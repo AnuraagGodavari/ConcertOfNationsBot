@@ -1,10 +1,12 @@
-# Lil-Buddy
-A simple discord bot designed to work with several features, including database integration, emailing and the usage of APIs.
+# NationsBot
+A discord bot meant to run a grand strategy roleplaying game by handling economics, resources, building, population etc.
 
 ## Features
-* Status tracking: can set users to be "status watched", which means Lil' Buddy will track them and post their newest custom statuses to a specified channel.
+* Allows users to play as a "nation", which includes such things as owned territories, buildings, resources, etc.
+* Players can build their economy in ways such as taxing their population, mining resources and building buildings.
 
 ## How to run
-Dependencies:
+Python Libraries:
 * Discord.py: A python wrapper for the Discord API used to make the bot itself
 * dotenv: A python library which allows us to declare environment variables (ex. the bot's token, which is used to authenticate the bot and must remain secret)
+* mysql-connector: A python library which allows us to use the relational database MySQL and its forks (i.e. MariaDB) to store information.
