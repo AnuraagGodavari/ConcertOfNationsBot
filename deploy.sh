@@ -10,24 +10,24 @@ sudo apt full-upgrade -y
 sudo apt autoremove
 #sudo apt autoremove -y --purge
 
-#Declare text which defines the lilbuddy service
+#Declare text which defines the nationsbot service
 pwd=`pwd`
-lilbuddy="[Unit]
-Description=Lil' Buddy Discord Bot
+nationsbot="[Unit]
+Description=NationsBot Discord Bot
 After=multi-user.target
 
 [Service]
 Type=simple
 Restart=always
 
-ExecStart=/home/anuraag/miniconda3/envs/env_LilBuddy/bin/python3 /home/anuraag/DiscordBots/Lil-Buddy/Lil-Buddy
+ExecStart=/home/anuraag/miniconda3/envs/env_nationsbot/bin/python3 /home/anuraag/DiscordBots/NationsBot/NationsBot
 
 [Install]
 WantedBy=multi-user.target"
 
-echo "$lilbuddy" > lilbuddy.service
+echo "$nationsbot" > nationsbot.service
 
-sudo cp lilbuddy.service /etc/systemd/system/
-sudo systemctl start lilbuddy.service
-sudo systemctl enable lilbuddy.service
-rm lilbuddy.service
+sudo cp nationsbot.service /etc/systemd/system/
+sudo systemctl start nationsbot.service
+sudo systemctl enable nationsbot.service
+rm nationsbot.service
