@@ -7,6 +7,12 @@ def fetch_assoc(cursor):
 	return dict(zip(cursor.column_names, cursor.fetchone()))
 
 def getdb():
+	"""
+	Returns a connection to a MySQL/MariaDB database.
+	Returns:
+		mariadb_connection: The result of mariadb.connect(), either saved earlier or newly connected.
+	"""
+	
 	global mariadb_connection
 	
 	if not mariadb_connection:

@@ -1,12 +1,13 @@
-import os
+import os, json, logging
 from dotenv import load_dotenv
-import json
 
 import discord
 from discord.ext import commands
 
 from common import *
 from database import *
+
+import logger
 
 #The bot
 nationsbot = commands.Bot(command_prefix = 'n.', intents = discord.Intents().all())
