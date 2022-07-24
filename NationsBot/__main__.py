@@ -1,13 +1,27 @@
+#Python libraries
+import sys
 import os, json, logging
+
+#Packages
 from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands
 
+#Utilities
 from common import *
 from database import *
+from logger import *
 
-import logger
+#For NationsBot
+from ConcertOfNationsEngine import Base_GameObjects
+from Testing import GenerateGame
+
+
+#CLI options
+options = {
+	"debug": False
+}
 
 #The bot
 nationsbot = commands.Bot(command_prefix = 'n.', intents = discord.Intents().all())
@@ -16,7 +30,7 @@ nationsbot = commands.Bot(command_prefix = 'n.', intents = discord.Intents().all
 @nationsbot.event
 async def on_ready():
 	""" Detects when the bot has been fully loaded and is online """
-	print("Bot ready!")
+	logInfo("Bot ready!")
 
 @nationsbot.command()
 async def load(ctx, cog):
@@ -33,8 +47,14 @@ async def ping(ctx):
 
 def main():
 	
+	global options
+	
 	load_dotenv()
 	token = os.getenv('TOKEN')
+	
+	#Non-bot related setup
+	if options["debug"]:
+		GenerateGame.generateGame()
 	
 	for filename in os.listdir(f"{pwdir}/Cogs"):
 		if filename.endswith(".py"):
@@ -43,4 +63,12 @@ def main():
 	nationsbot.run(token)
 
 if __name__ == "__main__":
+	
+	#If command line args, generate data for flags dict
+	if (len(sys.argv) > 1):
+		for arg in sys.argv:
+			
+			if arg == "-d": 
+				options["debug"] = True
+	
 	main()

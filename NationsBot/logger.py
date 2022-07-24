@@ -15,6 +15,11 @@ def log(level, message, info = None):
 	
 	logtime = datetime.datetime.now()
 	
+	#Print info
+	print(f"[{logtime}] {level}: {message}")
+	if (info): pprint.pprint(info)
+	
+	#Write to file
 	with open(masterlog, 'a') as log:
 		log.write(f"[{logtime}] {level}: {message}\n")
 		
@@ -28,8 +33,33 @@ def log(level, message, info = None):
 				log.write(f"{info} \n")
 				
 		log.write("\n")
+
 	
-def log_error(error, errorInfo):
+def logInfo(message, details = None):
+	"""
+	Logs an error by writing the error's name, traceback and other details to the master log
+	
+	Args:
+		error (Exception): The exception object itself
+		serverID (int): The discord ID of the server where the command was executed
+		authorID (int): The discord ID of the user who used the command that triggered the error.
+	"""
+	
+	#Log the message and user-provided details
+	log("INFO", message, details)
+	
+	#Add further information to the errorData and return
+	
+	logtime = {
+		"message": message,
+		"details": details,
+		"time": str(datetime.datetime.now())
+	}
+			
+	return logtime
+	
+	
+def logError(error, errorInfo):
 	"""
 	Logs an error by writing the error's name, traceback and other details to the master log
 	
