@@ -28,7 +28,7 @@ class ErrorLogger(commands.Cog):
 
 		authorID = ctx.author.id
 
-		errorData = log_error(error, {"Server": serverID, "Author": authorID})
+		errorData = logError(error, {"Server": serverID, "Author": authorID})
 
 		await ctx.send(f"The following error has occurred: \"{str(error)}\"")
 		await ctx.send(f"_Error has been logged as <{errorData['Error Time']}>._")
