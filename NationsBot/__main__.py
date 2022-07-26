@@ -14,7 +14,6 @@ from database import *
 from logger import *
 
 #For NationsBot
-from ConcertOfNationsEngine import Base_GameObjects
 from Testing import GenerateGame
 
 
@@ -47,14 +46,18 @@ async def ping(ctx):
 
 def main():
 	
+	logInitial("Initializing Bot")
+	
 	global options
 	
 	load_dotenv()
 	token = os.getenv('TOKEN')
 	
 	#Non-bot related setup
-	if options["debug"]:
+	if options["debug"]: 
+		logInfo("Launching in Debug Mode")
 		GenerateGame.generateGame()
+	else: logInfo("Launching in Release Mode")
 	
 	for filename in os.listdir(f"{pwdir}/Cogs"):
 		if filename.endswith(".py"):
