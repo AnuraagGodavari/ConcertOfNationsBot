@@ -4,35 +4,39 @@ from common import *
 
 debugmodeOn = False
 	
-def log(level, message, info = None):
+def log(level, message, details = None):
 	"""
 	Prints log information to the console and writes it to a log file.
 	
 	Args:
 		level (string): Descriptor of the log level. Might be DEBUG, WARNING, ERROR etc.
-		info (dict): information like traceback, context etc.
+		details (dict): information like traceback, context etc.
 	"""
 	
 	logtime = datetime.datetime.now()
 	
 	#Print info
 	print(f"[{logtime}] {level}: {message}")
-	if (info): pprint.pprint(info)
+	if (details): pprint.pprint(details)
 	
 	#Write to file
 	with open(masterlog, 'a') as log:
-		log.write(f"[{logtime}] {level}: {message}\n")
 		
-		if (info): 
-			log.write(f"[{logtime}] Additional Info:")
+		if (details == None):
+			log.write(f"[{logtime}] {level}: {message}\n\n")
+		
+		elif (type(details is dict)):
+			log.write(f"[{logtime}] {level}: {message}\n[{logtime}] Additional Info: {json.dumps(details, indent=4)}\n")
 			
-			if (type(info) is dict):
-				log.write(f"{json.dumps(info, indent=4)} \n")
-				
-			else:
-				log.write(f"{info} \n")
-				
-		log.write("\n")
+		else:
+			log.write(f"[{logtime}] {level}: {message}\n[{logtime}] Additional Info: {details}\n")
+
+
+def logInitial(message):
+	
+	with open(masterlog, 'a') as logfile: logfile.write("\n\n")
+		
+	log("START", message)
 
 	
 def logInfo(message, details = None):
