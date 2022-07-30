@@ -6,3 +6,9 @@
 
 **/Logs/**
 *.log
+
+**/Savegames/**
+**/Gamerule/**
+**/Worlds/**
+
+**/Assets/**

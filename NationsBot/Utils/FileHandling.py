@@ -2,34 +2,6 @@ import json, os, inspect, pprint, copy
 
 #General methods
 
-def newGame(gameName, serverID, startMonth, startYear, map, gameDict): #Creates a new saveFile
-    
-    if (map in os.listdir("Maps")) and (gameDict in os.listdir("Dictionaries")): #If the map and gameDict file names lead to existing files
-        
-        saveGame = GameObjects.SaveGame(gameName, serverID, GameObjects.Date(startMonth, startYear), map, gameDict) #Creates a SaveGame object
-        
-        with open(f"Savegames/{gameName} - {serverID}.json", 'w') as f: #Saves the SaveGame to a new file
-            json.dump(saveObject(saveGame), f, indent = 4)
-            
-        return saveGame
-
-# getNation(608117738183065641, None, 608113391747465227)
-def getNation(nationID, gamePassword, serverID = None):
-    if serverID != None:
-        saveGame = getSaveGame(serverID)
-    else:
-        saveGame = getSaveGame(gamePassword)
-    nation = loadObject(saveGame["Nations"][str(nationID)])
-    return nation
-
-def getSaveGame(ID):
-    ID = str(ID)
-    for file in os.listdir("Savegames"):
-        if (file[:-5].split(" - ")[-1] == ID): #if ID in file:
-            with open(f"Savegames/{file}") as f:
-                saveGame = json.load(f)
-                return saveGame
-
 #d = saveObject(getNation(608117738183065641, None, 608113391747465227))
 def saveObject(originalThing): #recursively turns a custom object, with object parameters and subparameters, into a dictionary
 

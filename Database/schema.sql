@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS `Savegames` (
 	`id` BIGINT UNSIGNED NOT NULL,
 	`server_id` BIGINT UNSIGNED NOT NULL,
 	`savefile` VARCHAR(64) NOT NULL,
-	`mapfile` VARCHAR(64) NOT NULL,
+	`worldfile` VARCHAR(64) NOT NULL,
+	`gamerulefile` VARCHAR(64) NOT NULL,
 	`created` timestamp NOT NULL DEFAULT current_timestamp(),
 	PRIMARY KEY (`id`)
 );
