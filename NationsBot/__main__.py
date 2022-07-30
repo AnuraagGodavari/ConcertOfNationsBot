@@ -59,7 +59,7 @@ def main():
 		GenerateGame.generateGame()
 	else: logInfo("Launching in Release Mode")
 	
-	for filename in os.listdir(f"{pwdir}/Cogs"):
+	for filename in os.listdir(cogsDir):
 		if filename.endswith(".py"):
 			nationsbot.load_extension(f"Cogs.{filename[:-3]}")
 	
