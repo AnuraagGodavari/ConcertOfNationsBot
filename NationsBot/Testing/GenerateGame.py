@@ -8,40 +8,40 @@ from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
 def generateTestWorld():
-	logInfo("Generating 'Test World' Worldmap...")
+    logInfo("Generating 'Test World' Worldmap...")
 
-	world = Mapping.World("Test World")
+    world = Mapping.World("Test World")
 
-	world.territories = {
-		"Test (1,1)": Mapping.Territory((1, 1)),
-		"Test (2,2)": Mapping.Territory((2, 2))
-	}
+    world.territories = {
+        "Test (1,1)": Mapping.Territory((1, 1)),
+        "Test (2,2)": Mapping.Territory((2, 2))
+    }
 
-	with open(f"{worldsDir}/Test World.json", 'w') as f:
-		json.dump(FileHandling.saveObject(world), f, indent = 4)
+    with open(f"{worldsDir}/Test World.json", 'w') as f:
+        json.dump(FileHandling.saveObject(world), f, indent = 4)
 
-	logInfo("Generated 'Test World'")
-	return world
+    logInfo("Generated 'Test World'")
+    return world
 
 def generateGame():
-	logInfo("Beginning game generation!")
-	
-	testWorld = generateTestWorld()
+    logInfo("Beginning game generation!")
+    
+    testWorld = generateTestWorld()
 
-	savegame = Savegame(
-		"TestGame",
-		{"m": 1, "y": 1},
-		1,
-		"Test Gamerule",
-		"Test World",
-		nations = {
-			"Nation01": Nation("Nation01")
-		}
-	)
+    savegame = Savegame(
+        "TestGame",
+        {"m": 1, "y": 1},
+        1,
+        nations = {
+            "Nation01": Nation("Nation01")
+        }
+    )
 
-	load_gamerule("Test Gamerule")
-	
-	setupNew_saveGame(0, savegame, "Test World", "Test Gamerule")
-	save_saveGame(savegame)
-	
-	logInfo("Generated and saved game", FileHandling.saveObject(savegame))
+    load_gamerule("Test Gamerule")
+    
+    #setupNew_saveGame(0, savegame, testWorld.name, "Test Gamerule")
+    
+    save_saveGame(savegame)
+    savegame = load_saveGame("TestGame")
+
+    logInfo("Generated and saved game", FileHandling.saveObject(savegame))

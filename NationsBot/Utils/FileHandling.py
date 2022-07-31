@@ -1,43 +1,71 @@
 import json, os, inspect, pprint, copy
 
+from logger import *
+
 #General methods
+
+def easyLoad(fileName, dir = ""):
+
+    if (dir): dir += "/"
+
+    logInfo(f"Loading from file: {gameruleDir}/{fileName}.json")
+
+    with open(f"{dir}{fileName}.json", 'r') as f:
+        logInfo("File found, loading")
+        loaded = json.load(f)
+
+    if ("__class__" in loaded.keys()):
+        return loadObject(loaded)
+
+    return loaded
+
+def easySave(contents, fileName, dir = ""):
+
+    if (dir): dir += "/"
+
+    logInfo(f"Saving to file: {gameruleDir}/{fileName}.json")
+
+    with open(f"{dir}{fileName}.json", 'w') as f:
+        logInfo("File found")
+        json.dump(saveObject(contents), f, indent = 4)
+        logInfo("Successfully saved")
 
 #d = saveObject(getNation(608117738183065641, None, 608113391747465227))
 def saveObject(originalThing): #recursively turns a custom object, with object parameters and subparameters, into a dictionary
 
     thing = copy.deepcopy(originalThing)
     
-	#Define the dictionary we should return
+    #Define the dictionary we should return
     rtnDict = {}
-	
-	#If thing is a custom class, this should work
+    
+    #If thing is a custom class, this should work
     try: rtnDict = toDict(thing)
-		
+        
     except:
-		
+        
         if isinstance(thing, dict):
             rtnDict = thing
-			
+            
         elif isinstance(thing, list):
             rtnList = []
             for item in thing:
                 rtnList.append(saveObject[item])
             return rtnList
-		
+        
         else: #Primitive data type
             return thing
             
-	#Save each value in the rtnDict recursively
+    #Save each value in the rtnDict recursively
     for param in rtnDict.keys(): #For each thing in this new dictionary:
-		
+        
         if isinstance(rtnDict[param], list): #If thing is a list
             temp, rtnDict[param] = rtnDict[param], [] #Makes the list empty and refills it with built-in data types.
             for item in temp:
                 rtnDict[param].append(saveObject(item))
-				
+                
         elif isinstance(rtnDict[param], dict): #If thing is a dict
             rtnDict[param] = saveObject(rtnDict[param])
-			
+            
         else:
             try: rtnDict[param] = saveObject(rtnDict[param]) #Tries to saveObject the thing, assuming it is a custom object
             except: pass
@@ -92,10 +120,6 @@ def toObject(thing): #Turns dict from json into object
             class_ = getattr(module,class_name)
             
             obj = class_(**thing) #generate object
-            
-            #if (("Territory" not in class_name) and (class_name != "Vertex")): 
-                #print(class_name)
-                #print(obj)
             
             return obj
         else:
