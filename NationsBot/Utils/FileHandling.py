@@ -8,7 +8,7 @@ def easyLoad(fileName, dir = ""):
 
     if (dir): dir += "/"
 
-    logInfo(f"Loading from file: {gameruleDir}/{fileName}.json")
+    logInfo(f"Loading from file: {dir}{fileName}.json")
 
     with open(f"{dir}{fileName}.json", 'r') as f:
         logInfo("File found, loading")
@@ -23,7 +23,7 @@ def easySave(contents, fileName, dir = ""):
 
     if (dir): dir += "/"
 
-    logInfo(f"Saving to file: {gameruleDir}/{fileName}.json")
+    logInfo(f"Saving to file: {dir}{fileName}.json")
 
     with open(f"{dir}{fileName}.json", 'w') as f:
         logInfo("File found")
