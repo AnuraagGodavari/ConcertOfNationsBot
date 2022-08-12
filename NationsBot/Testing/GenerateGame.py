@@ -1,6 +1,7 @@
 from logger import *
 
 import pprint
+from random import randrange
 
 from Utils import FileHandling, Mapping
 
@@ -12,16 +13,24 @@ def generateTestWorld(length, height, space):
 
     world = Mapping.World("Test World")
 
-    world.territories = { 
-        f"Test ({x},{y})": Mapping.Territory((x, y), details = {"Terrain": "Plains"}) 
-        for x in range(0, length, space) for y in range(0, height, space) }
+    '''
+    [
+        world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
+        for x in range(0, length, space) for y in range(0, height, space) 
+    ]
+    '''
+
+    for i in range(32):
+        x = randrange(0, length, space)
+        y = randrange(0, height, space)
+        world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
 
     world.calculateAllNeighbors(
         [
             {
                 "t0": {"Terrain": "Plains"},
                 "t1": {"Terrain": "Plains"},
-                "maxDist": 1
+                "maxDist": 40
             }
         ]
     )
@@ -29,13 +38,15 @@ def generateTestWorld(length, height, space):
     with open(f"{worldsDir}/Test World.json", 'w') as f:
         json.dump(FileHandling.saveObject(world), f, indent = 4)
 
+    world.toImage()
+
     logInfo("Generated 'Test World'")
     return world
 
 def generateGame():
     logInfo("Beginning game generation!")
     
-    testWorld = generateTestWorld(5, 5, 1)
+    testWorld = generateTestWorld(150, 150, 7)
 
     savegame = Savegame(
         "TestGame",
@@ -54,3 +65,5 @@ def generateGame():
     savegame = load_saveGame("TestGame")
 
     logInfo("Generated and saved game", FileHandling.saveObject(savegame))
+
+    exit()
