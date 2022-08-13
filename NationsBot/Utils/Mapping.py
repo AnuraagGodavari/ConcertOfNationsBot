@@ -73,7 +73,13 @@ class World:
 
                     continue
 
-    def toImage(self):
+    def toImage(self, colorRules = None):
+        """
+        Creates an image representing the map as a graph, with territories as vertices and edges as edges.
+
+        Parameters:
+            colorRules(dict): Dictionary where the keys are territories and values are the color they should be on the image, represented as an rgb tuple.
+        """
         
         #Represents the extra space between min/max X/Y and the borders of the image.
         coordOffset = (75, 75)
@@ -119,13 +125,13 @@ class World:
         imgDraw = ImageDraw.Draw(out_img)
 
         #Draw territories on the map
-        for terr in self.territories.values():
+        for terrName, terr in self.territories.items():
 
             #Draw territory edges on the map
             for neighborName, neighbor in terr.edges.items():
                 neighbor = self.territories[neighborName]
 
-                if neighbor.id < terr.id:
+                if neighbor.id > terr.id:
 
                     imgDraw.line(
                         [
@@ -137,6 +143,13 @@ class World:
                         fill = "black"
                     )
 
+            #Check for custom color; if none, use default
+            terrColor = (255,255,255)
+
+            if colorRules:
+                if terrName in colorRules.keys():
+                    terrColor = colorRules[terrName]
+
             #Now draw the territory as a circle
             imgDraw.ellipse(
                 (
@@ -145,7 +158,7 @@ class World:
                     (terr.pos[0] * mapScale[0]) + terrOffset[0] + (terrSize[0]/2),
                     (terr.pos[1] * mapScale[1]) + terrOffset[1] + (terrSize[0]/2)
                 ), 
-            fill = (255,255,255),
+            fill = terrColor,
             outline = (0,0,0))
 
             #Draw the territory's ID number nearby
