@@ -15,7 +15,7 @@ def generateTestWorld(length, height, space):
 
     [
         world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
-        for x in range(0, length, space) for y in range(0, height, space) 
+        for y in range(0, length, space) for x in range(0, height, space) 
     ]
 
     '''
@@ -58,6 +58,12 @@ def generateGame():
         territories = ["Test (0,0)", "Test (20,0)", "Test (0,20)", "Test (20,20)"]
         ))
 
+    savegame.add_Nation(Nation(
+        "Nation02",
+        (randint(0, 255), randint(0, 255), randint(0, 255)),
+        territories = ['Test (0,40)', 'Test (0,60)', 'Test (0,80)', 'Test (20,40)', 'Test (20,60)', 'Test (20,80)']
+        ))
+
     load_gamerule("Test Gamerule")
     
     #setupNew_saveGame(0, savegame, testWorld.name, "Test Gamerule")
@@ -67,7 +73,7 @@ def generateGame():
 
     logInfo("Generated and saved game", FileHandling.saveObject(savegame))
 
-    savegame.world_toImage(testWorld)
+    savegame.world_toImage()
 
     logInfo("Generated image of test world map")
 
