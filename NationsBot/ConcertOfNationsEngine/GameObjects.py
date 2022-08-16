@@ -1,5 +1,7 @@
 import pprint
 
+from database import *
+
 import ConcertOfNationsEngine.GameHandling as gamehandling
 
 class Savegame:
@@ -12,17 +14,34 @@ class Savegame:
         nations (dict): Contains all the nations that populate the game, controlled by players.
     """
     
-    def __init__(self, name, date, turn, nations = None):
+    def __init__(self, name, date, turn, nations = None, visibilities = None):
         self.name = name
         self.date = date
         self.turn = turn
 
         self.nations = nations or dict()
+        self.visibilities = visibilities or dict()
+
+    def getWorld(self):
+    
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT worldfile FROM Savegames WHERE savefile=%s LIMIT 1;"
+        params = [self.name]
+        cursor.execute(stmt, params)
+        result = cursor.fetchone()
+
+        if (result == None): return False
+        return gamehandling.load_world(result[0])
 
     def add_Nation(self, nation):
         self.nations[nation.name] = nation
 
-    def world_toImage(self, world):
+    def world_toImage(self):
+
+        world = self.getWorld()
+
         colorRules = dict()
 
         for nation in self.nations.values():
