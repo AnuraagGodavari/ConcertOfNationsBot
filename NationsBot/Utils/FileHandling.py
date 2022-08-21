@@ -30,7 +30,6 @@ def easySave(contents, fileName, dir = ""):
         json.dump(saveObject(contents), f, indent = 4)
         logInfo("Successfully saved")
 
-#d = saveObject(getNation(608117738183065641, None, 608113391747465227))
 def saveObject(originalThing): #recursively turns a custom object, with object parameters and subparameters, into a dictionary
 
     thing = copy.deepcopy(originalThing)

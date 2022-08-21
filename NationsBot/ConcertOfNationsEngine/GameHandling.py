@@ -60,9 +60,18 @@ def load_world(world_name):
     return world
 
 #Add a nation by role and savegame to the database
-def add_Nation(savegame, nation_name, roleID):
+def add_Nation(savegame, nation_name, roleID, playerID):
     """
     Add a nation as a role to the database
     """
-    pass
+    db = getdb()
+    cursor = db.cursor()
 
+    savegameInfo = savegame.getRow()
+    
+    '''
+    stmt = "INSERT INTO PlayerGames (player_id, game_id, role_id) VALUES (%s, %s, %s)"
+    params = []
+    cursor.execute(stmt, params)
+    db.commit()
+    '''

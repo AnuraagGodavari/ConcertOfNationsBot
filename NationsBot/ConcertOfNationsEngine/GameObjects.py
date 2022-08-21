@@ -1,6 +1,7 @@
 import pprint
 
 from database import *
+from logger import *
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
 
@@ -22,8 +23,24 @@ class Savegame:
         self.nations = nations or dict()
         self.visibilities = visibilities or dict()
 
+    def getRow(self):
+        """
+        Get the row in the database table Savegames pertaining to this savegame
+        """
+
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT * FROM Savegames WHERE savefile=%s LIMIT 1;"
+        params = [self.name]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
+
+        if (result == None): return False
+        return result
+
     def getWorld(self):
-    
+        logInfo("")
         db = getdb()
         cursor = db.cursor()
 
@@ -32,7 +49,10 @@ class Savegame:
         cursor.execute(stmt, params)
         result = cursor.fetchone()
 
-        if (result == None): return False
+        if (result == None):
+            return False
+
+        logInfo("Got worldfile info")
         return gamehandling.load_world(result[0])
 
     def add_Nation(self, nation):
