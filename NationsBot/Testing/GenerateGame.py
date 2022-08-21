@@ -1,3 +1,4 @@
+from common import *
 from logger import *
 
 import pprint
@@ -42,6 +43,9 @@ def generateTestWorld(length, height, space):
     return world
 
 def generateGame():
+
+    conf = FileHandling.easyLoad("debugConf", pwdir)
+
     logInfo("Beginning game generation!")
     
     testWorld = generateTestWorld(100, 100, 20)
@@ -51,12 +55,32 @@ def generateGame():
         {"m": 1, "y": 1},
         1
     )
+    
+    try:
+        setupNew_saveGame(
+            conf["savegame"]["serverID"], 
+            savegame, 
+            testWorld.name, 
+            "Test Gamerule"
+            )
+    except Exception as e:
+        logInfo("Savegame already in database, not logging as error")
 
     savegame.add_Nation(Nation(
         "Nation01",
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = ["Test (0,0)", "Test (20,0)", "Test (0,20)", "Test (20,20)"]
         ))
+
+    try:
+        add_Nation(
+            savegame, 
+            "Nation01",
+            conf["Nation01"]["roleid"], 
+            conf["Nation01"]["playerid"]
+            )
+    except Exception as e:
+        logInfo("Nation already in database, not logging as error")
 
     savegame.add_Nation(Nation(
         "Nation02",
@@ -66,8 +90,6 @@ def generateGame():
 
     load_gamerule("Test Gamerule")
     
-    #setupNew_saveGame(0, savegame, testWorld.name, "Test Gamerule")
-    
     save_saveGame(savegame)
     savegame = load_saveGame("TestGame")
 
@@ -76,5 +98,3 @@ def generateGame():
     savegame.world_toImage()
 
     logInfo("Generated image of test world map")
-
-    exit()
