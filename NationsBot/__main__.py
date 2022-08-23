@@ -77,7 +77,7 @@ if __name__ == "__main__":
     
     #If command line args, generate data for flags dict
     if (len(sys.argv) > 1):
-        for arg in sys.argv:
+        for arg in sys.argv[1:]:
             
             if 'd' in arg: 
                 options["debug"] = True

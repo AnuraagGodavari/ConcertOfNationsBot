@@ -59,7 +59,45 @@ def load_world(world_name):
     logInfo(f"World {world.name} successfully loaded")
     return world
 
-#Add a nation by role and savegame to the database
+
+#Player
+def add_Player(playerID):
+    """
+    Add a player by discord ID to the database
+    """
+    db = getdb()
+    cursor = db.cursor()
+
+    try:
+        stmt = "INSERT INTO Players (discord_id) VALUES (%s)"
+        params = [playerID]
+        cursor.execute(stmt, params)
+        db.commit()
+    except Exception as e:
+        raise Exception(f"Could not insert player into database: <{e}>")
+
+    logInfo(f"Added player <{playerID}> to the database")
+
+def get_Player(playerID):
+        """
+        Get the row in the database table Players pertaining to this player
+        """
+
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT * FROM Players WHERE discord_id=%s LIMIT 1;"
+        params = [playerID]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
+
+        if (result == None): return False
+
+        logInfo(f"Retrieved player from database with id {result['id']}")
+        return result
+
+
+#Nation
 def add_Nation(savegame, nation_name, roleID, playerID):
     """
     Add a nation as a role to the database
@@ -68,10 +106,21 @@ def add_Nation(savegame, nation_name, roleID, playerID):
     cursor = db.cursor()
 
     savegameInfo = savegame.getRow()
-    
-    '''
-    stmt = "INSERT INTO PlayerGames (player_id, game_id, role_id) VALUES (%s, %s, %s)"
-    params = []
-    cursor.execute(stmt, params)
-    db.commit()
-    '''
+
+    playerInfo = get_Player(playerID)
+
+    if not (playerInfo):
+        add_Player(playerID)
+        playerInfo = get_Player(playerID)
+
+    return
+
+    try:
+        stmt = "INSERT INTO PlayerGames (player_id, game_id, role_id) VALUES (%s, %s, %s)"
+        params = [playerID, savegameInfo["id"], roleID]
+        cursor.execute(stmt, params)
+        db.commit()
+    except Exception as e:
+        raise Exception(f"Could not insert nation into database: <{e}>")
+
+    logInfo(f"Added nation \"{nation_name}\" to database")
