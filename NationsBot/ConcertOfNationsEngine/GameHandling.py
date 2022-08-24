@@ -97,6 +97,43 @@ def get_Player(playerID):
         return result
 
 
+#Player
+def add_Role(roleID, roleName):
+    """
+    Add a role by discord ID to the database
+    """
+    db = getdb()
+    cursor = db.cursor()
+
+    try:
+        stmt = "INSERT INTO Roles (discord_id, name) VALUES (%s, %s)"
+        params = [roleID, roleName]
+        cursor.execute(stmt, params)
+        db.commit()
+    except Exception as e:
+        raise Exception(f"Could not insert role into database: <{e}>")
+
+    logInfo(f"Added role <{roleID}> to the database")
+
+def get_Role(roleID):
+        """
+        Get the row in the database table Roles pertaining to this role
+        """
+
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT * FROM Roles WHERE discord_id=%s LIMIT 1;"
+        params = [roleID]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
+
+        if not (result): return False
+
+        logInfo(f"Retrieved role from database with id {result['id']}")
+        return result
+
+
 #Nation
 def add_Nation(savegame, nation_name, roleID, playerID):
     """
@@ -109,9 +146,19 @@ def add_Nation(savegame, nation_name, roleID, playerID):
 
     playerInfo = get_Player(playerID)
 
+    #Insert player if need be
     if not (playerInfo):
         add_Player(playerID)
         playerInfo = get_Player(playerID)
+
+    #Insert role
+
+    if not (get_Role(roleID)):
+        add_Role(roleID, nation_name)
+        roleInfo = get_Role(roleID)
+
+    else: 
+        logInfo(f"Role <{roleID}> for \"{nation_name}\" already exists in the database")
 
     return
 
