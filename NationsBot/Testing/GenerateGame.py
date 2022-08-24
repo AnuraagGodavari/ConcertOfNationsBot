@@ -80,8 +80,8 @@ def generateGame():
             conf["Nation01"]["playerid"]
             )
     except Exception as e:
-        logInfo("Nation already in database")
-        logError(e)
+        logError(e, {"Message": "Nation already in database"})
+        return
 
     savegame.add_Nation(Nation(
         "Nation02",
