@@ -73,7 +73,7 @@ class World:
 
                     continue
 
-    def toImage(self, colorRules = None):
+    def toImage(self, mapScale = None, colorRules = None):
         """
         Creates an image representing the map as a graph, with territories as vertices and edges as edges.
 
@@ -83,10 +83,11 @@ class World:
         
         #Represents the extra space between min/max X/Y and the borders of the image.
         coordOffset = (75, 75)
-        mapScale = (400, 400)
+        mapScale = mapScale or (1, 1)
         terrSize = (32, 32)
 
-        #Represents the max render length of an edge.#If an edge is more than edgeDrawLimits[1], then shrink the map so it draws it as long as edgeDrawLimits[1] would before.
+        #Represents the max render length of an edge.
+        #If an edge is more than edgeDrawLimits[1], then shrink the map so it draws it as long as edgeDrawLimits[1] would before.
         #If an edge is less than edgeDrawLimits[0], then inflate the map so it draws it as long as edgeDrawLimits[0] would before.
         edgeDrawLimits = (1, 2)
 
@@ -107,9 +108,11 @@ class World:
                 minEdge = min(minEdge, min(t.edges.values()))
                 maxEdge = max(maxEdge, max(t.edges.values()))
 
+        if maxEdge == -1: maxEdge = 1
+
         mapScale = (
-            int(mapScale[0] * min(1, edgeDrawLimits[1] / maxEdge)),
-            int(mapScale[1] * min(1, edgeDrawLimits[1] / maxEdge))
+            int(mapScale[0] * min(1, edgeDrawLimits[1] / max(1, maxEdge))),
+            int(mapScale[1] * min(1, edgeDrawLimits[1] / max(1, maxEdge)))
         )
 
         dim = (maxX-minX, maxY-minY)
@@ -117,8 +120,8 @@ class World:
         terrOffset = (0 - minX + coordOffset[0], 0 - minY + coordOffset[0])
 
         out_img = Image.new("RGBA", (
-            (dim[0] * mapScale[0]) + (coordOffset[0]*2), 
-            (dim[1] * mapScale[1]) + (coordOffset[1]*2)
+            int((dim[0] * mapScale[0]) + (coordOffset[0]*2)), 
+            int((dim[1] * mapScale[1]) + (coordOffset[1]*2))
             ),
             (200, 200, 200)
         )
