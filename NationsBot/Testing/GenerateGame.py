@@ -52,13 +52,13 @@ def generateGame():
 
     savegame = Savegame(
         "TestGame",
+        conf["savegame"]["serverID"],
         {"m": 1, "y": 1},
         1
     )
     
     try:
         setupNew_saveGame(
-            conf["savegame"]["serverID"], 
             savegame, 
             testWorld.name, 
             "Test Gamerule"
@@ -68,6 +68,7 @@ def generateGame():
 
     savegame.add_Nation(Nation(
         "Nation01",
+        conf["Nation01"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = ["Test (0,0)", "Test (20,0)", "Test (0,20)", "Test (20,20)"]
         ))
@@ -75,19 +76,29 @@ def generateGame():
     try:
         add_Nation(
             savegame, 
-            "Nation01",
-            conf["Nation01"]["roleid"], 
+            savegame.nations["Nation01"], 
             conf["Nation01"]["playerid"]
             )
     except Exception as e:
-        logError(e, {"Message": "Nation already in database"})
+        logError(e, {"Message": "Nation 1 already in database"})
         return
 
     savegame.add_Nation(Nation(
         "Nation02",
+        conf["Nation02"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = ['Test (0,40)', 'Test (0,60)', 'Test (0,80)', 'Test (20,40)', 'Test (20,60)', 'Test (20,80)']
         ))
+
+    try:
+        add_Nation(
+            savegame, 
+            savegame.nations["Nation02"],
+            conf["Nation02"]["playerid"]
+            )
+    except Exception as e:
+        logError(e, {"Message": "Nation 2 already in database"})
+        return
 
     load_gamerule("Test Gamerule")
     
@@ -96,6 +107,6 @@ def generateGame():
 
     logInfo("Generated and saved game", FileHandling.saveObject(savegame))
 
-    savegame.world_toImage()
+    savegame.world_toImage(mapScale = (100, 100))
 
     logInfo("Generated image of test world map")

@@ -9,11 +9,13 @@ from Utils import FileHandling
 from ConcertOfNationsEngine.GameObjects import *
 
 #Deal with savegames
-def setupNew_saveGame(server_id, savegame, world_name, gamerule_name):
+def setupNew_saveGame(savegame, world_name, gamerule_name):
     """
     Given a new savegame object, create a savefile for it and save it to the database.
     """
     logInfo("Setting up a new savegame in the savefiles and database")
+
+    server_id = savegame.id
     
     #Update database
     db = getdb()
@@ -41,6 +43,10 @@ def load_saveGame(savegame_name):
     savegame = FileHandling.easyLoad(savegame_name, savesDir)
     logInfo(f"Savegame {savegame.name} successfully loaded")
     return savegame
+
+def get_players(savegame_name):
+    pass
+
 
 #Deal with other files
 def load_gamerule(gamerule_name):
@@ -91,13 +97,13 @@ def get_Player(playerID):
         cursor.execute(stmt, params)
         result = fetch_assoc(cursor)
 
-        if (result == None): return False
+        if not (result): return False
 
         logInfo(f"Retrieved player from database with id {result['id']}")
         return result
 
 
-#Player
+#Role
 def add_Role(roleID, roleName):
     """
     Add a role by discord ID to the database
@@ -135,10 +141,14 @@ def get_Role(roleID):
 
 
 #Nation
-def add_Nation(savegame, nation_name, roleID, playerID):
+def add_Nation(savegame, nation, playerID):
     """
     Add a nation as a role to the database
     """
+
+    nation_name = nation.name
+    roleID = nation.role_id
+
     db = getdb()
     cursor = db.cursor()
 
