@@ -15,16 +15,19 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
     """
     logInfo("Setting up a new savegame in the savefiles and database")
 
-    server_id = savegame.id
+    server_id = savegame.server_id
     
     #Update database
-    db = getdb()
-    cursor = db.cursor()
+    try:
+        db = getdb()
+        cursor = db.cursor()
 
-    stmt = "INSERT INTO Savegames (server_id, savefile, worldfile, gamerulefile) VALUES (%s, %s, %s, %s)"
-    params = [server_id, savegame.name, world_name, gamerule_name]
-    cursor.execute(stmt, params)
-    db.commit()
+        stmt = "INSERT INTO Savegames (server_id, savefile, worldfile, gamerulefile) VALUES (%s, %s, %s, %s)"
+        params = [server_id, savegame.name, world_name, gamerule_name]
+        cursor.execute(stmt, params)
+        db.commit()
+    except Exception as e:
+        logError(e)
 
     #Generate savefile for the game
     save_saveGame(savegame)
@@ -44,8 +47,26 @@ def load_saveGame(savegame_name):
     logInfo(f"Savegame {savegame.name} successfully loaded")
     return savegame
 
-def get_players(savegame_name):
-    pass
+def get_player_byGame(savegame, player_id):
+
+    db = getdb()
+    cursor = db.cursor()
+
+    stmt = """
+    SELECT * FROM 
+        PlayerGames 
+            INNER JOIN Players ON PlayerGames.player_id=Players.id
+            INNER JOIN Savegames ON PlayerGames.game_id=Savegames.id
+    WHERE Savegames.server_id=%s AND Players.discord_id=%s LIMIT 1;
+    """
+
+    params = [savegame.server_id, player_id]
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result): return False
+    logInfo(f"Player {player_id} info for game {savegame.server_id} retrieved")
+    return result
 
 
 #Deal with other files
@@ -152,6 +173,12 @@ def add_Nation(savegame, nation, playerID):
     db = getdb()
     cursor = db.cursor()
 
+    #Fail if player is already tracked to a nation
+    playerExists = get_player_byGame(savegame, playerID)
+    if (playerExists):
+        logInfo(f"Player {playerID} exists in game {savegame.name} already")
+        return False
+
     savegameInfo = savegame.getRow()
 
     playerInfo = get_Player(playerID)
@@ -161,8 +188,9 @@ def add_Nation(savegame, nation, playerID):
         add_Player(playerID)
         playerInfo = get_Player(playerID)
 
-    #Insert role
+    roleInfo = get_Role(roleID)
 
+    #Insert role
     if not (get_Role(roleID)):
         add_Role(roleID, nation_name)
         roleInfo = get_Role(roleID)
@@ -170,14 +198,31 @@ def add_Nation(savegame, nation, playerID):
     else: 
         logInfo(f"Role <{roleID}> for \"{nation_name}\" already exists in the database")
 
-    return
+    if not(savegameInfo and playerInfo and roleInfo):
+        logInfo(
+            f"Something went wrong when adding nation {nation.name}", 
+            {
+                "savegameInfo": bool(savegameInfo), 
+                "playerInfo": bool(playerInfo), 
+                "roleInfo": bool(roleInfo)
+            }
+            )
+        raise Exception(f"Something went wrong when adding nation {nation.name}")
 
     try:
         stmt = "INSERT INTO PlayerGames (player_id, game_id, role_id) VALUES (%s, %s, %s)"
-        params = [playerID, savegameInfo["id"], roleID]
+        params = [playerInfo["id"], savegameInfo["id"], roleInfo["id"]]
         cursor.execute(stmt, params)
         db.commit()
     except Exception as e:
         raise Exception(f"Could not insert nation into database: <{e}>")
 
+    result = get_player_byGame(savegame, playerID)
+
+    if not (result): 
+        logInfo(f"Adding nation \"{nation_name}\" to database failed")
+        return False
+
     logInfo(f"Added nation \"{nation_name}\" to database")
+    return result
+    
