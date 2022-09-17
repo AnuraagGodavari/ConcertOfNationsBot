@@ -28,17 +28,7 @@ class Savegame:
         """
         Get the row in the database table Savegames pertaining to this savegame
         """
-
-        db = getdb()
-        cursor = db.cursor()
-
-        stmt = "SELECT * FROM Savegames WHERE server_id=%s LIMIT 1;"
-        params = [self.server_id]
-        cursor.execute(stmt, params)
-        result = fetch_assoc(cursor)
-
-        if not (result): return False
-        return result
+        return gamehandling.dbget_saveGame_byServer(self.server_id)
 
     def getWorld(self):
         logInfo("")
@@ -57,6 +47,10 @@ class Savegame:
         return gamehandling.load_world(result[0])
 
     def add_Nation(self, nation):
+
+        if nation.name in self.nations.keys():
+            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
+
         self.nations[nation.name] = nation
 
     def world_toImage(self, mapScale = None):
