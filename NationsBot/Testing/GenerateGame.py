@@ -66,6 +66,7 @@ def generateGame():
     except Exception as e:
         logInfo("Savegame already in database, not logging as error")
 
+    '''
     savegame.add_Nation(Nation(
         "Nation01",
         conf["Nation01"]["roleid"], 
@@ -99,6 +100,7 @@ def generateGame():
     except Exception as e:
         logError(e, {"Message": "Nation 2 already in database"})
         return
+    '''
 
     load_gamerule("Test Gamerule")
     

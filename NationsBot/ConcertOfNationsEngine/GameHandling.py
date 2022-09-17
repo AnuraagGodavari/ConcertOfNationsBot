@@ -1,4 +1,5 @@
 import json
+from functools import lru_cache
 
 from logger import *
 
@@ -39,13 +40,30 @@ def save_saveGame(savegame):
     FileHandling.easySave(savegame, savegame.name, savesDir)
     logInfo(f"Saved {savegame.name} to file: {savesDir}/{savegame.name}.json")
 
+@lru_cache(maxsize=16)
 def load_saveGame(savegame_name):
     """
     Load a savegame object from its savefile
     """
     savegame = FileHandling.easyLoad(savegame_name, savesDir)
-    logInfo(f"Savegame {savegame.name} successfully loaded")
+    logInfo(f"Savegame {savegame.name} successfully loaded and added to cache")
     return savegame
+
+def dbget_saveGame_byServer(server_id):
+        """
+        Get the row in the database table Savegames pertaining to this server
+        """
+
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT * FROM Savegames WHERE server_id=%s LIMIT 1;"
+        params = [server_id]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
+
+        if not (result): return False
+        return result
 
 def get_player_byGame(savegame, player_id):
 
