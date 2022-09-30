@@ -44,11 +44,13 @@ def generateTestWorld(length, height, space):
 
 def generateGame():
 
+
     conf = FileHandling.easyLoad("debugConf", pwdir)
 
     logInfo("Beginning game generation!")
     
     testWorld = generateTestWorld(100, 100, 20)
+    '''
 
     savegame = Savegame(
         "TestGame",
@@ -65,8 +67,6 @@ def generateGame():
             )
     except Exception as e:
         logInfo("Savegame already in database, not logging as error")
-
-    '''
     savegame.add_Nation(Nation(
         "Nation01",
         conf["Nation01"]["roleid"], 
@@ -100,7 +100,6 @@ def generateGame():
     except Exception as e:
         logError(e, {"Message": "Nation 2 already in database"})
         return
-    '''
 
     load_gamerule("Test Gamerule")
     
@@ -112,3 +111,4 @@ def generateGame():
     savegame.world_toImage(mapScale = (100, 100))
 
     logInfo("Generated image of test world map")
+    '''

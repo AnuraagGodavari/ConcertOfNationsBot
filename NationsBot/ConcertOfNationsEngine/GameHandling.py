@@ -199,16 +199,16 @@ def add_Nation(savegame, nation, playerID):
 
     savegameInfo = savegame.getRow()
 
+    #Insert player if need be
     playerInfo = get_Player(playerID)
 
-    #Insert player if need be
     if not (playerInfo):
         add_Player(playerID)
         playerInfo = get_Player(playerID)
 
+    #Insert role if need be
     roleInfo = get_Role(roleID)
 
-    #Insert role
     if not (get_Role(roleID)):
         add_Role(roleID, nation_name)
         roleInfo = get_Role(roleID)
