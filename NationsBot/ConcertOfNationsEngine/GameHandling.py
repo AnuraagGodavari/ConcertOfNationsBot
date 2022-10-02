@@ -10,6 +10,23 @@ from Utils import FileHandling
 from ConcertOfNationsEngine.GameObjects import *
 
 #Deal with savegames
+
+def dbget_saveGame_byServer(server_id):
+        """
+        Get the row in the database table Savegames pertaining to this server
+        """
+
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT * FROM Savegames WHERE server_id=%s LIMIT 1;"
+        params = [server_id]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
+
+        if not (result): return False
+        return result
+
 def setupNew_saveGame(savegame, world_name, gamerule_name):
     """
     Given a new savegame object, create a savefile for it and save it to the database.
@@ -18,6 +35,10 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
 
     server_id = savegame.server_id
     
+    if (dbget_saveGame_byServer(server_id)):
+        logInfo(f"Savegame already exists for the server {server_id}")
+        raise Exception(f"Savegame already exists for the server {server_id}")
+
     #Update database
     try:
         db = getdb()
@@ -29,6 +50,7 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
         db.commit()
     except Exception as e:
         logError(e)
+        raise Exception(f"Savegame could not be inserted!")
 
     #Generate savefile for the game
     save_saveGame(savegame)
@@ -48,22 +70,6 @@ def load_saveGame(savegame_name):
     savegame = FileHandling.easyLoad(savegame_name, savesDir)
     logInfo(f"Savegame {savegame.name} successfully loaded and added to cache")
     return savegame
-
-def dbget_saveGame_byServer(server_id):
-        """
-        Get the row in the database table Savegames pertaining to this server
-        """
-
-        db = getdb()
-        cursor = db.cursor()
-
-        stmt = "SELECT * FROM Savegames WHERE server_id=%s LIMIT 1;"
-        params = [server_id]
-        cursor.execute(stmt, params)
-        result = fetch_assoc(cursor)
-
-        if not (result): return False
-        return result
 
 def get_player_byGame(savegame, player_id):
 
