@@ -42,15 +42,11 @@ def generateTestWorld(length, height, space):
     logInfo("Generated 'Test World'")
     return world
 
-def generateGame():
-
+def generateGame(world):
 
     conf = FileHandling.easyLoad("debugConf", pwdir)
 
     logInfo("Beginning game generation!")
-    
-    testWorld = generateTestWorld(100, 100, 20)
-    '''
 
     savegame = Savegame(
         "TestGame",
@@ -62,7 +58,7 @@ def generateGame():
     try:
         setupNew_saveGame(
             savegame, 
-            testWorld.name, 
+            world.name, 
             "Test Gamerule"
             )
     except Exception as e:
@@ -111,4 +107,29 @@ def generateGame():
     savegame.world_toImage(mapScale = (100, 100))
 
     logInfo("Generated image of test world map")
-    '''
+
+    return savegame
+
+def testTerritoryTransfer(savegame, territoryName, targetNation):
+
+    logInfo(f"Testing transfer of territory {territoryName}")
+
+    prevOwner = savegame.find_terrOwner(territoryName)
+
+    if (prevOwner == targetNation):
+        logInfo(f"Territory {territoryName} already owned by {prevOwner}")
+        return
+
+    terrInfo = savegame.nations[prevOwner].cedeTerritory(territoryName)
+
+    savegame.nations[targetNation].annexTerritory(terrInfo)
+
+
+def testSuite():
+    
+    savegame = generateGame(
+        generateTestWorld(100, 100, 20)
+    )
+
+    testTerritoryTransfer(savegame, "Test (20,20)", "Nation02")
+

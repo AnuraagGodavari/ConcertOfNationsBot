@@ -65,7 +65,19 @@ class Savegame:
 
         world.toImage(mapScale = mapScale, colorRules = colorRules)
     
-    
+
+    def find_terrOwner(self, territoryName):
+        """
+        Go through each nation and find which one owns a specific territory
+
+        Returns: The name of the owner nation.
+        """
+        for nation in self.nations.values():
+            if territoryName in nation.territories: return nation.name
+
+        return False
+
+
 class Nation:
     """
     Represents a nation, which controls a number of territories and ingame objects such as buildings and armies, as well as having an economy, meaning resources and their production.
@@ -98,3 +110,23 @@ class Nation:
 
         if not (result): return False
         return result
+
+    def cedeTerritory(self, territoryName):
+
+        logInfo(f"Nation {self.name} ceding territory {territoryName}")        
+
+        terrInfo = dict()
+
+        terrInfo["name"] = territoryName
+        self.territories.remove(territoryName)
+
+        logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
+        return terrInfo
+
+    def annexTerritory(self, territoryInfo):
+        
+        logInfo(f"Nation {self.name} annexing territory {territoryInfo['name']}")
+
+        self.territories.append(territoryInfo["name"])
+
+        logInfo(f"Nation {self.name} successfully annexed territory {territoryInfo['name']}!")

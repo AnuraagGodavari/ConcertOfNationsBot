@@ -191,6 +191,8 @@ def add_Nation(savegame, nation, playerID):
     Add a nation as a role to the database
     """
 
+    logInfo(f"Adding nation {nation.name} to savegame {savegame.name} with player {playerID}")
+
     nation_name = nation.name
     roleID = nation.role_id
 
