@@ -23,7 +23,20 @@ class AdminCommands(commands.Cog):
         await ctx.send("Test!")
 
     @commands.command()
-    async def addNation(self, ctx, roleid, playerid, **args):
+    async def giveTerritory(self, ctx, roleid, territoryName, **args):
+        """
+        Give a territory to a nation and take it away from its previous owner, if any.
+        """
+        pass
+
+        #Check if territory name exists
+
+        #Check if territory is owned, remove it
+
+        #Add this territory to the nation
+
+    @commands.command()
+    async def addNation(self, ctx, roleid, playerid):
         """
         Add a nation (by role) and player to a savegame.
         """

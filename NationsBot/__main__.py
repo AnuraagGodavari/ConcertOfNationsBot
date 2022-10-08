@@ -58,7 +58,7 @@ def main():
     if options["debug"]: 
         logInfo("Launching in Debug Mode")
 
-        try: GenerateGame.generateGame()
+        try: GenerateGame.testSuite()
         except Exception as e: logError(e)
 
         if options["abort"]:
