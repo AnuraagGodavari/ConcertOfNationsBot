@@ -27,18 +27,88 @@ class AdminCommands(commands.Cog):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
         """
-        pass
+        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {territoryName}, {args})")
 
-        #Check if territory name exists
+        roleObj = ctx.guild.get_role(int(roleid[3:-1]))
+        if not(roleObj):
+            logInfo(f"Unknown role {roleid}")
+            await ctx.send(f"Unknown role {roleid}")
+            return
 
-        #Check if territory is owned, remove it
+        #MAKE FUNCTION FOR THIS
+        #Get savegame info from database
+        try:
+            savegame = FileHandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
+        except Exception as e:
+            logInfo("Could not load a game for this server.")
+            logError(e)
+            await ctx.send("Could not load a game for this server.")
+            return
 
-        #Add this territory to the nation
+        #MAKE FUNCTION FOR THIS
+        #Get nation info
+        role = get_Role(roleObj.id)
+        
+        if not(role):
+            logInfo(f"Could not load information for the role {roleid}")
+            await ctx.send(f"Could not load information for the role {roleid}")
+            return
+
+        if not(role['name'] in savegame.nations.keys()):
+            logInfo(f"Nation {role['name']} does not exist in this game")
+            return
+
+        nation = savegame.nations[role['name']]
+
+        if not(role['discord_id'] == nation.role_id):
+            logInfo(f"Role error: The role for {role['name']} does not match with an existing nation {nation.name}")
+            return
+
+        #Check if territory exists
+        if not (territoryName in savegame.getWorld().territories.keys()):
+            logInfo(f"Territory {territoryName} does not exist")
+            await ctx.send(f"Territory {territoryName} does not exist")
+            return
+
+        #Check territory owner
+        prevOwner = savegame.find_terrOwner(territoryName)
+
+        if not (prevOwner):
+            logInfo(f"Territory {territoryName} is unowned")
+
+        if (prevOwner == nation.name):
+            logInfo(f"Territory {territoryName} already owned by {prevOwner}")
+            await ctx.send(f"Territory {territoryName} already owned by {prevOwner}")
+            return
+
+        try: 
+            #Check if territory is owned, remove it
+            if (prevOwner):
+                terrInfo = savegame.nations[prevOwner].cedeTerritory(territoryName)
+
+            else:
+                terrInfo = {"name": territoryName}
+
+            #Add this territory to the nation
+            savegame.nations[nation.name].annexTerritory(terrInfo)
+
+        except Exception as e:
+            logInfo(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
+            await ctx.send(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
+            logError(e)
+            return
+
+        logInfo(f"Successfully transferred the territory {territoryName}{((' from ' + str(prevOwner))*bool(prevOwner)) or ''} to {nation.name}")
+        await ctx.send(f"Successfully transferred the territory {territoryName}{((' from ' + str(prevOwner))*bool(prevOwner)) or ''} to {nation.name}")
+
 
     @commands.command()
     async def addNation(self, ctx, roleid, playerid):
         """
         Add a nation (by role) and player to a savegame.
+
+        Args:
+            roleid(str): 
         """
 
         logInfo(f"addNation({ctx.guild.id}, {roleid}, {playerid})")

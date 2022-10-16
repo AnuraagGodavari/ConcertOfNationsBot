@@ -15,7 +15,7 @@ def generateTestWorld(length, height, space):
     world = Mapping.World("Test World")
 
     [
-        world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
+        world.addNewTerritory(f"Test_({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
 
@@ -23,7 +23,7 @@ def generateTestWorld(length, height, space):
     for i in range(32):
         x = randrange(0, length, space)
         y = randrange(0, height, space)
-        world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
+        world.addNewTerritory(f"Test_({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
     '''
 
     world.calculateAllNeighbors(
@@ -67,7 +67,7 @@ def generateGame(world):
         "Nation01",
         conf["Nation01"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
-        territories = ["Test (0,0)", "Test (20,0)", "Test (0,20)", "Test (20,20)"]
+        territories = ["Test_(0,0)", "Test_(20,0)", "Test_(0,20)", "Test_(20,20)"]
         ))
 
     try:
@@ -84,7 +84,7 @@ def generateGame(world):
         "Nation02",
         conf["Nation02"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
-        territories = ['Test (0,40)', 'Test (0,60)', 'Test (0,80)', 'Test (20,40)', 'Test (20,60)', 'Test (20,80)']
+        territories = ['Test_(0,40)', 'Test_(0,60)', 'Test_(0,80)', 'Test_(20,40)', 'Test_(20,60)', 'Test_(20,80)']
         ))
 
     try:
@@ -131,5 +131,5 @@ def testSuite():
         generateTestWorld(100, 100, 20)
     )
 
-    testTerritoryTransfer(savegame, "Test (20,20)", "Nation02")
+    testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
 
