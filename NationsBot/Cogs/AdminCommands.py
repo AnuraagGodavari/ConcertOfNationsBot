@@ -8,6 +8,8 @@ from common import *
 from database import *
 from logger import *
 
+from DiscordUtils.GetGameInfo import *
+
 from ConcertOfNationsEngine.GameHandling import *
 
 #The cog itself
@@ -29,40 +31,13 @@ class AdminCommands(commands.Cog):
         """
         logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {territoryName}, {args})")
 
-        roleObj = ctx.guild.get_role(int(roleid[3:-1]))
-        if not(roleObj):
-            logInfo(f"Unknown role {roleid}")
-            await ctx.send(f"Unknown role {roleid}")
-            return
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
 
-        #MAKE FUNCTION FOR THIS
-        #Get savegame info from database
-        try:
-            savegame = FileHandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
-        except Exception as e:
-            logInfo("Could not load a game for this server.")
-            logError(e)
-            await ctx.send("Could not load a game for this server.")
-            return
-
-        #MAKE FUNCTION FOR THIS
-        #Get nation info
-        role = get_Role(roleObj.id)
-        
-        if not(role):
-            logInfo(f"Could not load information for the role {roleid}")
-            await ctx.send(f"Could not load information for the role {roleid}")
-            return
-
-        if not(role['name'] in savegame.nations.keys()):
-            logInfo(f"Nation {role['name']} does not exist in this game")
-            return
-
-        nation = savegame.nations[role['name']]
-
-        if not(role['discord_id'] == nation.role_id):
-            logInfo(f"Role error: The role for {role['name']} does not match with an existing nation {nation.name}")
-            return
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        if not (savegame): 
+            return #Error will already have been handled
 
         #Check if territory exists
         if not (territoryName in savegame.getWorld().territories.keys()):
@@ -101,6 +76,7 @@ class AdminCommands(commands.Cog):
         logInfo(f"Successfully transferred the territory {territoryName}{((' from ' + str(prevOwner))*bool(prevOwner)) or ''} to {nation.name}")
         await ctx.send(f"Successfully transferred the territory {territoryName}{((' from ' + str(prevOwner))*bool(prevOwner)) or ''} to {nation.name}")
 
+        save_saveGame(savegame)
 
     @commands.command()
     async def addNation(self, ctx, roleid, playerid):
