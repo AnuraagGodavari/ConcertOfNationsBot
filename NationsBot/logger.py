@@ -1,4 +1,4 @@
-import json, datetime, pprint, traceback
+import json, datetime, pprint, traceback, inspect
 
 from common import *
 
@@ -14,22 +14,24 @@ def log(level, message, details = None):
     """
     
     logtime = datetime.datetime.now()
+
+    callerFunctionInfo = f"{inspect.stack()[2].filename.split('/')[-1].split('.')[0]}.{inspect.stack()[2].function}() Line {inspect.stack()[2].lineno}"
     
     #Print info
-    print(f"[{logtime}] {level}: {message}")
+    print(f"[{logtime} {callerFunctionInfo}] {level}: {message}")
     if (details): pprint.pprint(details)
     
     #Write to file
     with open(masterlog, 'a') as log:
-        
+
         if (details == None):
-            log.write(f"[{logtime}] {level}: {message}\n\n")
+            log.write(f"[{logtime} {callerFunctionInfo}] {level}: {message}\n\n")
         
         elif (type(details is dict)):
-            log.write(f"[{logtime}] {level}: {message}\n[{logtime}] Additional Info: {json.dumps(details, indent=4)}\n")
+            log.write(f"[{logtime} {callerFunctionInfo}] {level}: {message}\n[{logtime}] Additional Info: {json.dumps(details, indent=4)}\n")
             
         else:
-            log.write(f"[{logtime}] {level}: {message}\n[{logtime}] Additional Info: {details}\n")
+            log.write(f"[{logtime} {callerFunctionInfo}] {level}: {message}\n[{logtime}] Additional Info: {details}\n")
 
 
 def logInitial(message):
@@ -63,7 +65,7 @@ def logInfo(message, details = None):
     return logtime
     
     
-def logError(error, errorInfo):
+def logError(error, errorInfo = None):
     """
     Logs an error by writing the error's name, traceback and other details to the master log
     

@@ -11,3 +11,5 @@ worldsDir = f"{pwdir}/Worlds"
 gameruleDir = f"{pwdir}/Gamerule"
 
 cogsDir = f"{pwdir}/NationsBot/Cogs"
+
+fontsDir = f"{pwdir}/Assets/Fonts"

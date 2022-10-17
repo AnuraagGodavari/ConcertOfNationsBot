@@ -19,7 +19,8 @@ from Testing import GenerateGame
 
 #CLI options
 options = {
-    "debug": False
+    "debug": False,
+    "abort": False
 }
 
 #The bot
@@ -56,7 +57,14 @@ def main():
     #Non-bot related setup
     if options["debug"]: 
         logInfo("Launching in Debug Mode")
-        GenerateGame.generateGame()
+
+        try: GenerateGame.generateGame()
+        except Exception as e: logError(e)
+
+        if options["abort"]:
+            logInfo("Aborting before bot launch\n\n")
+            return
+
     else: logInfo("Launching in Release Mode")
     
     for filename in os.listdir(cogsDir):
@@ -71,7 +79,10 @@ if __name__ == "__main__":
     if (len(sys.argv) > 1):
         for arg in sys.argv:
             
-            if arg == "-d": 
+            if 'd' in arg: 
                 options["debug"] = True
+
+            if 'a' in arg:
+                options["abort"] = True
     
     main()
