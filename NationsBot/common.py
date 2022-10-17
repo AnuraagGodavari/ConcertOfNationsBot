@@ -2,6 +2,12 @@ import os
 
 #Filenames
 
-pwdir = os.path.dirname(__file__)
+pwdir = f"{os.path.dirname(__file__)}/.."
 
-masterlog = f"{pwdir}/../Logs/nationsbot.log"
+masterlog = f"{pwdir}/Logs/nationsbot.log"
+
+savesDir = f"{pwdir}/Savegames"
+worldsDir = f"{pwdir}/Worlds"
+gameruleDir = f"{pwdir}/Gamerule"
+
+cogsDir = f"{pwdir}/NationsBot/Cogs"
