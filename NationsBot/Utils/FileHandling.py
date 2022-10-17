@@ -8,7 +8,7 @@ def easyLoad(fileName, dir = ""):
 
     if (dir): dir += "/"
 
-    logInfo(f"Loading from file: {gameruleDir}/{fileName}.json")
+    logInfo(f"Loading from file: {dir}{fileName}.json")
 
     with open(f"{dir}{fileName}.json", 'r') as f:
         logInfo("File found, loading")
@@ -23,14 +23,13 @@ def easySave(contents, fileName, dir = ""):
 
     if (dir): dir += "/"
 
-    logInfo(f"Saving to file: {gameruleDir}/{fileName}.json")
+    logInfo(f"Saving to file: {dir}{fileName}.json")
 
     with open(f"{dir}{fileName}.json", 'w') as f:
         logInfo("File found")
         json.dump(saveObject(contents), f, indent = 4)
         logInfo("Successfully saved")
 
-#d = saveObject(getNation(608117738183065641, None, 608113391747465227))
 def saveObject(originalThing): #recursively turns a custom object, with object parameters and subparameters, into a dictionary
 
     thing = copy.deepcopy(originalThing)

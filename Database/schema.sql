@@ -1,6 +1,6 @@
 /*
-DROP DATABASE IF EXISTS ConcertOfNations;
 */
+DROP DATABASE IF EXISTS ConcertOfNations;
 
 CREATE DATABASE IF NOT EXISTS ConcertOfNations DEFAULT CHARACTER SET = 'utf8mb4';
 
@@ -8,8 +8,8 @@ USE ConcertOfNations;
 
 CREATE TABLE IF NOT EXISTS `Savegames` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `server_id` BIGINT UNSIGNED NOT NULL,
-    `savefile` VARCHAR(64) NOT NULL,
+    `server_id` BIGINT UNSIGNED NOT NULL UNIQUE,
+    `savefile` VARCHAR(64) NOT NULL UNIQUE,
     `worldfile` VARCHAR(64) NOT NULL,
     `gamerulefile` VARCHAR(64) NOT NULL,
     `created` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -18,14 +18,14 @@ CREATE TABLE IF NOT EXISTS `Savegames` (
 
 CREATE TABLE IF NOT EXISTS `Players` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `discord_id` BIGINT UNSIGNED NOT NULL,
+    `discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
     `created` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `Roles` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `discord_id` BIGINT UNSIGNED NOT NULL,
+    `discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
     `name` VARCHAR(32) NOT NULL,
     `desc` VARCHAR(128),
     PRIMARY KEY (`id`)
