@@ -11,6 +11,7 @@ from logger import *
 from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
+from ConcertOfNationsEngine.CustomExceptions import *
 
 #The cog itself
 class AdminCommands(commands.Cog):
@@ -19,11 +20,6 @@ class AdminCommands(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-
-    @commands.command()
-    async def test_admincommands(self, ctx, roleid, player, **args):
-        await ctx.send("Test!")
-
     @commands.command()
     async def giveTerritory(self, ctx, roleid, territoryName, **args):
         """
@@ -41,8 +37,7 @@ class AdminCommands(commands.Cog):
 
         #Check if territory exists
         if not (territoryName in savegame.getWorld().territories.keys()):
-            logInfo(f"Territory {territoryName} does not exist")
-            await ctx.send(f"Territory {territoryName} does not exist")
+            raise InputError(f"Territory {territoryName} does not exist")
             return
 
         #Check territory owner
@@ -52,8 +47,7 @@ class AdminCommands(commands.Cog):
             logInfo(f"Territory {territoryName} is unowned")
 
         if (prevOwner == nation.name):
-            logInfo(f"Territory {territoryName} already owned by {prevOwner}")
-            await ctx.send(f"Territory {territoryName} already owned by {prevOwner}")
+            raise NonFatalError(f"Territory {territoryName} already owned by {prevOwner}")
             return
 
         try: 
@@ -68,8 +62,7 @@ class AdminCommands(commands.Cog):
             savegame.nations[nation.name].annexTerritory(terrInfo)
 
         except Exception as e:
-            logInfo(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
-            await ctx.send(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
+            raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
             logError(e)
             return
 
@@ -93,9 +86,7 @@ class AdminCommands(commands.Cog):
         try:
             savegame = FileHandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
         except Exception as e:
-            logInfo("Could not load a game for this server.")
-            logError(e)
-            await ctx.send("Could not load a game for this server.")
+            raise InputError("Could not load a game for this server.")
             return
 
         role = ctx.guild.get_role(int(roleid[3:-1]))
@@ -139,7 +130,7 @@ class AdminCommands(commands.Cog):
 
         try: month, year = (int(x) for x in re.split(r'[,/\\]', date))
         except:
-            await ctx.send("Could not parse the date. Please write in one of the following formats without spaces: \n> monthnumber,yearnumber\n> monthnumber/yearnumber")
+            raise InputError("Could not parse the date. Please write in one of the following formats without spaces: \n> monthnumber,yearnumber\n> monthnumber/yearnumber")
             return
 
         savegame = Savegame(
@@ -156,8 +147,7 @@ class AdminCommands(commands.Cog):
                 "Test Gamerule"
                 )
         except Exception as e:
-            logInfo("Savegame already in database")
-            await ctx.send("This server already has a game assigned to it")
+            raise NonFatalError("This server already has a savegame assigned to it")
             return
 
         logInfo(f"Successfully created savegame {savegame.name} for server {ctx.guild.id}")
