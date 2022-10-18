@@ -7,6 +7,7 @@ from database import *
 from logger import *
 
 from ConcertOfNationsEngine.GameHandling import *
+from ConcertOfNationsEngine.CustomExceptions import *
 
 
 def get_NationFromRole(ctx, roleid, savegame):
@@ -15,24 +16,24 @@ def get_NationFromRole(ctx, roleid, savegame):
     roleObj = ctx.guild.get_role(int(roleid[3:-1]))
     if not(roleObj):
         logInfo(f"Unknown role {roleid}")
-        raise Exception(f"Unknown role {roleid}")
+        raise InputError(f"Unknown role {roleid}")
         return False
 
     role = get_Role(roleObj.id)
     
     if not(role):
         logInfo(f"Could not load information for the role {roleid}")
-        raise Exception(f"Could not load information for the role {roleid}")
+        raise InputError(f"Could not load information for the role {roleid}")
         return False
 
     if not(role['name'] in savegame.nations.keys()):
-        logInfo(f"Nation {role['name']} does not exist in this game")
+        raise InputError(f"Nation {role['name']} does not exist in this game")
         return False
 
     nation = savegame.nations[role['name']]
 
     if not(role['discord_id'] == nation.role_id):
-        logInfo(f"Role error: The role for {role['name']} does not match with an existing nation {nation.name}")
+        raise InputError(f"The role for {role['name']} does not match with an existing nation {nation.name}")
         return False
 
     return nation
@@ -45,7 +46,7 @@ def get_SavegameFromCtx(ctx):
     except Exception as e:
         logInfo("Could not load a game for this server.")
         logError(e)
-        raise Exception("Could not load a game for this server.")
+        raise InputError("Could not load a game for this server.")
         return False
     
     return savegame
