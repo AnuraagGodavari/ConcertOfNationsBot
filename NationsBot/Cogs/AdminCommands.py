@@ -21,6 +21,7 @@ class AdminCommands(commands.Cog):
         self.client = client
         
     @commands.command()
+    @commands.has_permissions(administrator = True)
     async def giveTerritory(self, ctx, roleid, territoryName, **args):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
@@ -72,6 +73,7 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command()
+    @commands.has_permissions(administrator = True)
     async def addNation(self, ctx, roleid, playerid):
         """
         Add a nation (by role) and player to a savegame.
@@ -121,6 +123,7 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Added {roleid} to this game!")
 
     @commands.command()
+    @commands.has_permissions(administrator = True)
     async def initGame(self, ctx, name, date):
         """
         Called in a server without an attached game to initialize a game
