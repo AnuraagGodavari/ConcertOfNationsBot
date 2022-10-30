@@ -8,6 +8,67 @@ from common import *
 from Utils import FileHandling
 
 from ConcertOfNationsEngine.GameObjects import *
+from ConcertOfNationsEngine.CustomExceptions import *
+
+#Deal with worlds
+
+def save_world(world):
+    with open(f"{worldsDir}/Test World.json", 'w') as f:
+        json.dump(FileHandling.saveObject(world), f, indent = 4)
+
+    logInfo(f"Successfully saved world {world.name}")
+
+@lru_cache(maxsize=16)
+def load_world(world_name):
+    """
+    Load a world from a .json file representing a map without nations, buildings etc; only terrain, resources etc.
+    """
+    world = FileHandling.easyLoad(world_name, worldsDir)
+    logInfo(f"World {world.name} successfully loaded")
+    return world
+
+def dbget_world(world_name):
+        """
+        Get the row in the database table Worlds with this name
+        """
+
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "SELECT * FROM Worlds WHERE name=%s LIMIT 1;"
+        params = [world_name]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
+
+        if not (result): return False
+        return result
+
+def setupNew_world(world):
+    """
+    Given a new world object, create a file for it and save it to the database.
+    """
+    logInfo("Setting up a new world in worldfiles and database")
+    
+    if (dbget_world(world.name)):
+        raise InputError(f"World with name {world.name} already exists")
+
+    #Update database
+    try:
+        db = getdb()
+        cursor = db.cursor()
+
+        stmt = "INSERT INTO Worlds (name) VALUES (%s)"
+        params = [world.name]
+        cursor.execute(stmt, params)
+        db.commit()
+    except Exception as e:
+        logError(e)
+        raise GameError(f"World could not be inserted!")
+
+    logInfo("Successfully inserted world into database")
+
+    #Generate world file
+    save_world(world)
 
 #Deal with savegames
 
@@ -36,16 +97,21 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
     server_id = savegame.server_id
     
     if (dbget_saveGame_byServer(server_id)):
-        logInfo(f"Savegame already exists for the server {server_id}")
-        raise Exception(f"Savegame already exists for the server {server_id}")
+        raise InputError(f"Savegame already exists for the server {server_id}")
+
+    #World must already exist in the database
+    worldInfo = dbget_world(world_name)
+    
+    if not (worldInfo):
+        raise InputError(f"World {world_name} does not exist in the database")
 
     #Update database
     try:
         db = getdb()
         cursor = db.cursor()
 
-        stmt = "INSERT INTO Savegames (server_id, savefile, worldfile, gamerulefile) VALUES (%s, %s, %s, %s)"
-        params = [server_id, savegame.name, world_name, gamerule_name]
+        stmt = "INSERT INTO Savegames (server_id, savefile, world_id, gamerulefile) VALUES (%s, %s, %s, %s)"
+        params = [server_id, savegame.name, worldInfo['id'], gamerule_name]
         cursor.execute(stmt, params)
         db.commit()
     except Exception as e:
@@ -101,14 +167,6 @@ def load_gamerule(gamerule_name):
     gamerule = FileHandling.easyLoad(gamerule_name, gameruleDir)
     logInfo("Gamerule successfully loaded")
     return gamerule
-
-def load_world(world_name):
-    """
-    Load a world from a .json file representing a map without nations, buildings etc; only terrain, resources etc.
-    """
-    world = FileHandling.easyLoad(world_name, worldsDir)
-    logInfo(f"World {world.name} successfully loaded")
-    return world
 
 
 #Player

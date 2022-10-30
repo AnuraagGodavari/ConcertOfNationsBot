@@ -6,14 +6,34 @@ CREATE DATABASE IF NOT EXISTS ConcertOfNations DEFAULT CHARACTER SET = 'utf8mb4'
 
 USE ConcertOfNations;
 
+CREATE TABLE IF NOT EXISTS `Worlds` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(32) NOT NULL UNIQUE,
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `Savegames` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `server_id` BIGINT UNSIGNED NOT NULL UNIQUE,
     `savefile` VARCHAR(64) NOT NULL UNIQUE,
-    `worldfile` VARCHAR(64) NOT NULL,
+    `world_id` BIGINT UNSIGNED NOT NULL,
     `gamerulefile` VARCHAR(64) NOT NULL,
     `created` timestamp NOT NULL DEFAULT current_timestamp(),
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    CONSTRAINT `Savegames_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `WorldImages` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `world_id` BIGINT UNSIGNED NOT NULL,
+    `savegame_id` BIGINT UNSIGNED NOT NULL,
+    `turn_no` INT UNSIGNED,
+    `nation` VARCHAR(64),
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    CONSTRAINT `WorldImages_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`),
+    CONSTRAINT `WorldImages_ibfk_2` FOREIGN KEY (`savegame_id`) REFERENCES `Savegames` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `Players` (
@@ -34,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `PlayerGames` (
     `player_id` BIGINT UNSIGNED NOT NULL,
     `game_id` BIGINT UNSIGNED NOT NULL,
     `role_id` BIGINT UNSIGNED NOT NULL,
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`player_id`, `game_id`),
     CONSTRAINT `PlayerGames_ibfk_1` FOREIGN KEY (`player_id`) REFERENCES `Players` (`id`),
     CONSTRAINT `PlayerGames_ibfk_2` FOREIGN KEY (`game_id`) REFERENCES `Savegames` (`id`),
