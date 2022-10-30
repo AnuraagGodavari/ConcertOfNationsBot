@@ -36,8 +36,11 @@ def generateTestWorld(length, height, space):
         ]
     )
 
-    with open(f"{worldsDir}/Test World.json", 'w') as f:
-        json.dump(FileHandling.saveObject(world), f, indent = 4)
+    try:
+        setupNew_world(world)
+    except Exception as e:
+        logInfo("World already in database, not logging as error")
+        save_world(world)
 
     logInfo("Generated 'Test World'")
     return world
@@ -127,9 +130,9 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
 def testSuite():
     
-    savegame = generateGame(
-        generateTestWorld(100, 100, 20)
-    )
+    testWorld = generateTestWorld(100, 100, 20)
+
+    savegame = generateGame(testWorld)
 
     testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
 

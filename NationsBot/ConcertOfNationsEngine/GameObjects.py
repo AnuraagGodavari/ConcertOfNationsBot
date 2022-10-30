@@ -35,16 +35,16 @@ class Savegame:
         db = getdb()
         cursor = db.cursor()
 
-        stmt = "SELECT worldfile FROM Savegames WHERE savefile=%s LIMIT 1;"
+        stmt = "SELECT * FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE savefile=%s LIMIT 1;"
         params = [self.name]
         cursor.execute(stmt, params)
-        result = cursor.fetchone()
+        result = fetch_assoc(cursor)
 
         if not (result):
             return False
 
         logInfo("Got worldfile info")
-        return gamehandling.load_world(result[0])
+        return gamehandling.load_world(result["name"])
 
     def add_Nation(self, nation):
 
