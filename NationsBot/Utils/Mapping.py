@@ -119,7 +119,7 @@ class World:
         #Where the territories are placed on the map relative to 0 is measured by coordinates minus offset
         terrOffset = (0 - minX + coordOffset[0], 0 - minY + coordOffset[0])
 
-        out_img = Image.new("RGBA", (
+        out_img = Image.new("RGB", (
             int((dim[0] * mapScale[0]) + (coordOffset[0]*2)), 
             int((dim[1] * mapScale[1]) + (coordOffset[1]*2))
             ),
@@ -172,6 +172,8 @@ class World:
                 ),
                 str(terr.id), font=courierFont, fill="black")
 
-        out_img.save(f"{worldsDir}/{self.name}.png")
+        out_img.save(f"{worldsDir}/{self.name}.jpg")
 
         logInfo(f"Successfully saved world {self.name}!")
+
+        return f"{self.name}.jpg"
