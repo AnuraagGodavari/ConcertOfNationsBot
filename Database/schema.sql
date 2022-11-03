@@ -24,18 +24,6 @@ CREATE TABLE IF NOT EXISTS `Savegames` (
     CONSTRAINT `Savegames_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `WorldImages` (
-    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `world_id` BIGINT UNSIGNED NOT NULL,
-    `savegame_id` BIGINT UNSIGNED NOT NULL,
-    `turn_no` INT UNSIGNED,
-    `nation` VARCHAR(64),
-    `created` timestamp NOT NULL DEFAULT current_timestamp(),
-    PRIMARY KEY (`id`),
-    CONSTRAINT `WorldImages_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`),
-    CONSTRAINT `WorldImages_ibfk_2` FOREIGN KEY (`savegame_id`) REFERENCES `Savegames` (`id`)
-);
-
 CREATE TABLE IF NOT EXISTS `Players` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
@@ -48,6 +36,22 @@ CREATE TABLE IF NOT EXISTS `Roles` (
     `discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
     `name` VARCHAR(32) NOT NULL,
     PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `WorldMaps` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `world_id` BIGINT UNSIGNED NOT NULL,
+    `savegame_id` BIGINT UNSIGNED NOT NULL,
+    `role_id` BIGINT UNSIGNED,
+    `turn_no` INT UNSIGNED NOT NULL,
+    `filename` VARCHAR(128),
+    `link` VARCHAR(128) UNIQUE,
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    CONSTRAINT `WorldMaps_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`),
+    CONSTRAINT `WorldMaps_ibfk_2` FOREIGN KEY (`savegame_id`) REFERENCES `Savegames` (`id`),
+    CONSTRAINT `WorldMaps_ibfk_3` FOREIGN KEY (`role_id`) REFERENCES `Roles` (`id`),
+    UNIQUE(`world_id`, `savegame_id`, `turn_no`, `role_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `PlayerGames` (
@@ -79,12 +83,4 @@ CREATE TABLE IF NOT EXISTS `NewTurns` (
     `created` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`),
     CONSTRAINT `NewTurns_ibfk_1` FOREIGN KEY (`game_id`) REFERENCES `Savegames` (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `MapImages` (
-    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `link` VARCHAR(48),
-    `conditions` VARCHAR(256),
-    `created` timestamp NOT NULL DEFAULT current_timestamp(),
-    PRIMARY KEY (`id`)
 );

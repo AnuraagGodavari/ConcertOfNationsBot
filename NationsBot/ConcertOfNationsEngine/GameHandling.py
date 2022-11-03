@@ -27,7 +27,7 @@ def load_world(world_name):
     logInfo(f"World {world.name} successfully loaded")
     return world
 
-def dbget_world(world_name):
+def dbget_world_byName(world_name):
         """
         Get the row in the database table Worlds with this name
         """
@@ -49,7 +49,7 @@ def setupNew_world(world):
     """
     logInfo("Setting up a new world in worldfiles and database")
     
-    if (dbget_world(world.name)):
+    if (dbget_world_byName(world.name)):
         raise InputError(f"World with name {world.name} already exists")
 
     #Update database
@@ -70,12 +70,77 @@ def setupNew_world(world):
     #Generate world file
     save_world(world)
 
+
+def insert_worldMap(world, savegame, filename, link, nation = None):
+    """
+    Inserting a worldImage into the database based on savegame, nation, turn number, etc. and containing a filename and imgur link
+    """
+    logInfo("Saving information for a world image")
+    
+    savegameInfo = dbget_saveGame_byServer(savegame.server_id)
+    if not (savegameInfo):
+        raise InputError(f"Savegame {savegame.name} does not exist in the database")
+
+    worldInfo = dbget_world_byName(world.name)
+    if not (worldInfo):
+        raise InputError(f"World {world.name} does not exist in the database")
+
+    if (nation):
+        roleInfo = get_Role(nation.role_id)
+        if not (roleInfo):
+            raise InputError(f"Nation {nation.name} does not exist in the database as a role")
+
+    #Update database
+    try:
+        db = getdb()
+        cursor = db.cursor()
+
+        if (nation):
+            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
+            params = [worldInfo['id'], savegameInfo['id'], savegame.turn, roleInfo['id'], filename, link]
+
+        else:
+            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, filename, link) VALUES (%s, %s, %s, %s, %s)"
+            params = [worldInfo['id'], savegameInfo['id'], savegame.turn, filename, link]
+
+        cursor.execute(stmt, params)
+        db.commit()
+    except Exception as e:
+        logError(e)
+        raise GameError(f"World could not be inserted!")
+
+
+def dbget_worldMap(world, savegame, turn, nation = None):
+    """
+    Get the row in the database table WorldMaps pertaining to the information provided
+    """
+    logInfo(f"Retrieving a world map with the world {world.name} and the game {savegame.name} from the database")
+
+    db = getdb()
+    cursor = db.cursor()
+
+    if (nation):
+        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND Roles.discord_id=%s"
+        params = [world.name, savegame.server_id, turn, nation.role_id]
+
+    else:
+        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s"
+        params = [world.name, savegame.server_id, turn]
+
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result): return False
+    return result
+
+
 #Deal with savegames
 
 def dbget_saveGame_byServer(server_id):
         """
         Get the row in the database table Savegames pertaining to this server
         """
+        logInfo(f"Getting a savegame with the id {server_id} from the database")
 
         db = getdb()
         cursor = db.cursor()
@@ -100,7 +165,7 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
         raise InputError(f"Savegame already exists for the server {server_id}")
 
     #World must already exist in the database
-    worldInfo = dbget_world(world_name)
+    worldInfo = dbget_world_byName(world_name)
     
     if not (worldInfo):
         raise InputError(f"World {world_name} does not exist in the database")

@@ -2,6 +2,7 @@ import pprint
 
 from database import *
 from logger import *
+import imgur
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
 
@@ -35,7 +36,7 @@ class Savegame:
         db = getdb()
         cursor = db.cursor()
 
-        stmt = "SELECT * FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE savefile=%s LIMIT 1;"
+        stmt = "SELECT Worlds.* FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE savefile=%s LIMIT 1;"
         params = [self.name]
         cursor.execute(stmt, params)
         result = fetch_assoc(cursor)
@@ -63,8 +64,10 @@ class Savegame:
             for territory in nation.territories:
                 colorRules[territory] = tuple(nation.mapcolor)
 
-        world.toImage(mapScale = mapScale, colorRules = colorRules)
-    
+        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules)
+        link = imgur.upload(f"{worldsDir}/{worldfile}")
+
+        gamehandling.insert_worldMap(world, self, link, worldfile, None)
 
     def find_terrOwner(self, territoryName):
         """

@@ -64,8 +64,13 @@ def generateGame(world):
             world.name, 
             "Test Gamerule"
             )
+    except InputError as e:
+        logError(e)
+    except GameError as e:
+        logError(e)
     except Exception as e:
         logInfo("Savegame already in database, not logging as error")
+        
     savegame.add_Nation(Nation(
         "Nation01",
         conf["Nation01"]["roleid"], 
@@ -108,6 +113,7 @@ def generateGame(world):
     logInfo("Generated and saved game", FileHandling.saveObject(savegame))
 
     savegame.world_toImage(mapScale = (100, 100))
+    logInfo(dbget_worldMap(world, savegame, savegame.turn))
 
     logInfo("Generated image of test world map")
 
@@ -134,5 +140,5 @@ def testSuite():
 
     savegame = generateGame(testWorld)
 
-    testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
+    #testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
 
