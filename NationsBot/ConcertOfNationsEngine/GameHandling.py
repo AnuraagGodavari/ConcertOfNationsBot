@@ -77,6 +77,10 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
     """
     logInfo("Saving information for a world image")
     
+    if (dbget_worldMap(world, savegame, savegame.turn, nation)):
+        logInfo(f"World Map already exists for world {world.name}, savegame {savegame.name} turn {savegame.turn} and nation {nation or 'n/a'}")
+        return
+
     savegameInfo = dbget_saveGame_byServer(savegame.server_id)
     if not (savegameInfo):
         raise InputError(f"Savegame {savegame.name} does not exist in the database")
@@ -90,7 +94,7 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         if not (roleInfo):
             raise InputError(f"Nation {nation.name} does not exist in the database as a role")
 
-    #Update database
+     #Update database
     try:
         db = getdb()
         cursor = db.cursor()
@@ -108,7 +112,6 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
     except Exception as e:
         logError(e)
         raise GameError(f"World could not be inserted!")
-
 
 def dbget_worldMap(world, savegame, turn, nation = None):
     """

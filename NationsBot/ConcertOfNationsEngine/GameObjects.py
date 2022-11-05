@@ -32,7 +32,7 @@ class Savegame:
         return gamehandling.dbget_saveGame_byServer(self.server_id)
 
     def getWorld(self):
-        logInfo("")
+        logInfo(f"Getting world for savegame {self.name} from database")
         db = getdb()
         cursor = db.cursor()
 
@@ -67,7 +67,7 @@ class Savegame:
         worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules)
         link = imgur.upload(f"{worldsDir}/{worldfile}")
 
-        gamehandling.insert_worldMap(world, self, link, worldfile, None)
+        gamehandling.insert_worldMap(world, self, worldfile, link, None)
 
     def find_terrOwner(self, territoryName):
         """
