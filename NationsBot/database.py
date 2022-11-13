@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 mariadb_connection = None
 
 def fetch_assoc(cursor):
-    return dict(zip(cursor.column_names, cursor.fetchone()))
+    row = cursor.fetchone()
+    if not row: return False
+    return dict(zip(cursor.column_names, row))
 
 def getdb():
     """

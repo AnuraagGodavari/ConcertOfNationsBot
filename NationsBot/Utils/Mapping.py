@@ -4,6 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 from logger import *
 from common import *
 
+from ConcertOfNationsEngine.CustomExceptions import *
+
 class Territory:
     """
     Analogous to a Vertex in a Graph. Represents one territory in a network of territories.
@@ -73,7 +75,7 @@ class World:
 
                     continue
 
-    def toImage(self, colorRules = None):
+    def toImage(self, mapScale = None, colorRules = None):
         """
         Creates an image representing the map as a graph, with territories as vertices and edges as edges.
 
@@ -83,10 +85,11 @@ class World:
         
         #Represents the extra space between min/max X/Y and the borders of the image.
         coordOffset = (75, 75)
-        mapScale = (400, 400)
+        mapScale = mapScale or (1, 1)
         terrSize = (32, 32)
 
-        #Represents the max render length of an edge.#If an edge is more than edgeDrawLimits[1], then shrink the map so it draws it as long as edgeDrawLimits[1] would before.
+        #Represents the max render length of an edge.
+        #If an edge is more than edgeDrawLimits[1], then shrink the map so it draws it as long as edgeDrawLimits[1] would before.
         #If an edge is less than edgeDrawLimits[0], then inflate the map so it draws it as long as edgeDrawLimits[0] would before.
         edgeDrawLimits = (1, 2)
 
@@ -107,18 +110,20 @@ class World:
                 minEdge = min(minEdge, min(t.edges.values()))
                 maxEdge = max(maxEdge, max(t.edges.values()))
 
+        if maxEdge == -1: maxEdge = 1
+
         mapScale = (
-            int(mapScale[0] * min(1, edgeDrawLimits[1] / maxEdge)),
-            int(mapScale[1] * min(1, edgeDrawLimits[1] / maxEdge))
+            int(mapScale[0] * min(1, edgeDrawLimits[1] / max(1, maxEdge))),
+            int(mapScale[1] * min(1, edgeDrawLimits[1] / max(1, maxEdge)))
         )
 
         dim = (maxX-minX, maxY-minY)
         #Where the territories are placed on the map relative to 0 is measured by coordinates minus offset
         terrOffset = (0 - minX + coordOffset[0], 0 - minY + coordOffset[0])
 
-        out_img = Image.new("RGBA", (
-            (dim[0] * mapScale[0]) + (coordOffset[0]*2), 
-            (dim[1] * mapScale[1]) + (coordOffset[1]*2)
+        out_img = Image.new("RGB", (
+            int((dim[0] * mapScale[0]) + (coordOffset[0]*2)), 
+            int((dim[1] * mapScale[1]) + (coordOffset[1]*2))
             ),
             (200, 200, 200)
         )
@@ -169,6 +174,29 @@ class World:
                 ),
                 str(terr.id), font=courierFont, fill="black")
 
-        out_img.save(f"{worldsDir}/{self.name}.png")
+        out_img.save(f"{worldsDir}/{self.name}.jpg")
 
         logInfo(f"Successfully saved world {self.name}!")
+
+        return f"{self.name}.jpg"
+
+    def territoryName(self, terrID):
+        try: return next(terr for terr in self.territories.keys() if self[terr].id == terrID)
+        except: raise InputError(f"Territory with ID \"{terrID}\" not found")
+
+
+    def __getitem__(self, items):
+        """
+        Called by: self[items]
+        """
+        
+        try:
+
+            if (type(items) == int):
+                #Get the territory from self.territories which has an id equal to items
+                return next(terr for terr in self.territories.values() if terr.id == items)
+
+            if (type(items) == str):
+                return self.territories[items]
+
+        except: return False
