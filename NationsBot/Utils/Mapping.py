@@ -4,6 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 from logger import *
 from common import *
 
+from ConcertOfNationsEngine.CustomExceptions import *
+
 class Territory:
     """
     Analogous to a Vertex in a Graph. Represents one territory in a network of territories.
@@ -177,3 +179,24 @@ class World:
         logInfo(f"Successfully saved world {self.name}!")
 
         return f"{self.name}.jpg"
+
+    def territoryName(self, terrID):
+        try: return next(terr for terr in self.territories.keys() if self[terr].id == terrID)
+        except: raise InputError(f"Territory with ID \"{terrID}\" not found")
+
+
+    def __getitem__(self, items):
+        """
+        Called by: self[items]
+        """
+        
+        try:
+
+            if (type(items) == int):
+                #Get the territory from self.territories which has an id equal to items
+                return next(terr for terr in self.territories.values() if terr.id == items)
+
+            if (type(items) == str):
+                return self.territories[items]
+
+        except: return False

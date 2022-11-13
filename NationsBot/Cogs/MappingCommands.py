@@ -25,6 +25,36 @@ class MappingCommands(commands.Cog):
         pass
 
     @commands.command()
+    async def territory(self, ctx, terrID):
+        """
+        Look at the full world map associated with this game, without any fog of war unless admin specifies a country.
+        """
+        logInfo(f"territory({ctx.guild.id, terrID})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrName = world.territoryName(int(terrID))
+        
+        else: terrName = terrID
+
+        world_terrInfo = world[terrName]
+        
+        terrEmbed = discord.Embed(
+            title = terrName,
+            description = ""
+        )
+        terrEmbed.add_field(name = "Territory ID", value = terrID, inline = False)
+
+        await ctx.send(embed = terrEmbed)
+
+
+    @commands.command()
     async def worldmap(self, ctx, roleid = None):
         logInfo("Not accounting for 'known world'")
         """
@@ -64,8 +94,18 @@ class MappingCommands(commands.Cog):
 
         worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
 
-        logInfo(worldMapInfo)
-        await ctx.send(worldMapInfo['link'])
+        if not (worldMapInfo):
+            savegame.world_toImage(mapScale = (100, 100))
+            worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
+
+        #logInfo("Got a matching world map for this game.", details = worldMapInfo)
+        embed = discord.Embed(
+                title = f"{savegame.name} World Map",
+                description = "_Territories are displayed by their IDs. Use the command \"terr_lookup <id>\" to see more information about a territory!_"
+            )
+        embed.set_image(url = worldMapInfo['link'])
+
+        await ctx.send(embed = embed)
         
 
         

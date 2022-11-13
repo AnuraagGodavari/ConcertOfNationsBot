@@ -112,8 +112,8 @@ def generateGame(world):
 
     logInfo("Generated and saved game", FileHandling.saveObject(savegame))
 
-    savegame.world_toImage(mapScale = (100, 100))
-    logInfo(dbget_worldMap(world, savegame, savegame.turn))
+    #savegame.world_toImage(mapScale = (100, 100))
+    #logInfo(dbget_worldMap(world, savegame, savegame.turn))
 
     logInfo("Generated image of test world map")
 
@@ -140,5 +140,5 @@ def testSuite():
 
     savegame = generateGame(testWorld)
 
-    #testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
+    testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
 
