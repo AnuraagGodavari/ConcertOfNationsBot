@@ -118,9 +118,8 @@ class Nation:
 
         logInfo(f"Nation {self.name} ceding territory {territoryName}")        
 
-        terrInfo = dict()
+        terrInfo = self.getTerritoryInfo(territoryName)
 
-        terrInfo["name"] = territoryName
         self.territories.remove(territoryName)
 
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
@@ -133,3 +132,12 @@ class Nation:
         self.territories.append(territoryInfo["name"])
 
         logInfo(f"Nation {self.name} successfully annexed territory {territoryInfo['name']}!")
+
+    def getTerritoryInfo(self, territoryName):
+
+        terrInfo = dict()
+
+        if (territoryName in self.territories):
+            terrInfo["name"] = territoryName
+
+        return terrInfo
