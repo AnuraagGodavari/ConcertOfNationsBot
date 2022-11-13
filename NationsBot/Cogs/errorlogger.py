@@ -7,6 +7,8 @@ from common import *
 from database import *
 from logger import *
 
+from ConcertOfNationsEngine.CustomExceptions import *
+
 #The cog itself
 class ErrorLogger(commands.Cog):
     """ A cog that allows its client bot to watch member statuses """
@@ -18,8 +20,10 @@ class ErrorLogger(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
             
-        print(error)
-        #pprint.pprint(traceback.format_exception(type(error), error, error.__traceback__))
+        #error is an error built into discord.py, so analyze the original error
+        if (isinstance(error, commands.errors.CommandInvokeError)):
+            logInfo("CommandInvokeError raised")
+            error = error.original
 
         if (ctx.guild):
             serverID = ctx.guild.id
@@ -28,18 +32,46 @@ class ErrorLogger(commands.Cog):
 
         authorID = ctx.author.id
 
-        errorData = logError(error, {"Server": serverID, "Author": authorID})
+        #Respond to error
+        #If the error is that permissions are missing, very little info needs to be logged
+        if (isinstance(error, commands.errors.MissingPermissions)):
+            await ctx.send(str(error))
+            logInfo(str(error), {"Server": serverID, "Author": authorID})
+            return
 
-        await ctx.send(f"The following error has occurred: \"{str(error)}\"")
-        await ctx.send(f"_Error has been logged as <{errorData['Error Time']}>._")
+        #Custom Exceptions
+        if (isinstance(error, NonFatalError)):
+            await ctx.send(str(error))
 
-        print(f"Above error has been handled!\n")
+        elif (isinstance(error, InputError)):
+            await ctx.send(f"Input Error: \"{str(error)}\"")
+
+        elif (isinstance(error, GameError)):
+            await ctx.send(f"Game Error: \"{str(error)}\"")
+
+        #Something unforseen happened, so document to the maximum
+        else:
+            errorData = logError(error, {"Server": serverID, "Author": authorID})
+
+            await ctx.send(f"[{errorData['Error Time']}] The following error has occurred and been logged: \"{str(error)}\"")
+
+        logInfo(f"Above error has been handled successfully!\n")
         
         
     @commands.command()
     async def error(self, ctx, **args):
         await ctx.send("Testing error logging...")
         raise Exception("Testing error logging from command!")
+        
+    @commands.command()
+    async def inputError(self, ctx, **args):
+        await ctx.send("Testing error logging...")
+        raise InputError("Testing error logging from command!")
+        
+    @commands.command()
+    async def gameError(self, ctx, **args):
+        await ctx.send("Testing error logging...")
+        raise GameError("Testing error logging from command!")
         
 def setup(client):
     client.add_cog(ErrorLogger(client))

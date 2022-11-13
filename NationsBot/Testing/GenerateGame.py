@@ -15,7 +15,7 @@ def generateTestWorld(length, height, space):
     world = Mapping.World("Test World")
 
     [
-        world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
+        world.addNewTerritory(f"Test_({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
 
@@ -23,7 +23,7 @@ def generateTestWorld(length, height, space):
     for i in range(32):
         x = randrange(0, length, space)
         y = randrange(0, height, space)
-        world.addNewTerritory(f"Test ({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
+        world.addNewTerritory(f"Test_({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
     '''
 
     world.calculateAllNeighbors(
@@ -36,57 +36,74 @@ def generateTestWorld(length, height, space):
         ]
     )
 
-    with open(f"{worldsDir}/Test World.json", 'w') as f:
-        json.dump(FileHandling.saveObject(world), f, indent = 4)
+    try:
+        setupNew_world(world)
+    except Exception as e:
+        logInfo("World already in database, not logging as error")
+        save_world(world)
 
     logInfo("Generated 'Test World'")
     return world
 
-def generateGame():
+def generateGame(world):
 
     conf = FileHandling.easyLoad("debugConf", pwdir)
 
     logInfo("Beginning game generation!")
-    
-    testWorld = generateTestWorld(100, 100, 20)
 
     savegame = Savegame(
         "TestGame",
+        conf["savegame"]["serverID"],
         {"m": 1, "y": 1},
         1
     )
     
     try:
         setupNew_saveGame(
-            conf["savegame"]["serverID"], 
             savegame, 
-            testWorld.name, 
+            world.name, 
             "Test Gamerule"
             )
+    except InputError as e:
+        logError(e)
+    except GameError as e:
+        logError(e)
     except Exception as e:
         logInfo("Savegame already in database, not logging as error")
-
+        
     savegame.add_Nation(Nation(
         "Nation01",
+        conf["Nation01"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
-        territories = ["Test (0,0)", "Test (20,0)", "Test (0,20)", "Test (20,20)"]
+        territories = ["Test_(0,0)", "Test_(20,0)", "Test_(0,20)", "Test_(20,20)"]
         ))
 
     try:
         add_Nation(
             savegame, 
-            "Nation01",
-            conf["Nation01"]["roleid"], 
+            savegame.nations["Nation01"], 
             conf["Nation01"]["playerid"]
             )
     except Exception as e:
-        logInfo("Nation already in database, not logging as error")
+        logError(e, {"Message": "Nation 1 already in database"})
+        return
 
     savegame.add_Nation(Nation(
         "Nation02",
+        conf["Nation02"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
-        territories = ['Test (0,40)', 'Test (0,60)', 'Test (0,80)', 'Test (20,40)', 'Test (20,60)', 'Test (20,80)']
+        territories = ['Test_(0,40)', 'Test_(0,60)', 'Test_(0,80)', 'Test_(20,40)', 'Test_(20,60)', 'Test_(20,80)']
         ))
+
+    try:
+        add_Nation(
+            savegame, 
+            savegame.nations["Nation02"],
+            conf["Nation02"]["playerid"]
+            )
+    except Exception as e:
+        logError(e, {"Message": "Nation 2 already in database"})
+        return
 
     load_gamerule("Test Gamerule")
     
@@ -95,6 +112,33 @@ def generateGame():
 
     logInfo("Generated and saved game", FileHandling.saveObject(savegame))
 
-    savegame.world_toImage()
+    #savegame.world_toImage(mapScale = (100, 100))
+    #logInfo(dbget_worldMap(world, savegame, savegame.turn))
 
     logInfo("Generated image of test world map")
+
+    return savegame
+
+def testTerritoryTransfer(savegame, territoryName, targetNation):
+
+    logInfo(f"Testing transfer of territory {territoryName}")
+
+    prevOwner = savegame.find_terrOwner(territoryName)
+
+    if (prevOwner == targetNation):
+        logInfo(f"Territory {territoryName} already owned by {prevOwner}")
+        return
+
+    terrInfo = savegame.nations[prevOwner].cedeTerritory(territoryName)
+
+    savegame.nations[targetNation].annexTerritory(terrInfo)
+
+
+def testSuite():
+    
+    testWorld = generateTestWorld(100, 100, 20)
+
+    savegame = generateGame(testWorld)
+
+    testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
+
