@@ -149,6 +149,9 @@ class AdminCommands(commands.Cog):
                 "Test World", 
                 "Test Gamerule"
                 )
+        except InputError as e:
+            raise e
+            return
         except Exception as e:
             raise NonFatalError("This server already has a savegame assigned to it")
             return

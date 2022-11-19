@@ -1,18 +1,22 @@
 from logger import *
 
-class NonFatalError(Exception):
+class CustomException(Exception):
+    pass
+
+
+class NonFatalError(CustomException):
     
     def __init__(self, args):
         super().__init__(args)
         logInfo(str(args[0]))
 
-class InputError(Exception):
+class InputError(CustomException):
     
     def __init__(self, args):
         super().__init__(args)
         logInfo(f"Input Error: \"{str(args)}\"")
 
-class GameError(Exception):
+class GameError(CustomException):
     
     def __init__(self, args):
         super().__init__(args)
