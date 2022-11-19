@@ -149,8 +149,11 @@ class AdminCommands(commands.Cog):
                 "Test World", 
                 "Test Gamerule"
                 )
+        except CustomException as e:
+            raise e
+            return
         except Exception as e:
-            raise NonFatalError("This server already has a savegame assigned to it")
+            raise NonFatalError("Something went wrong when initializing the savegame.")
             return
 
         logInfo(f"Successfully created savegame {savegame.name} for server {ctx.guild.id}")
