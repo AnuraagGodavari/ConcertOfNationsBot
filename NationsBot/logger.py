@@ -4,18 +4,23 @@ from common import *
 
 debugmodeOn = False
     
-def log(level, message, details = None):
+def log(level, message, details = None, stackLevel = 0):
     """
     Prints log information to the console and writes it to a log file.
     
     Args:
         level (string): Descriptor of the log level. Might be DEBUG, WARNING, ERROR etc.
         details (dict): information like traceback, context etc.
+        stackLevel(int): Log the name of the function this far up the stack from the function that's logging
     """
     
+    #Should refer to the function 1 level up the stack which called log
+    stackLevel += 1
+
     logtime = datetime.datetime.now()
 
-    callerFunctionInfo = f"{inspect.stack()[2].filename.split('/')[-1].split('.')[0]}.{inspect.stack()[2].function}() Line {inspect.stack()[2].lineno}"
+    # = "<Function> Line <Lineno>"
+    callerFunctionInfo = f"{inspect.stack()[stackLevel].filename.split('/')[-1].split('.')[0]}.{inspect.stack()[stackLevel].function}() Line {inspect.stack()[stackLevel].lineno}"
     
     #Print info
     print(f"{level}: [{logtime} {callerFunctionInfo}] {message}")
@@ -41,18 +46,20 @@ def logInitial(message):
     log("START", message)
 
     
-def logInfo(message, details = None):
+def logInfo(message, details = None, stackLevel = 0):
     """
     Logs an error by writing the error's name, traceback and other details to the master log
     
     Args:
-        error (Exception): The exception object itself
-        serverID (int): The discord ID of the server where the command was executed
-        authorID (int): The discord ID of the user who used the command that triggered the error.
+        details(dict): Additional data about the log or the message
+        stackLevel(int): Log the name of the function this far up the stack from the function that's logging
     """
+
+    #Should refer to the function 1 level up the stack which called logInfo
+    stackLevel += 1
     
     #Log the message and user-provided details
-    log("INFO", message, details)
+    log("INFO", message, details, stackLevel)
     
     #Add further information to the errorData and return
     
@@ -65,22 +72,25 @@ def logInfo(message, details = None):
     return logtime
     
     
-def logError(error, errorInfo = None):
+def logError(error, errorInfo = None, stackLevel = 0):
     """
     Logs an error by writing the error's name, traceback and other details to the master log
     
     Args:
         error (Exception): The exception object itself
-        serverID (int): The discord ID of the server where the command was executed
-        authorID (int): The discord ID of the user who used the command that triggered the error.
+        errorInfo (dict): Additional metadata about the error
+        stackLevel(int): Log the name of the function this far up the stack from the function that's logging
     """
+
+    #Should refer to the function 1 level up the stack which called logError
+    stackLevel += 1
     
     #Log the error, stack trace and context details
     
     errorData = { "Stack Trace": traceback.format_exception(type(error), error, error.__traceback__) }
     if (errorInfo): errorData["Context"] = errorInfo
     
-    log("ERROR", str(error), errorData)
+    log("ERROR", str(error), errorData, stackLevel)
     
     #Add further information to the errorData and return
     
