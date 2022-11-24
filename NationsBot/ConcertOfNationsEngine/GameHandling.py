@@ -41,6 +41,7 @@ def dbget_world_byName(world_name):
         result = fetch_assoc(cursor)
 
         if not (result): return False
+        logInfo(f"Retrieved world {world_name} from database")
         return result
 
 def setupNew_world(world):
@@ -63,7 +64,7 @@ def setupNew_world(world):
         db.commit()
     except Exception as e:
         logError(e)
-        raise GameError(f"World could not be inserted!")
+        raise LogicError(f"World could not be inserted!")
 
     logInfo("Successfully inserted world into database")
 
@@ -111,7 +112,7 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         db.commit()
     except Exception as e:
         logError(e)
-        raise GameError(f"World could not be inserted!")
+        raise LogicError(f"World could not be inserted!")
 
 def dbget_worldMap(world, savegame, turn, nation = None):
     """
@@ -134,6 +135,7 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     result = fetch_assoc(cursor)
 
     if not (result): return False
+    logInfo(f"Successfully retrieved world map image!")
     return result
 
 
@@ -154,6 +156,7 @@ def dbget_saveGame_byServer(server_id):
         result = fetch_assoc(cursor)
 
         if not (result): return False
+        logInfo("Successfully retrieved savegame!")
         return result
 
 def setupNew_saveGame(savegame, world_name, gamerule_name):
@@ -184,7 +187,7 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
         db.commit()
     except Exception as e:
         logError(e)
-        raise Exception(f"Savegame could not be inserted!")
+        raise GameException(f"Savegame could not be inserted!")
 
     #Generate savefile for the game
     save_saveGame(savegame)
@@ -330,8 +333,8 @@ def add_Nation(savegame, nation, playerID):
     if (playerExists):
         logInfo(f"Player {playerID} exists in game {savegame.name} already")
         return False
-
-    savegameInfo = savegame.getRow()
+    
+    logInfo("Player is not already tracked to a nation")
 
     #Insert player if need be
     playerInfo = get_Player(playerID)
@@ -340,23 +343,28 @@ def add_Nation(savegame, nation, playerID):
         add_Player(playerID)
         playerInfo = get_Player(playerID)
 
+    logInfo("Got player")
+
     #Insert role if need be
     roleInfo = get_Role(roleID)
 
     if not (get_Role(roleID)):
         add_Role(roleID, nation_name)
         roleInfo = get_Role(roleID)
+        logInfo(f"Created new role for \"{nation_name}\"")
 
     else: 
         logInfo(f"Role <{roleID}> for \"{nation_name}\" already exists in the database")
+
+    savegameInfo = savegame.getRow()
 
     if not(savegameInfo and playerInfo and roleInfo):
         logInfo(
             f"Something went wrong when adding nation {nation.name}", 
             {
-                "savegameInfo": bool(savegameInfo), 
-                "playerInfo": bool(playerInfo), 
-                "roleInfo": bool(roleInfo)
+                "savegameInfo": bool(savegameInfo) * "Exists", 
+                "playerInfo": bool(playerInfo) * "Exists", 
+                "roleInfo": bool(roleInfo) * "Exists"
             }
             )
         raise Exception(f"Something went wrong when adding nation {nation.name}")

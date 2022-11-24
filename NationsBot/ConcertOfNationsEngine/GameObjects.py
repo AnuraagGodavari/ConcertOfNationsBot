@@ -32,6 +32,8 @@ class Savegame:
         return gamehandling.dbget_saveGame_byServer(self.server_id)
 
     def getWorld(self):
+        """Get the world object that is associated with this game"""
+        
         logInfo(f"Getting world for savegame {self.name} from database")
         db = getdb()
         cursor = db.cursor()
@@ -48,13 +50,21 @@ class Savegame:
         return gamehandling.load_world(result["name"])
 
     def add_Nation(self, nation):
+        """Add a nation to this savegame if it does not already exist"""
 
         if nation.name in self.nations.keys():
             raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
 
         self.nations[nation.name] = nation
+        logInfo(f"Successfully added nation {nation.name} to game {self.name}")
 
     def world_toImage(self, mapScale = None):
+        """
+        Given this savegame and it's associated world, get an image of that world based on the game state this turn.
+
+        Args:
+            mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
+        """
 
         world = self.getWorld()
 
@@ -64,10 +74,16 @@ class Savegame:
             for territory in nation.territories:
                 colorRules[territory] = tuple(nation.mapcolor)
 
+        logInfo("Retrieved nation colors")
+
         worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules)
         link = imgur.upload(f"{worldsDir}/{worldfile}")
 
+        logInfo("Created map image of the world and uploaded it")
+
         gamehandling.insert_worldMap(world, self, worldfile, link, None)
+
+        logInfo("Successfully generated, uploaded and saved world map")
 
     def find_terrOwner(self, territoryName):
         """
@@ -98,23 +114,13 @@ class Nation:
 
         self.role_id = role_id
 
-    def getRow(self):
-        """
-        Get the row in the database table Roles pertaining to this savegame
-        """
-
-        db = getdb()
-        cursor = db.cursor()
-
-        stmt = "SELECT * FROM Savegames WHERE discord_id=%s LIMIT 1;"
-        params = [self.role_id]
-        cursor.execute(stmt, params)
-        result = fetch_assoc(cursor)
-
-        if not (result): return False
-        return result
-
     def cedeTerritory(self, territoryName):
+        """
+        Removes a territory and all associated objects from this nation
+        
+        Returns:
+            terrInfo(dict): Includes territory name and all associated objects
+        """
 
         logInfo(f"Nation {self.name} ceding territory {territoryName}")        
 
@@ -126,7 +132,13 @@ class Nation:
         return terrInfo
 
     def annexTerritory(self, territoryInfo):
+        """
+        Add a territory and related objects to this nation.
         
+        Args:
+            territoryInfo(dict): Includes the name of the territory and all associated objects
+        """
+
         logInfo(f"Nation {self.name} annexing territory {territoryInfo['name']}")
 
         self.territories.append(territoryInfo["name"])
@@ -134,7 +146,7 @@ class Nation:
         logInfo(f"Nation {self.name} successfully annexed territory {territoryInfo['name']}!")
 
     def getTerritoryInfo(self, territoryName):
-
+        """Get a territory and all objects associated with that territory."""
         terrInfo = dict()
 
         if (territoryName in self.territories):

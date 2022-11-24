@@ -40,6 +40,7 @@ def log(level, message, details = None, stackLevel = 0):
 
 
 def logInitial(message):
+    """Begin logging"""
     
     with open(masterlog, 'a') as logfile: logfile.write("\n\n")
         
