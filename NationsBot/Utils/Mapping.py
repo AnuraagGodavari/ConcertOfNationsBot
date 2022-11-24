@@ -37,6 +37,7 @@ class World:
         self.numTerritories = numTerritories
 
     def addNewTerritory(self, name, pos, edges = None, details = None):
+        
         self.territories[name] = Territory(self.numTerritories, pos, edges, details)
         self.numTerritories += 1
 

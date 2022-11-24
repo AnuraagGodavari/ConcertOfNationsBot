@@ -46,7 +46,7 @@ class ErrorLogger(commands.Cog):
         elif (isinstance(error, InputError)):
             await ctx.send(f"Input Error: \"{str(error)}\"")
 
-        elif (isinstance(error, GameError)):
+        elif (isinstance(error, LogicError)):
             await ctx.send(f"Game Error: \"{str(error)}\"")
 
         #Something unforseen happened, so document to the maximum
@@ -56,22 +56,6 @@ class ErrorLogger(commands.Cog):
             await ctx.send(f"[{errorData['Error Time']}] The following error has occurred and been logged: \"{str(error)}\"")
 
         logInfo(f"Above error has been handled successfully!\n")
-        
-        
-    @commands.command()
-    async def error(self, ctx, **args):
-        await ctx.send("Testing error logging...")
-        raise Exception("Testing error logging from command!")
-        
-    @commands.command()
-    async def inputError(self, ctx, **args):
-        await ctx.send("Testing error logging...")
-        raise InputError("Testing error logging from command!")
-        
-    @commands.command()
-    async def gameError(self, ctx, **args):
-        await ctx.send("Testing error logging...")
-        raise GameError("Testing error logging from command!")
         
 def setup(client):
     client.add_cog(ErrorLogger(client))
