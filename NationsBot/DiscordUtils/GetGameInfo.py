@@ -36,6 +36,8 @@ def get_NationFromRole(ctx, roleid, savegame):
         raise InputError(f"The role for {role['name']} does not match with an existing nation {nation.name}")
         return False
 
+    logInfo(f"Successfully got nation {nation.name} by role!")
+
     return nation
 
 def get_SavegameFromCtx(ctx):
@@ -48,5 +50,7 @@ def get_SavegameFromCtx(ctx):
         logError(e)
         raise InputError("Could not load a game for this server.")
         return False
+
+    logInfo(f"Successfully got savegame {savegame.name} from ctx")
     
     return savegame

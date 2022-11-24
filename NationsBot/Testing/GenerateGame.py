@@ -66,7 +66,7 @@ def generateGame(world):
             )
     except InputError as e:
         logError(e)
-    except GameError as e:
+    except LogicError as e:
         logError(e)
     except Exception as e:
         logInfo("Savegame already in database, not logging as error")

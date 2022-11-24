@@ -53,7 +53,6 @@ class MappingCommands(commands.Cog):
 
         await ctx.send(embed = terrEmbed)
 
-
     @commands.command()
     async def worldmap(self, ctx, roleid = None):
         logInfo("Not accounting for 'known world'")
@@ -86,7 +85,7 @@ class MappingCommands(commands.Cog):
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
-            return
+            raise NonFatalError("No savegame attached to this server")
 
         world = savegame.getWorld()
         if not (world):
@@ -108,6 +107,5 @@ class MappingCommands(commands.Cog):
         await ctx.send(embed = embed)
         
 
-        
 def setup(client):
     client.add_cog(MappingCommands(client))
