@@ -75,7 +75,24 @@ def generateGame(world):
         "Nation01",
         conf["Nation01"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
-        territories = ["Test_(0,0)", "Test_(20,0)", "Test_(0,20)", "Test_(20,20)"]
+        territories = {
+            "Test_(0,0)": 
+            {
+
+            }, 
+            "Test_(20,0)":
+            {
+                
+            },  
+            "Test_(0,20)":
+            {
+                
+            },  
+            "Test_(20,20)":
+            {
+                
+            } 
+            }
         ))
 
     try:
@@ -92,7 +109,32 @@ def generateGame(world):
         "Nation02",
         conf["Nation02"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
-        territories = ['Test_(0,40)', 'Test_(0,60)', 'Test_(0,80)', 'Test_(20,40)', 'Test_(20,60)', 'Test_(20,80)']
+        territories = {
+            'Test_(0,40)':
+            {
+                
+            },  
+            'Test_(0,60)':
+            {
+                
+            }, 
+            'Test_(0,80)':
+            {
+                
+            }, 
+            'Test_(20,40)':
+            {
+                
+            }, 
+            'Test_(20,60)':
+            {
+                
+            }, 
+            'Test_(20,80)':
+            {
+                
+            }
+            }
         ))
 
     try:
@@ -131,7 +173,7 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
     terrInfo = savegame.nations[prevOwner].cedeTerritory(territoryName)
 
-    savegame.nations[targetNation].annexTerritory(terrInfo)
+    savegame.nations[targetNation].annexTerritory(territoryName, terrInfo)
 
 
 def testSuite():
@@ -140,5 +182,5 @@ def testSuite():
 
     savegame = generateGame(testWorld)
 
-    testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
+    #testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
 

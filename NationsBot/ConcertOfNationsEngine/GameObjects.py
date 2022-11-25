@@ -110,7 +110,7 @@ class Nation:
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
-        self.territories = territories or list()
+        self.territories = territories or dict()
 
         self.role_id = role_id
 
@@ -122,16 +122,14 @@ class Nation:
             terrInfo(dict): Includes territory name and all associated objects
         """
 
-        logInfo(f"Nation {self.name} ceding territory {territoryName}")        
+        logInfo(f"Nation {self.name} ceding territory {territoryName}")
 
-        terrInfo = self.getTerritoryInfo(territoryName)
-
-        self.territories.remove(territoryName)
+        terrInfo = self.territories.pop(territoryName, False)
 
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
         return terrInfo
 
-    def annexTerritory(self, territoryInfo):
+    def annexTerritory(self, territoryName, territoryInfo):
         """
         Add a territory and related objects to this nation.
         
@@ -139,17 +137,16 @@ class Nation:
             territoryInfo(dict): Includes the name of the territory and all associated objects
         """
 
-        logInfo(f"Nation {self.name} annexing territory {territoryInfo['name']}")
+        logInfo(f"Nation {self.name} annexing territory {territoryName}")
 
-        self.territories.append(territoryInfo["name"])
+        self.territories[territoryName] = territoryInfo
 
-        logInfo(f"Nation {self.name} successfully annexed territory {territoryInfo['name']}!")
+        logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
 
-    def getTerritoryInfo(self, territoryName):
+    def getTerritoryInfo(self, territory):
         """Get a territory and all objects associated with that territory."""
-        terrInfo = dict()
 
-        if (territoryName in self.territories):
-            terrInfo["name"] = territoryName
+        if (territory in self.territories.values()):
+            return self.territories[territory]
 
-        return terrInfo
+        return False

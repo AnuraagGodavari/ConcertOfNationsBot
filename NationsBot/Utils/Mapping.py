@@ -187,11 +187,16 @@ class World:
         """
 
         if (type(items) == int):
-            #Get the territory from self.territories which has an id equal to items
+
+            if ((items >= len(self.territories)) or (items < 0)): return False
+
             return self.territories[items]
 
         if (type(items) == str):
-            try: return next(terr for terr in self.territories if terr.name == items)
-            except: pass
+
+            if items.isdigit(): return self[int(items)]
+
+            #Get the territory from self.territories which has a name equal to items
+            return next(iter(terr for terr in self.territories if terr.name == items), False)
 
         return False
