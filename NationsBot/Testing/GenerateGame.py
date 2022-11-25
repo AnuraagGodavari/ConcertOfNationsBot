@@ -138,7 +138,7 @@ def testSuite():
     
     testWorld = generateTestWorld(100, 100, 20)
 
-    #savegame = generateGame(testWorld)
+    savegame = generateGame(testWorld)
 
-    #testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
+    testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
 
