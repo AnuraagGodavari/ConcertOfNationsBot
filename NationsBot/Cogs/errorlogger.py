@@ -55,7 +55,7 @@ class ErrorLogger(commands.Cog):
 
             await ctx.send(f"[{errorData['Error Time']}] The following error has occurred and been logged: \"{str(error)}\"")
 
-        logInfo(f"Above error has been handled successfully!\n")
+        logInfo(f"Error has been handled successfully!\n")
         
 def setup(client):
     client.add_cog(ErrorLogger(client))

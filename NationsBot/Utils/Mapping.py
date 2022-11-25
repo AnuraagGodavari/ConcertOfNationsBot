@@ -16,7 +16,8 @@ class Territory:
         details (dict): Information used in other files. For example, resources.
     """
 
-    def __init__(self, id, pos, edges = None, details = None):
+    def __init__(self, name, id, pos, edges = None, details = None):
+        self.name = name
         self.id = id
         self.pos = pos
         self.edges = edges or dict()
@@ -31,15 +32,13 @@ class World:
         territories (dict): Keys are territory names, values are the objects.
     """
 
-    def __init__(self, name, territories = None, numTerritories = 0):
+    def __init__(self, name, territories = None):
         self.name = name
-        self.territories = territories or dict()
-        self.numTerritories = numTerritories
+        self.territories = territories or list()
 
     def addNewTerritory(self, name, pos, edges = None, details = None):
         
-        self.territories[name] = Territory(self.numTerritories, pos, edges, details)
-        self.numTerritories += 1
+        self.territories.append(Territory(name, len(self.territories), pos, edges, details))
 
     def calculateAllNeighbors(self, neighborRules):
         """
@@ -54,10 +53,10 @@ class World:
                 }
         """
 
-        for t0name, t0 in self.territories.items():
-            for t1name, t1 in self.territories.items():
+        for t0 in self.territories:
+            for t1 in self.territories:
 
-                if t0name == t1name: continue
+                if t0.id == t1.id: continue
 
                 for rule in neighborRules:
 
@@ -71,8 +70,8 @@ class World:
 
                     pointDist = (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5
                     if (pointDist <= rule["maxDist"]):
-                        t0.edges[t1name] = pointDist
-                        t1.edges[t0name] = pointDist
+                        t0.edges[t1.id] = pointDist
+                        t1.edges[t0.id] = pointDist
 
                     continue
 
@@ -97,12 +96,12 @@ class World:
         courierFont = ImageFont.truetype(f"{fontsDir}/courier.ttf", 24)
 
         #Initialize min and max X and Y values to the X and Y coords of the first territory in the dict of territories
-        firstT = self.territories[next(iter(self.territories))]
+        firstT = next(iter(self.territories))
         minX, maxX, minY, maxY = firstT.pos[0], firstT.pos[0], firstT.pos[1], firstT.pos[1]
         minEdge = float('inf')
         maxEdge = -1
         
-        for t in self.territories.values():
+        for t in self.territories:
             minX = min(minX, t.pos[0])
             maxX = max(maxX, t.pos[0])
             minY = min(minY, t.pos[1])
@@ -131,11 +130,12 @@ class World:
         imgDraw = ImageDraw.Draw(out_img)
 
         #Draw territories on the map
-        for terrName, terr in self.territories.items():
+        for terr in self.territories:
 
             #Draw territory edges on the map
-            for neighborName, neighbor in terr.edges.items():
-                neighbor = self.territories[neighborName]
+            for neighborID in terr.edges.keys():
+
+                neighbor = self.territories[int(neighborID)]
 
                 if neighbor.id > terr.id:
 
@@ -153,8 +153,8 @@ class World:
             terrColor = (255,255,255)
 
             if colorRules:
-                if terrName in colorRules.keys():
-                    terrColor = colorRules[terrName]
+                if terr.name in colorRules.keys():
+                    terrColor = colorRules[terr.name]
 
             #Now draw the territory as a circle
             imgDraw.ellipse(
@@ -181,23 +181,17 @@ class World:
 
         return f"{self.name}.jpg"
 
-    def territoryName(self, terrID):
-        try: return next(terr for terr in self.territories.keys() if self[terr].id == terrID)
-        except: raise InputError(f"Territory with ID \"{terrID}\" not found")
-
-
     def __getitem__(self, items):
         """
         Called by: self[items]
         """
-        
-        try:
 
-            if (type(items) == int):
-                #Get the territory from self.territories which has an id equal to items
-                return next(terr for terr in self.territories.values() if terr.id == items)
+        if (type(items) == int):
+            #Get the territory from self.territories which has an id equal to items
+            return self.territories[items]
 
-            if (type(items) == str):
-                return self.territories[items]
+        if (type(items) == str):
+            try: return next(terr for terr in self.territories if terr.name == items)
+            except: pass
 
-        except: return False
+        return False
