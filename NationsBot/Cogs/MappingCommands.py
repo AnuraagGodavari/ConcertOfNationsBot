@@ -39,14 +39,15 @@ class MappingCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrName = world.territoryName(int(terrID))
-        
-        else: terrName = terrID
+        if terrID.isdigit(): terrID = int(terrID)
 
-        world_terrInfo = world[terrName]
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         terrEmbed = discord.Embed(
-            title = terrName,
+            title = world_terrInfo.name,
             description = ""
         )
         terrEmbed.add_field(name = "Territory ID", value = terrID, inline = False)
