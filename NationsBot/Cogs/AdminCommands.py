@@ -37,9 +37,12 @@ class AdminCommands(commands.Cog):
             return #Error will already have been handled
 
         #Check if territory exists
-        if not (territoryName in savegame.getWorld().territories.keys()):
+        worldTerr = savegame.getWorld()[territoryName]
+        if not (worldTerr):
             raise InputError(f"Territory {territoryName} does not exist")
             return
+
+        territoryName = worldTerr.name
 
         #Check territory owner
         prevOwner = savegame.find_terrOwner(territoryName)
@@ -60,7 +63,7 @@ class AdminCommands(commands.Cog):
                 terrInfo = {"name": territoryName}
 
             #Add this territory to the nation
-            savegame.nations[nation.name].annexTerritory(terrInfo)
+            savegame.nations[nation.name].annexTerritory(territoryName, terrInfo)
 
         except Exception as e:
             raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
