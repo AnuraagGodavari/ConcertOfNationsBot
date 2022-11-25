@@ -42,6 +42,8 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Territory {territoryName} does not exist")
             return
 
+        territoryName = worldTerr.name
+
         #Check territory owner
         prevOwner = savegame.find_terrOwner(territoryName)
 
