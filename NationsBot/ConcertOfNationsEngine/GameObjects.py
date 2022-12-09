@@ -14,16 +14,24 @@ class Savegame:
         date (dict): Represents the ingame month (m) and year (y)
         turn (int): The turn number that the game is currently on
         nations (dict): Contains all the nations that populate the game, controlled by players.
+
+        changes (list): Tracks territory changes in a turn. Format:
+        [
+            {
+                "territory name": ["prev owner", "new owner"],
+                "mapImg": db_id
+            }
+        ]
     """
     
-    def __init__(self, name, server_id, date, turn, nations = None, visibilities = None):
+    def __init__(self, name, server_id, date, turn, nations = None, changes = None):
         self.name = name
+        self.server_id = server_id
         self.date = date
         self.turn = turn
 
         self.nations = nations or dict()
-        self.visibilities = visibilities or dict()
-        self.server_id = server_id
+        self.changes = changes or list()
 
     def getRow(self):
         """
@@ -59,6 +67,7 @@ class Savegame:
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
 
     def world_toImage(self, mapScale = None):
+        '''REMEMBER: iter through self.changes backwards until we get map image with identical territories'''
         """
         Given this savegame and it's associated world, get an image of that world based on the game state this turn.
 
@@ -96,6 +105,43 @@ class Savegame:
 
         return False
 
+    def transfer_territory(self, territoryName, targetNation):
+        
+        #Check if territory exists
+        worldTerr = self.getWorld()[territoryName]
+        if not (worldTerr):
+            raise InputError(f"Territory {territoryName} does not exist")
+            return False
+
+        territoryName = worldTerr.name
+
+        #Check territory owner
+        prevOwner = self.find_terrOwner(territoryName)
+
+        if not (prevOwner):
+            logInfo(f"Territory {territoryName} is unowned")
+
+        if (prevOwner == targetNation.name):
+            raise NonFatalError(f"Territory {territoryName} already owned by {prevOwner}")
+            return False
+
+        try: 
+            #Check if territory is owned, remove it
+            if (prevOwner):
+                terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
+
+            else:
+                terrInfo = {"name": territoryName}
+
+            #Add this territory to the nation
+            self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
+
+        except Exception as e:
+            raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {targetNation.name}")
+            logError(e)
+            return False
+
+        return True
 
 class Nation:
     """

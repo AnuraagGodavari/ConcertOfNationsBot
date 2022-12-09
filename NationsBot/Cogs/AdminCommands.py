@@ -36,42 +36,11 @@ class AdminCommands(commands.Cog):
         if not (savegame): 
             return #Error will already have been handled
 
-        #Check if territory exists
-        worldTerr = savegame.getWorld()[territoryName]
-        if not (worldTerr):
-            raise InputError(f"Territory {territoryName} does not exist")
-            return
+        try: savegame.transfer_territory(territoryName, nation)
+        except Exception as e: raise e
 
-        territoryName = worldTerr.name
-
-        #Check territory owner
-        prevOwner = savegame.find_terrOwner(territoryName)
-
-        if not (prevOwner):
-            logInfo(f"Territory {territoryName} is unowned")
-
-        if (prevOwner == nation.name):
-            raise NonFatalError(f"Territory {territoryName} already owned by {prevOwner}")
-            return
-
-        try: 
-            #Check if territory is owned, remove it
-            if (prevOwner):
-                terrInfo = savegame.nations[prevOwner].cedeTerritory(territoryName)
-
-            else:
-                terrInfo = {"name": territoryName}
-
-            #Add this territory to the nation
-            savegame.nations[nation.name].annexTerritory(territoryName, terrInfo)
-
-        except Exception as e:
-            raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {nation.name}")
-            logError(e)
-            return
-
-        logInfo(f"Successfully transferred the territory {territoryName}{((' from ' + str(prevOwner))*bool(prevOwner)) or ''} to {nation.name}")
-        await ctx.send(f"Successfully transferred the territory {territoryName}{((' from ' + str(prevOwner))*bool(prevOwner)) or ''} to {nation.name}")
+        logInfo(f"Successfully transferred the territory {territoryName} to {nation.name}")
+        await ctx.send(f"Successfully transferred the territory {territoryName} to {nation.name}")
 
         save_saveGame(savegame)
 
