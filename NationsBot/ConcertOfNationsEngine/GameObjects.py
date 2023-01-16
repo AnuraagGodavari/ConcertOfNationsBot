@@ -15,23 +15,26 @@ class Savegame:
         turn (int): The turn number that the game is currently on
         nations (dict): Contains all the nations that populate the game, controlled by players.
 
-        changes (list): Tracks territory changes in a turn. Format:
+        gamestate (dict): Describes seperate aspects of the game as it presently exists. Format:
         [
             {
-                "territory name": ["prev owner", "new owner"],
-                "mapImg": db_id
+                "mapChanged": (bool) Has the map changed since the last time an image was generated?,
+                "mapNum": (int) Which number map we are on for this turn
             }
         ]
     """
     
-    def __init__(self, name, server_id, date, turn, nations = None, changes = None):
+    def __init__(self, name, server_id, date, turn, nations = None, gamestate = None):
         self.name = name
         self.server_id = server_id
         self.date = date
         self.turn = turn
 
         self.nations = nations or dict()
-        self.changes = changes or list()
+        self.gamestate = gamestate or {
+            "mapChanged": False,
+            "mapNum": 0
+        }
 
     def getRow(self):
         """
@@ -67,13 +70,17 @@ class Savegame:
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
 
     def world_toImage(self, mapScale = None):
-        '''REMEMBER: iter through self.changes backwards until we get map image with identical territories'''
         """
         Given this savegame and it's associated world, get an image of that world based on the game state this turn.
 
         Args:
             mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
         """
+
+        #Check if the map has changed since the last time an image was generated
+        if (not mapChanged):
+            logInfo("Tried to create world image but one should already exist.")
+            return
 
         world = self.getWorld()
 
@@ -140,6 +147,14 @@ class Savegame:
             raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {targetNation.name}")
             logError(e)
             return False
+
+        #Does a new map need to be generated?
+        if not (self.gamestate["mapChanged"]):
+            self.gamestate["mapNum"] += 1
+
+        self.gamestate["mapChanged"] = True
+
+        logInfo(f"Transferred the territory {territoryName} from {prevOwner} to {targetNation.name}!")
 
         return True
 
