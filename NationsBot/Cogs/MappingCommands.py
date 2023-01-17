@@ -92,11 +92,9 @@ class MappingCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
+        #Handles getting the world map if one exists that represents the current gamestate, or creating a new one otherwise.
+        savegame.world_toImage(mapScale = (100, 100))
         worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
-
-        if not (worldMapInfo):
-            savegame.world_toImage(mapScale = (100, 100))
-            worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
 
         #logInfo("Got a matching world map for this game.", details = worldMapInfo)
         embed = discord.Embed(
@@ -108,5 +106,5 @@ class MappingCommands(commands.Cog):
         await ctx.send(embed = embed)
         
 
-def setup(client):
-    client.add_cog(MappingCommands(client))
+async def setup(client):
+    await client.add_cog(MappingCommands(client))
