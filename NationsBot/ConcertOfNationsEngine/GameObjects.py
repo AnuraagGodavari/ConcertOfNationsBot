@@ -78,7 +78,7 @@ class Savegame:
         """
 
         #Check if the map has changed since the last time an image was generated
-        if (not mapChanged):
+        if (not self.gamestate["mapChanged"]):
             logInfo("Tried to create world image but one should already exist.")
             return
 
@@ -92,12 +92,16 @@ class Savegame:
 
         logInfo("Retrieved nation colors")
 
-        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules)
+        filename = f"{self.name}_{self.turn}-{self.gamestate['mapNum']}"
+        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
+
         link = imgur.upload(f"{worldsDir}/{worldfile}")
 
         logInfo("Created map image of the world and uploaded it")
 
         gamehandling.insert_worldMap(world, self, worldfile, link, None)
+        
+        self.gamestate["mapChanged"] = False
 
         logInfo("Successfully generated, uploaded and saved world map")
 

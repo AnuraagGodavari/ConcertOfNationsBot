@@ -75,7 +75,7 @@ class World:
 
                     continue
 
-    def toImage(self, mapScale = None, colorRules = None):
+    def toImage(self, mapScale = None, colorRules = None, filename = None):
         """
         Creates an image representing the map as a graph, with territories as vertices and edges as edges.
 
@@ -175,7 +175,9 @@ class World:
                 ),
                 str(terr.id), font=courierFont, fill="black")
 
-        out_img.save(f"{worldsDir}/{self.name}.jpg")
+        if not (filename): filename = f"{worldsDir}/{self.name}.jpg"
+        if not (filename.endswith(".jpg")): filename += ".jpg"
+        out_img.save(filename)
 
         logInfo(f"Successfully saved world {self.name}!")
 

@@ -132,5 +132,5 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Successfully initialized game \"{savegame.name}\" at date {savegame.date} and turn {savegame.turn} for this server!")
 
         
-def setup(client):
-    client.add_cog(AdminCommands(client))
+async def setup(client):
+    await client.add_cog(AdminCommands(client))
