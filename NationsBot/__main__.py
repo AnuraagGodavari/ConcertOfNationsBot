@@ -1,5 +1,5 @@
 #Python libraries
-import sys
+import sys, asyncio
 import os, json, logging
 
 #Packages
@@ -45,14 +45,11 @@ async def unload(ctx, cog):
 async def ping(ctx):
     await ctx.send(f"Pong!\nLatency: **{round(nationsbot.latency * 1000)}ms**")
 
-def main():
-    
+async def setup():
+
     logInitial("Initializing Bot")
     
     global options
-    
-    load_dotenv()
-    token = os.getenv('TOKEN')
     
     #Non-bot related setup
     if options["debug"]: 
@@ -69,7 +66,12 @@ def main():
     
     for filename in os.listdir(cogsDir):
         if filename.endswith(".py"):
-            nationsbot.load_extension(f"Cogs.{filename[:-3]}")
+            await nationsbot.load_extension(f"Cogs.{filename[:-3]}")
+
+def main():
+    
+    load_dotenv()
+    token = os.getenv('TOKEN')
     
     nationsbot.run(token)
 
@@ -85,4 +87,5 @@ if __name__ == "__main__":
             if 'a' in arg:
                 options["abort"] = True
     
+    asyncio.run(setup())
     main()

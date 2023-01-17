@@ -57,5 +57,5 @@ class ErrorLogger(commands.Cog):
 
         logInfo(f"Error has been handled successfully!\n")
         
-def setup(client):
-    client.add_cog(ErrorLogger(client))
+async def setup(client):
+    await client.add_cog(ErrorLogger(client))
