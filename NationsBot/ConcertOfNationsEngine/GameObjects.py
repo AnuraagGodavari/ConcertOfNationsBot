@@ -14,16 +14,27 @@ class Savegame:
         date (dict): Represents the ingame month (m) and year (y)
         turn (int): The turn number that the game is currently on
         nations (dict): Contains all the nations that populate the game, controlled by players.
+
+        gamestate (dict): Describes seperate aspects of the game as it presently exists. Format:
+        [
+            {
+                "mapChanged": (bool) Has the map changed since the last time an image was generated?,
+                "mapNum": (int) Which number map we are on for this turn
+            }
+        ]
     """
     
-    def __init__(self, name, server_id, date, turn, nations = None, visibilities = None):
+    def __init__(self, name, server_id, date, turn, nations = None, gamestate = None):
         self.name = name
+        self.server_id = server_id
         self.date = date
         self.turn = turn
 
         self.nations = nations or dict()
-        self.visibilities = visibilities or dict()
-        self.server_id = server_id
+        self.gamestate = gamestate or {
+            "mapChanged": False,
+            "mapNum": 0
+        }
 
     def getRow(self):
         """
@@ -66,6 +77,11 @@ class Savegame:
             mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
         """
 
+        #Check if the map has changed since the last time an image was generated
+        if (not self.gamestate["mapChanged"]):
+            logInfo("Tried to create world image but one should already exist.")
+            return
+
         world = self.getWorld()
 
         colorRules = dict()
@@ -76,12 +92,16 @@ class Savegame:
 
         logInfo("Retrieved nation colors")
 
-        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules)
+        filename = f"{self.name}_{self.turn}-{self.gamestate['mapNum']}"
+        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
+
         link = imgur.upload(f"{worldsDir}/{worldfile}")
 
         logInfo("Created map image of the world and uploaded it")
 
         gamehandling.insert_worldMap(world, self, worldfile, link, None)
+        
+        self.gamestate["mapChanged"] = False
 
         logInfo("Successfully generated, uploaded and saved world map")
 
@@ -96,6 +116,51 @@ class Savegame:
 
         return False
 
+    def transfer_territory(self, territoryName, targetNation):
+        
+        #Check if territory exists
+        worldTerr = self.getWorld()[territoryName]
+        if not (worldTerr):
+            raise InputError(f"Territory {territoryName} does not exist")
+            return False
+
+        territoryName = worldTerr.name
+
+        #Check territory owner
+        prevOwner = self.find_terrOwner(territoryName)
+
+        if not (prevOwner):
+            logInfo(f"Territory {territoryName} is unowned")
+
+        if (prevOwner == targetNation.name):
+            raise NonFatalError(f"Territory {territoryName} already owned by {prevOwner}")
+            return False
+
+        try: 
+            #Check if territory is owned, remove it
+            if (prevOwner):
+                terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
+
+            else:
+                terrInfo = {"name": territoryName}
+
+            #Add this territory to the nation
+            self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
+
+        except Exception as e:
+            raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {targetNation.name}")
+            logError(e)
+            return False
+
+        #Does a new map need to be generated?
+        if not (self.gamestate["mapChanged"]):
+            self.gamestate["mapNum"] += 1
+
+        self.gamestate["mapChanged"] = True
+
+        logInfo(f"Transferred the territory {territoryName} from {prevOwner} to {targetNation.name}!")
+
+        return True
 
 class Nation:
     """

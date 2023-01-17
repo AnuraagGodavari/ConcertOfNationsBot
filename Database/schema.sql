@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `WorldMaps` (
     `savegame_id` BIGINT UNSIGNED NOT NULL,
     `role_id` BIGINT UNSIGNED,
     `turn_no` INT UNSIGNED NOT NULL,
+    `turn_map_no` INT UNSIGNED NOT NULL,
     `filename` VARCHAR(128),
     `link` VARCHAR(128) UNIQUE,
     `created` timestamp NOT NULL DEFAULT current_timestamp(),

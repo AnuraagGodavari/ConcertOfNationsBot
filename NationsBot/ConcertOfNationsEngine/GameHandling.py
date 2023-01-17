@@ -78,7 +78,7 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
     """
     logInfo("Saving information for a world image")
     
-    if (dbget_worldMap(world, savegame, savegame.turn, nation)):
+    if ((savegame.gamestate["mapChanged"] == False) and (dbget_worldMap(world, savegame, savegame.turn, nation))):
         logInfo(f"World Map already exists for world {world.name}, savegame {savegame.name} turn {savegame.turn} and nation {nation or 'n/a'}")
         return
 
@@ -101,12 +101,12 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         cursor = db.cursor()
 
         if (nation):
-            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
-            params = [worldInfo['id'], savegameInfo['id'], savegame.turn, roleInfo['id'], filename, link]
+            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            params = [worldInfo['id'], savegameInfo['id'], savegame.turn, savegame.gamestate["mapNum"], roleInfo['id'], filename, link]
 
         else:
-            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, filename, link) VALUES (%s, %s, %s, %s, %s)"
-            params = [worldInfo['id'], savegameInfo['id'], savegame.turn, filename, link]
+            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
+            params = [worldInfo['id'], savegameInfo['id'], savegame.turn, savegame.gamestate["mapNum"], filename, link]
 
         cursor.execute(stmt, params)
         db.commit()
@@ -124,17 +124,18 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     cursor = db.cursor()
 
     if (nation):
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND Roles.discord_id=%s"
-        params = [world.name, savegame.server_id, turn, nation.role_id]
+        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s AND Roles.discord_id=%s"
+        params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"]), nation.role_id]
 
     else:
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s"
-        params = [world.name, savegame.server_id, turn]
+        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s"
+        params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"])]
 
     cursor.execute(stmt, params)
     result = fetch_assoc(cursor)
 
     if not (result): return False
+
     logInfo(f"Successfully retrieved world map image!")
     return result
 

@@ -64,9 +64,7 @@ def generateGame(world):
             world.name, 
             "Test Gamerule"
             )
-    except InputError as e:
-        logError(e)
-    except LogicError as e:
+    except CustomException as e:
         logError(e)
     except Exception as e:
         logInfo("Savegame already in database, not logging as error")
@@ -165,15 +163,11 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
     logInfo(f"Testing transfer of territory {territoryName}")
 
-    prevOwner = savegame.find_terrOwner(territoryName)
-
-    if (prevOwner == targetNation):
-        logInfo(f"Territory {territoryName} already owned by {prevOwner}")
+    if not(savegame.transfer_territory(territoryName, targetNation)):
+        logInfo("Could not transfer territory")
         return
 
-    terrInfo = savegame.nations[prevOwner].cedeTerritory(territoryName)
-
-    savegame.nations[targetNation].annexTerritory(territoryName, terrInfo)
+    logInfo(f"Territory transfer successful!")
 
 
 def testSuite():
@@ -182,5 +176,5 @@ def testSuite():
 
     savegame = generateGame(testWorld)
 
-    #testTerritoryTransfer(savegame, "Test_(20,20)", "Nation02")
+    testTerritoryTransfer(savegame, "Test_(20,20)", savegame.nations["Nation02"])
 
