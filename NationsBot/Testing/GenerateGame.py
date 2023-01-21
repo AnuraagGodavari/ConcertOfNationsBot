@@ -4,7 +4,7 @@ from logger import *
 import pprint
 from random import *
 
-from Utils import FileHandling, Mapping
+from GameUtils import FileHandling, Mapping
 
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
