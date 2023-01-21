@@ -5,7 +5,7 @@ from logger import *
 
 from database import *
 from common import *
-from Utils import FileHandling
+from GameUtils import FileHandling
 
 from ConcertOfNationsEngine.GameObjects import *
 from ConcertOfNationsEngine.CustomExceptions import *
