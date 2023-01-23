@@ -8,10 +8,13 @@ from common import *
 from database import *
 from logger import *
 
+from DiscordUtils.menuembed import *
 from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
+
+from GameUtils.FileHandling import *
 
 #The cog itself
 class MappingCommands(commands.Cog):
@@ -96,14 +99,27 @@ class MappingCommands(commands.Cog):
         savegame.world_toImage(mapScale = (100, 100))
         worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
 
-        #logInfo("Got a matching world map for this game.", details = worldMapInfo)
+        logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
+        
+        #Make a menu for the world map display
+
+        menu = MenuEmbed(
+            f"{savegame.name} World Map", 
+            "_Territories are displayed by their IDs. Use the command \"terr\_lookup <id>\" to see more information about a territory!_", 
+            imgurl = worldMapInfo['link'],
+            fields = [(f"Territory {i}", saveObject(terr)) for i, terr in enumerate(world.territories)],
+            pagesize = 10
+            )
+
+        """
         embed = discord.Embed(
                 title = f"{savegame.name} World Map",
                 description = "_Territories are displayed by their IDs. Use the command \"terr_lookup <id>\" to see more information about a territory!_"
             )
         embed.set_image(url = worldMapInfo['link'])
+        """
 
-        await ctx.send(embed = embed)
+        await ctx.send(embed = menu.toEmbed())
         
 
 async def setup(client):

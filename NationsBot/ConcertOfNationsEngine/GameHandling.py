@@ -33,7 +33,7 @@ def dbget_world_byName(world_name):
         """
 
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         stmt = "SELECT * FROM Worlds WHERE name=%s LIMIT 1;"
         params = [world_name]
@@ -56,7 +56,7 @@ def setupNew_world(world):
     #Update database
     try:
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         stmt = "INSERT INTO Worlds (name) VALUES (%s)"
         params = [world.name]
@@ -98,7 +98,7 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
      #Update database
     try:
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         if (nation):
             stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s, %s)"
@@ -121,7 +121,7 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     logInfo(f"Retrieving a world map with the world {world.name} and the game {savegame.name} from the database")
 
     db = getdb()
-    cursor = db.cursor()
+    cursor = db.cursor(buffered=True)
 
     if (nation):
         stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s AND Roles.discord_id=%s"
@@ -149,7 +149,7 @@ def dbget_saveGame_byServer(server_id):
         logInfo(f"Getting a savegame with the id {server_id} from the database")
 
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         stmt = "SELECT * FROM Savegames WHERE server_id=%s LIMIT 1;"
         params = [server_id]
@@ -180,7 +180,7 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
     #Update database
     try:
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         stmt = "INSERT INTO Savegames (server_id, savefile, world_id, gamerulefile) VALUES (%s, %s, %s, %s)"
         params = [server_id, savegame.name, worldInfo['id'], gamerule_name]
@@ -212,7 +212,7 @@ def load_saveGame(savegame_name):
 def get_player_byGame(savegame, player_id):
 
     db = getdb()
-    cursor = db.cursor()
+    cursor = db.cursor(buffered=True)
 
     stmt = """
     SELECT * FROM 
@@ -247,7 +247,7 @@ def add_Player(playerID):
     Add a player by discord ID to the database
     """
     db = getdb()
-    cursor = db.cursor()
+    cursor = db.cursor(buffered=True)
 
     try:
         stmt = "INSERT INTO Players (discord_id) VALUES (%s)"
@@ -265,7 +265,7 @@ def get_Player(playerID):
         """
 
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         stmt = "SELECT * FROM Players WHERE discord_id=%s LIMIT 1;"
         params = [playerID]
@@ -284,7 +284,7 @@ def add_Role(roleID, roleName):
     Add a role by discord ID to the database
     """
     db = getdb()
-    cursor = db.cursor()
+    cursor = db.cursor(buffered=True)
 
     try:
         stmt = "INSERT INTO Roles (discord_id, name) VALUES (%s, %s)"
@@ -302,7 +302,7 @@ def get_Role(roleID):
         """
 
         db = getdb()
-        cursor = db.cursor()
+        cursor = db.cursor(buffered=True)
 
         stmt = "SELECT * FROM Roles WHERE discord_id=%s LIMIT 1;"
         params = [roleID]
@@ -327,7 +327,7 @@ def add_Nation(savegame, nation, playerID):
     roleID = nation.role_id
 
     db = getdb()
-    cursor = db.cursor()
+    cursor = db.cursor(buffered=True)
 
     #Fail if player is already tracked to a nation
     playerExists = get_player_byGame(savegame, playerID)
