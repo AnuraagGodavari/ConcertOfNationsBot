@@ -32,7 +32,7 @@ class Savegame:
 
         self.nations = nations or dict()
         self.gamestate = gamestate or {
-            "mapChanged": False,
+            "mapChanged": True,
             "mapNum": 0
         }
 
