@@ -63,8 +63,8 @@ class AdminCommands(commands.Cog):
             raise InputError("Could not load a game for this server.")
             return
 
-        role = ctx.guild.get_role(int(roleid[3:-1]))
-        player = ctx.guild.get_member(int(playerid[2:-1]))
+        role = ctx.guild.get_role(get_RoleID(roleid))
+        player = ctx.guild.get_member(get_PlayerID(playerid))
 
         logInfo(f"Adding nation {role.name} to saveGame")
 
