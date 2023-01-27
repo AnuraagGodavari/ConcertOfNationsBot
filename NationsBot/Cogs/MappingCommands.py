@@ -111,6 +111,10 @@ class MappingCommands(commands.Cog):
             pagesize = 10
             )
 
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created worldmap_full menu and assigned it to player {ctx.author.id}")
+
         """
         embed = discord.Embed(
                 title = f"{savegame.name} World Map",
