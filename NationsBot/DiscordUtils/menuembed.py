@@ -5,6 +5,9 @@ from logger import *
 
 from ConcertOfNationsEngine.CustomExceptions import *
 
+""" A dictionary of depth 1 where keys are player IDs and values are menu objects """
+menucache = dict()
+
 class MenuEmbed:
     """
     An object that can create a discord embed with pages of fields.
@@ -79,3 +82,9 @@ class MenuEmbed:
             )
 
         return embed
+
+def assignMenu(playerid, menu):
+    menucache[str(playerid)] = menu
+
+def getMenu(playerid):
+    return menucache[str(playerid)]
