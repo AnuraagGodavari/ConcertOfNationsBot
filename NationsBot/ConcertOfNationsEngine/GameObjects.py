@@ -92,7 +92,7 @@ class Savegame:
 
         logInfo("Retrieved nation colors")
 
-        filename = f"{self.name}_{self.turn}-{self.gamestate['mapNum']}"
+        filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
         worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
 
         link = imgur.upload(f"{worldsDir}/{worldfile}")
