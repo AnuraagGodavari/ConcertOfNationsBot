@@ -1,3 +1,5 @@
+from math import *
+
 import discord
 
 from common import *
@@ -7,6 +9,28 @@ from ConcertOfNationsEngine.CustomExceptions import *
 
 """ A dictionary of depth 1 where keys are player IDs and values are menu objects """
 menucache = dict()
+
+class PaginationView(discord.ui.View):
+
+    def __init__(self, parentmenu, page):
+        super().__init__()
+        self.parentmenu = parentmenu
+        self.page = page
+
+    @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.red)
+    async def previous_page(self, interaction, button):
+        await interaction.response.edit_message(
+            embed = self.parentmenu.toEmbed(self.page - 1), 
+            view = self.parentmenu.embedView(self.page - 1)
+        )
+
+    @discord.ui.button(label="Next Page", style=discord.ButtonStyle.green)
+    async def next_page(self, interaction, button):
+        await interaction.response.edit_message(
+            embed = self.parentmenu.toEmbed(self.page + 1), 
+            view = self.parentmenu.embedView(self.page + 1)
+        )
+
 
 class MenuEmbed:
     """
@@ -36,13 +60,19 @@ class MenuEmbed:
         self.imgfile = imgfile
         self.imgurl = imgurl
         self.sortable = sortable
-        self.fields = fields
+        self.fields = fields or list()
         self.pagesize = max(1, min(pagesize, 25))
+
+    def adjust_pagenumber(self, pagenumber):
+        """ Adjust page number so it is between 0 and the last possible page number before overflow """
+        return max(0, min(pagenumber, floor(len(self.fields) / self.pagesize)))
 
     def sortContent(self, *keys):
         pass
 
     def toEmbed(self, pagenumber = 0, *sortkeys):
+        
+        pagenumber = self.adjust_pagenumber(pagenumber)
 
         embed = discord.Embed(
                 title = f"{self.title} Page {pagenumber + 1}",
@@ -82,6 +112,13 @@ class MenuEmbed:
             )
 
         return embed
+
+    def embedView(self, pagenumber = 0):
+        
+        pagenumber = self.adjust_pagenumber(pagenumber)
+
+        return PaginationView(self, pagenumber)
+
 
 def assignMenu(playerid, menu):
     menucache[str(playerid)] = menu
