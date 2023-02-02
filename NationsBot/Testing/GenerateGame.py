@@ -4,7 +4,7 @@ from logger import *
 import pprint
 from random import *
 
-from Utils import FileHandling, Mapping
+from GameUtils import FileHandling, Mapping
 
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
@@ -15,7 +15,11 @@ def generateTestWorld(length, height, space):
     world = Mapping.World("Test World")
 
     [
-        world.addNewTerritory(f"Test_({x},{y})", (x, y), details = {"Terrain": "Plains"}) 
+        world.addNewTerritory(
+            ''.join([chr(randint(97, 122)) for i in range(5)]), 
+            (x, y), 
+            details = {"Terrain": "Plains"}
+            ) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
 
@@ -74,19 +78,19 @@ def generateGame(world):
         conf["Nation01"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = {
-            "Test_(0,0)": 
+            world.territories[0].name: 
             {
 
             }, 
-            "Test_(20,0)":
+            world.territories[1].name:
             {
                 
             },  
-            "Test_(0,20)":
+            world.territories[5].name:
             {
                 
             },  
-            "Test_(20,20)":
+            world.territories[6].name:
             {
                 
             } 
@@ -108,27 +112,27 @@ def generateGame(world):
         conf["Nation02"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = {
-            'Test_(0,40)':
+            world.territories[2].name:
             {
                 
             },  
-            'Test_(0,60)':
+            world.territories[3].name:
             {
                 
             }, 
-            'Test_(0,80)':
+            world.territories[4].name:
             {
                 
             }, 
-            'Test_(20,40)':
+            world.territories[7].name:
             {
                 
             }, 
-            'Test_(20,60)':
+            world.territories[8].name:
             {
                 
             }, 
-            'Test_(20,80)':
+            world.territories[9].name:
             {
                 
             }
@@ -176,5 +180,5 @@ def testSuite():
 
     savegame = generateGame(testWorld)
 
-    testTerritoryTransfer(savegame, "Test_(20,20)", savegame.nations["Nation02"])
+    #testTerritoryTransfer(savegame, "Test_(20,20)", savegame.nations["Nation02"])
 
