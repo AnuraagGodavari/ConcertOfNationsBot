@@ -115,15 +115,7 @@ class MappingCommands(commands.Cog):
 
         logInfo(f"Created worldmap_full menu and assigned it to player {ctx.author.id}")
 
-        """
-        embed = discord.Embed(
-                title = f"{savegame.name} World Map",
-                description = "_Territories are displayed by their IDs. Use the command \"terr_lookup <id>\" to see more information about a territory!_"
-            )
-        embed.set_image(url = worldMapInfo['link'])
-        """
-
-        await ctx.send(embed = menu.toEmbed())
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
         
 
 async def setup(client):
