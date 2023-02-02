@@ -17,7 +17,7 @@ class PaginationView(discord.ui.View):
         self.parentmenu = parentmenu
         self.page = page
 
-    @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.green)
     async def previous_page(self, interaction, button):
         await interaction.response.edit_message(
             embed = self.parentmenu.toEmbed(self.page - 1), 
@@ -81,7 +81,7 @@ class MenuEmbed:
 
         if (self.imgurl): embed.set_image(url = self.imgurl)
 
-        pagestart = min(len(self.fields) - self.pagesize, pagenumber * self.pagesize)
+        pagestart = pagenumber * self.pagesize
         pageend = min(len(self.fields), (pagenumber + 1) * self.pagesize)
         
         paginatedFields = self.fields[pagestart:pageend]
