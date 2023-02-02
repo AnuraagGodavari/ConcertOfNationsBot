@@ -181,7 +181,7 @@ class World:
 
         logInfo(f"Successfully saved world {self.name}!")
 
-        return f"{self.name}.jpg"
+        return filename
 
     def __getitem__(self, items):
         """

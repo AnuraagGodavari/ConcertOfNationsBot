@@ -95,7 +95,7 @@ class Savegame:
         filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
         worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
 
-        link = imgur.upload(f"{worldsDir}/{worldfile}")
+        link = imgur.upload(worldfile)
 
         logInfo("Created map image of the world and uploaded it")
 
