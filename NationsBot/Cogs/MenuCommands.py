@@ -26,7 +26,7 @@ class MenuCommands(commands.Cog):
     @commands.command()
     async def sort(self, ctx, *sortargs):
         """ Retrieve the previous menu and create an embed where its contents are sorted with sort args. """
-        logInfo(f"sort({sortargs})")
+        logInfo(f"sort({ctx.author.id}, {sortargs})")
         
         playerID = ctx.author.id
         menu = getMenu(playerID)
@@ -38,7 +38,14 @@ class MenuCommands(commands.Cog):
     @commands.command()
     async def reverse(self, ctx):
         """ Display the fields in the previous menu in reverse order """
-        pass
+        logInfo(f"reverse({ctx.author.id})")
+        
+        playerID = ctx.author.id
+        menu = getMenu(playerID)
+
+        menu.fields.reverse()
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
 async def setup(client):
     await client.add_cog(MenuCommands(client))
