@@ -9,11 +9,16 @@ from logger import *
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 
+def get_PlayerID(playerid):
+    return int(playerid[2:-1])
+
+def get_RoleID(roleid):
+    return int(roleid[3:-1])
 
 def get_NationFromRole(ctx, roleid, savegame):
     """Get nation info"""
 
-    roleObj = ctx.guild.get_role(int(roleid[3:-1]))
+    roleObj = ctx.guild.get_role(int(get_RoleID(roleid)))
     if not(roleObj):
         logInfo(f"Unknown role {roleid}")
         raise InputError(f"Unknown role {roleid}")

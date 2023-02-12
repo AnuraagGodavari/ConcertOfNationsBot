@@ -32,7 +32,7 @@ class Savegame:
 
         self.nations = nations or dict()
         self.gamestate = gamestate or {
-            "mapChanged": False,
+            "mapChanged": True,
             "mapNum": 0
         }
 
@@ -92,10 +92,10 @@ class Savegame:
 
         logInfo("Retrieved nation colors")
 
-        filename = f"{self.name}_{self.turn}-{self.gamestate['mapNum']}"
+        filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
         worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
 
-        link = imgur.upload(f"{worldsDir}/{worldfile}")
+        link = imgur.upload(worldfile)
 
         logInfo("Created map image of the world and uploaded it")
 
