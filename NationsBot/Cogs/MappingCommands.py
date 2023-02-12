@@ -107,7 +107,14 @@ class MappingCommands(commands.Cog):
             f"{savegame.name} World Map", 
             "_Territories are displayed by their IDs. Use the command \"terr\_lookup <id>\" to see more information about a territory!_", 
             imgurl = worldMapInfo['link'],
-            fields = [(f"Territory {i}", saveObject(terr)) for i, terr in enumerate(world.territories)],
+            fields = [
+                (f"Territory {i}", {
+                    "Name": terr.name, 
+                    "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]}
+                    }
+                ) 
+                for i, terr in enumerate(world.territories)
+            ],
             pagesize = 9
             )
 
