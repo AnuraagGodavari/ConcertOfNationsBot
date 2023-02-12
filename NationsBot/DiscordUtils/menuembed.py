@@ -68,7 +68,24 @@ class MenuEmbed:
         return max(0, min(pagenumber, floor(len(self.fields) / self.pagesize)))
 
     def sortContent(self, *keys):
-        pass
+
+        if len(keys) > 2: keys = keys[0:2]                
+        
+        if len(keys) < 1: raise InputError("Not enough sorting keys")
+        
+        #If there is only one sorting key, we sort on that key within the field
+        if (len(keys) == 1):
+            sortlambda = lambda field: field[1][keys[0]]
+
+        #If there are two sorting keys, we sort on the value of key1 within a dict at field[key0]
+        else:
+            sortlambda = lambda field: field[1][keys[0]][keys[1]]
+
+        try:
+            self.fields.sort(key = sortlambda)
+        except Exception as e:
+            logError(e)
+            raise InputError(f"Invalid sorting keys: {keys}") 
 
     def toEmbed(self, pagenumber = 0, *sortkeys):
         
@@ -97,18 +114,20 @@ class MenuEmbed:
                 if key == '__class__': continue
                 if key == '__module__': continue
 
+                '''
                 if type(contentDict[key]) == dict: continue
 
                 if type(contentDict[key]) == list:
                     if type(contentDict[key][0]) == dict:
                         continue
+                '''
 
                 content += f"{key}: {contentDict[key]}\n"
 
 
             embed.add_field(
                 name = title,
-                value = content
+                value = str(content)
             )
 
         return embed
