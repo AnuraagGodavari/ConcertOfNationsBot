@@ -110,7 +110,8 @@ class MappingCommands(commands.Cog):
             fields = [
                 (f"Territory {i}", {
                     "Name": terr.name, 
-                    "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]}
+                    "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]},
+                    "Resources": terr.resources
                     }
                 ) 
                 for i, terr in enumerate(world.territories)

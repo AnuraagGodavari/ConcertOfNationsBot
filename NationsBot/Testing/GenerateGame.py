@@ -9,7 +9,7 @@ from GameUtils import FileHandling, Mapping
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
-def generateTestWorld(length, height, space):
+def generateTestWorld(gamerule, length, height, space):
     logInfo("Generating 'Test World' Worldmap...")
 
     world = Mapping.World("Test World")
@@ -18,7 +18,8 @@ def generateTestWorld(length, height, space):
         world.addNewTerritory(
             ''.join([chr(randint(97, 122)) for i in range(5)]), 
             (x, y), 
-            details = {"Terrain": "Plains"}
+            details = {"Terrain": "Plains"},
+            resources = {resource: randint(0,5) for resource in gamerule["Resources"]}
             ) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
@@ -49,7 +50,7 @@ def generateTestWorld(length, height, space):
     logInfo("Generated 'Test World'")
     return world
 
-def generateGame(world):
+def generateGame(gamerule, world):
 
     conf = FileHandling.easyLoad("debugConf", pwdir)
 
@@ -148,8 +149,6 @@ def generateGame(world):
     except Exception as e:
         logError(e, {"Message": "Nation 2 already in database"})
         return
-
-    load_gamerule("Test Gamerule")
     
     save_saveGame(savegame)
     savegame = load_saveGame("TestGame")
@@ -175,10 +174,12 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
 
 def testSuite():
-    
-    testWorld = generateTestWorld(100, 100, 20)
 
-    savegame = generateGame(testWorld)
+    gamerule = load_gamerule("Test Gamerule")
+    
+    testWorld = generateTestWorld(gamerule, 100, 100, 20)
+
+    savegame = generateGame(gamerule, testWorld)
 
     #testTerritoryTransfer(savegame, "Test_(20,20)", savegame.nations["Nation02"])
 
