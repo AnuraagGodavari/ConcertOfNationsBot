@@ -88,4 +88,7 @@ if __name__ == "__main__":
                 options["abort"] = True
     
     asyncio.run(setup())
+
+    if options["abort"]: exit()
+    
     main()
