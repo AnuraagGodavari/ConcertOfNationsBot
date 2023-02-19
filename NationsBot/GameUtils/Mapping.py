@@ -16,12 +16,13 @@ class Territory:
         details (dict): Information used in other files. For example, resources.
     """
 
-    def __init__(self, name, id, pos, edges = None, details = None):
+    def __init__(self, name, id, pos, edges = None, details = None, resources = None):
         self.name = name
         self.id = id
         self.pos = pos
         self.edges = edges or dict()
         self.details = details or dict()
+        self.resources = resources or dict()
 
 
 class World:
@@ -36,9 +37,9 @@ class World:
         self.name = name
         self.territories = territories or list()
 
-    def addNewTerritory(self, name, pos, edges = None, details = None):
+    def addNewTerritory(self, name, pos, edges = None, details = None, resources = None):
         
-        self.territories.append(Territory(name, len(self.territories), pos, edges, details))
+        self.territories.append(Territory(name, len(self.territories), pos, edges, details, resources))
 
     def calculateAllNeighbors(self, neighborRules):
         """
