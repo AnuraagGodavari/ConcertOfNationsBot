@@ -205,6 +205,9 @@ class Nation:
 
         self.role_id = role_id
 
+    
+    #Territory management
+
     def cedeTerritory(self, territoryName):
         """
         Removes a territory and all associated objects from this nation
@@ -242,9 +245,11 @@ class Nation:
 
         return False
 
+
+    #New turn functions
+    
     def getTurnRevenue(self, savegame):
         """Get the total amount of resources that each territory this nation owns will produce."""
-        
         logInfo(f"Nation {self.name} getting total amount of resources produced per turn")
 
         totalrevenue = {}
@@ -258,5 +263,14 @@ class Nation:
 
         return totalrevenue
 
+    def newturnResources(self, savegame):
+        """Get the net change in resources for this nation for the new turn"""
+        logInfo("Nation {self.name} calculating total resource net income for this turn")
+
+        #Add resource revenue to self.resources
+        revenue = self.getTurnRevenue(savegame)
+        self.resources = ops.combineDicts(self.resources, revenue)
+
+        logInfo("Successfully calculated net income for {self.name}")
 
 
