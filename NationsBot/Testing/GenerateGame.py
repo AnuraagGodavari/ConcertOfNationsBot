@@ -172,6 +172,9 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
     logInfo(f"Territory transfer successful!")
 
+def testResourceRevenue(savegame, targetNation):
+    
+    logInfo("Testing getting {targetNation.name}'s total resource income per turn:", details = targetNation.getTurnRevenue(savegame)) 
 
 def testSuite():
 
@@ -180,6 +183,8 @@ def testSuite():
     testWorld = generateTestWorld(gamerule, 100, 100, 20)
 
     savegame = generateGame(gamerule, testWorld)
+
+    testResourceRevenue(savegame, savegame.nations["Nation01"])
 
     #testTerritoryTransfer(savegame, "Test_(20,20)", savegame.nations["Nation02"])
 
