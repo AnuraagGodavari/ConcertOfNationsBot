@@ -87,6 +87,11 @@ class Savegame:
         if nation.name in self.nations.keys():
             raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
 
+        gamerule = self.getGamerule()
+
+        #Generate an empty list of resources based on the gamerule, and make sure money is one of those included
+        nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
+        
         self.nations[nation.name] = nation
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
 
