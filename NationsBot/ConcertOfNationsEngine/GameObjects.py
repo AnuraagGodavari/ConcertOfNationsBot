@@ -4,6 +4,8 @@ from database import *
 from logger import *
 import imgur
 
+from GameUtils import Operations as ops
+
 import ConcertOfNationsEngine.GameHandling as gamehandling
 
 class Savegame:
@@ -215,3 +217,22 @@ class Nation:
             return self.territories[territory]
 
         return False
+
+    def getTurnRevenue(self, savegame):
+        """Get the total amount of resources that each territory this nation owns will produce."""
+        
+        logInfo(f"Nation {self.name} getting total amount of resources produced per turn")
+
+        totalrevenue = {}
+
+        worldmap = savegame.getWorld()
+
+        for territoryName in self.territories.keys():
+            
+            territory = worldmap[territoryName]
+            totalrevenue = ops.combineDicts(totalrevenue, territory.resources)
+
+        return totalrevenue
+
+
+
