@@ -25,6 +25,8 @@ class Savegame:
             }
         ]
     """
+
+    #Setup
     
     def __init__(self, name, server_id, date, turn, nations = None, gamestate = None):
         self.name = name
@@ -37,6 +39,23 @@ class Savegame:
             "mapChanged": True,
             "mapNum": 0
         }
+
+    def add_Nation(self, nation):
+        """Add a nation to this savegame if it does not already exist"""
+
+        if nation.name in self.nations.keys():
+            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
+
+        gamerule = self.getGamerule()
+
+        #Generate an empty list of resources based on the gamerule, and make sure money is one of those included
+        nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
+        
+        self.nations[nation.name] = nation
+        logInfo(f"Successfully added nation {nation.name} to game {self.name}")
+
+
+    #Get outside files that define the savegame
 
     def getRow(self):
         """
@@ -81,55 +100,7 @@ class Savegame:
         return gamehandling.load_gamerule(result["gamerulefile"])
 
 
-    def add_Nation(self, nation):
-        """Add a nation to this savegame if it does not already exist"""
-
-        if nation.name in self.nations.keys():
-            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
-
-        gamerule = self.getGamerule()
-
-        #Generate an empty list of resources based on the gamerule, and make sure money is one of those included
-        nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
-        
-        self.nations[nation.name] = nation
-        logInfo(f"Successfully added nation {nation.name} to game {self.name}")
-
-    def world_toImage(self, mapScale = None):
-        """
-        Given this savegame and it's associated world, get an image of that world based on the game state this turn.
-
-        Args:
-            mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
-        """
-
-        #Check if the map has changed since the last time an image was generated
-        if (not self.gamestate["mapChanged"]):
-            logInfo("Tried to create world image but one should already exist.")
-            return
-
-        world = self.getWorld()
-
-        colorRules = dict()
-
-        for nation in self.nations.values():
-            for territory in nation.territories:
-                colorRules[territory] = tuple(nation.mapcolor)
-
-        logInfo("Retrieved nation colors")
-
-        filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
-        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
-
-        link = imgur.upload(worldfile)
-
-        logInfo("Created map image of the world and uploaded it")
-
-        gamehandling.insert_worldMap(world, self, worldfile, link, None)
-        
-        self.gamestate["mapChanged"] = False
-
-        logInfo("Successfully generated, uploaded and saved world map")
+    #International operations
 
     def find_terrOwner(self, territoryName):
         """
@@ -187,6 +158,46 @@ class Savegame:
         logInfo(f"Transferred the territory {territoryName} from {prevOwner} to {targetNation.name}!")
 
         return True
+
+
+    #Display
+
+    def world_toImage(self, mapScale = None):
+        """
+        Given this savegame and it's associated world, get an image of that world based on the game state this turn.
+
+        Args:
+            mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
+        """
+
+        #Check if the map has changed since the last time an image was generated
+        if (not self.gamestate["mapChanged"]):
+            logInfo("Tried to create world image but one should already exist.")
+            return
+
+        world = self.getWorld()
+
+        colorRules = dict()
+
+        for nation in self.nations.values():
+            for territory in nation.territories:
+                colorRules[territory] = tuple(nation.mapcolor)
+
+        logInfo("Retrieved nation colors")
+
+        filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
+        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
+
+        link = imgur.upload(worldfile)
+
+        logInfo("Created map image of the world and uploaded it")
+
+        gamehandling.insert_worldMap(world, self, worldfile, link, None)
+        
+        self.gamestate["mapChanged"] = False
+
+        logInfo("Successfully generated, uploaded and saved world map")
+
 
 class Nation:
     """
