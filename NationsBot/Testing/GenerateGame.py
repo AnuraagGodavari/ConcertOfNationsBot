@@ -186,5 +186,5 @@ def testSuite():
 
     testResourceRevenue(savegame, savegame.nations["Nation01"])
 
-    #testTerritoryTransfer(savegame, "Test_(20,20)", savegame.nations["Nation02"])
+    testTerritoryTransfer(savegame, testWorld.territories[-1].name, savegame.nations["Nation02"])
 
