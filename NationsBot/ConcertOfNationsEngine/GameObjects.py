@@ -1,4 +1,5 @@
 import pprint
+from math import *
 
 from database import *
 from logger import *
@@ -28,10 +29,18 @@ class Savegame:
 
     #Setup
     
-    def __init__(self, name, server_id, date, turn, nations = None, gamestate = None):
+    def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
+
+        #Validate
+
+        if ('m' not in date.keys() or 'y' not in date.keys()):
+            raise InputError("Invalid date parameter", details = saveObject(date))
+
+        #Init
+
         self.name = name
         self.server_id = server_id
-        self.date = date
+        self.date = {'m': date['m'], 'y': date['y']}
         self.turn = turn
 
         self.nations = nations or dict()
@@ -99,6 +108,25 @@ class Savegame:
         logInfo("Got gamerule info")
         return gamehandling.load_gamerule(result["gamerulefile"])
 
+
+    #Main operations
+
+    def advanceTurn(self, numMonths: int):
+        """Move the date forward and calculate new turn changes for each nation"""
+
+        logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date}")
+
+        if (numMonths < 1):
+            raise InputError(f"Cannot advance turn by {numMonths} months!")
+
+        for nation in self.nations.values():
+            
+            nation.newTurn(self, numMonths)
+
+        newdate_raw = self.date['m'] + (self.date['y'] * 12) + numMonths
+        self.date = {'m': (newdate_raw % 12) + 1, 'y': ceil(newdate_raw / 12)}
+
+        logInfo(f"Successfully advanced date to {self.date}")
 
     #International operations
 
@@ -259,7 +287,7 @@ class Nation:
 
     #New turn functions
     
-    def getTurnRevenue(self, savegame):
+    def get_TurnRevenue(self, savegame):
         """Get the total amount of resources that each territory this nation owns will produce."""
         logInfo(f"Nation {self.name} getting total amount of resources produced per turn")
 
@@ -274,14 +302,21 @@ class Nation:
 
         return totalrevenue
 
-    def newturnResources(self, savegame):
+    def newTurn_Resources(self, savegame, numMonths):
         """Get the net change in resources for this nation for the new turn"""
-        logInfo("Nation {self.name} calculating total resource net income for this turn")
+        logInfo(f"Nation {self.name} calculating total resource net income for this turn")
 
         #Add resource revenue to self.resources
-        revenue = self.getTurnRevenue(savegame)
+        revenue = self.get_TurnRevenue(savegame)
+
+        for resource in revenue.keys():
+            revenue[resource] *= numMonths
+
         self.resources = ops.combineDicts(self.resources, revenue)
 
-        logInfo("Successfully calculated net income for {self.name}")
+        logInfo(f"Successfully calculated net income for {self.name}")
 
-
+    def newTurn(self, savegame, numMonths):
+        """Perform tasks for the end of a current turn"""
+        
+        self.newTurn_Resources(savegame, numMonths)
