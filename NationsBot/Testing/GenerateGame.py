@@ -174,7 +174,15 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
 def testResourceRevenue(savegame, targetNation):
     
-    logInfo("Testing getting {targetNation.name}'s total resource income per turn:", details = targetNation.getTurnRevenue(savegame)) 
+    logInfo("Testing getting {targetNation.name}'s total resource income per turn:", details = targetNation.get_TurnRevenue(savegame)) 
+
+def testNewTurn(savegame, numMonths):
+
+    logInfo(f"Advancing the turn for savegame {savegame.name} by {numMonths} months")
+
+    savegame.advanceTurn(numMonths)
+
+    logInfo(f"Turn has been advanced!")
 
 def testSuite():
 
@@ -184,7 +192,10 @@ def testSuite():
 
     savegame = generateGame(gamerule, testWorld)
 
+    testNewTurn(savegame, numMonths = 10)
+
     testResourceRevenue(savegame, savegame.nations["Nation01"])
+    testResourceRevenue(savegame, savegame.nations["Nation02"])
 
     testTerritoryTransfer(savegame, testWorld.territories[-1].name, savegame.nations["Nation02"])
 
