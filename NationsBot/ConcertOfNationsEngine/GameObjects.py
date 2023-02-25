@@ -1,8 +1,11 @@
 import pprint
+from math import *
 
 from database import *
 from logger import *
 import imgur
+
+from GameUtils import Operations as ops
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
 
@@ -23,11 +26,21 @@ class Savegame:
             }
         ]
     """
+
+    #Setup
     
-    def __init__(self, name, server_id, date, turn, nations = None, gamestate = None):
+    def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
+
+        #Validate
+
+        if ('m' not in date.keys() or 'y' not in date.keys()):
+            raise InputError("Invalid date parameter", details = saveObject(date))
+
+        #Init
+
         self.name = name
         self.server_id = server_id
-        self.date = date
+        self.date = {'m': date['m'], 'y': date['y']}
         self.turn = turn
 
         self.nations = nations or dict()
@@ -35,6 +48,23 @@ class Savegame:
             "mapChanged": True,
             "mapNum": 0
         }
+
+    def add_Nation(self, nation):
+        """Add a nation to this savegame if it does not already exist"""
+
+        if nation.name in self.nations.keys():
+            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
+
+        gamerule = self.getGamerule()
+
+        #Generate an empty list of resources based on the gamerule, and make sure money is one of those included
+        nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
+        
+        self.nations[nation.name] = nation
+        logInfo(f"Successfully added nation {nation.name} to game {self.name}")
+
+
+    #Get outside files that define the savegame
 
     def getRow(self):
         """
@@ -60,50 +90,47 @@ class Savegame:
         logInfo("Got worldfile info")
         return gamehandling.load_world(result["name"])
 
-    def add_Nation(self, nation):
-        """Add a nation to this savegame if it does not already exist"""
+    def getGamerule(self):
+        """Get the gamerule that is associated with this game"""
+        
+        logInfo(f"Getting gamerule for savegame {self.name} from database")
+        db = getdb()
+        cursor = db.cursor()
 
-        if nation.name in self.nations.keys():
-            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
+        stmt = "SELECT gamerulefile FROM Savegames WHERE savefile=%s LIMIT 1;"
+        params = [self.name]
+        cursor.execute(stmt, params)
+        result = fetch_assoc(cursor)
 
-        self.nations[nation.name] = nation
-        logInfo(f"Successfully added nation {nation.name} to game {self.name}")
+        if not (result):
+            return False
 
-    def world_toImage(self, mapScale = None):
-        """
-        Given this savegame and it's associated world, get an image of that world based on the game state this turn.
+        logInfo("Got gamerule info")
+        return gamehandling.load_gamerule(result["gamerulefile"])
 
-        Args:
-            mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
-        """
 
-        #Check if the map has changed since the last time an image was generated
-        if (not self.gamestate["mapChanged"]):
-            logInfo("Tried to create world image but one should already exist.")
-            return
+    #Main operations
 
-        world = self.getWorld()
+    def advanceTurn(self, numMonths: int):
+        """Move the date forward and calculate new turn changes for each nation"""
 
-        colorRules = dict()
+        logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date} and current turn: {self.turn}")
+
+        if (numMonths < 1):
+            raise InputError(f"Cannot advance turn by {numMonths} months!")
 
         for nation in self.nations.values():
-            for territory in nation.territories:
-                colorRules[territory] = tuple(nation.mapcolor)
+            
+            nation.newTurn(self, numMonths)
 
-        logInfo("Retrieved nation colors")
+        newdate_raw = self.date['m'] + (self.date['y'] * 12) + numMonths
+        self.date = {'m': (newdate_raw % 12) + 1, 'y': ceil(newdate_raw / 12)}
 
-        filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
-        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
+        self.turn += 1
 
-        link = imgur.upload(worldfile)
+        logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
-        logInfo("Created map image of the world and uploaded it")
-
-        gamehandling.insert_worldMap(world, self, worldfile, link, None)
-        
-        self.gamestate["mapChanged"] = False
-
-        logInfo("Successfully generated, uploaded and saved world map")
+    #International operations
 
     def find_terrOwner(self, territoryName):
         """
@@ -162,6 +189,46 @@ class Savegame:
 
         return True
 
+
+    #Display
+
+    def world_toImage(self, mapScale = None):
+        """
+        Given this savegame and it's associated world, get an image of that world based on the game state this turn.
+
+        Args:
+            mapScale(tuple): Format (x,y). Multiply literal distances between territories by these dimensions to enlarge the map image.
+        """
+
+        #Check if the map has changed since the last time an image was generated
+        if (not self.gamestate["mapChanged"]):
+            logInfo("Tried to create world image but one should already exist.")
+            return
+
+        world = self.getWorld()
+
+        colorRules = dict()
+
+        for nation in self.nations.values():
+            for territory in nation.territories:
+                colorRules[territory] = tuple(nation.mapcolor)
+
+        logInfo("Retrieved nation colors")
+
+        filename = f"{worldsDir}/{self.name}_{self.turn}-{self.gamestate['mapNum']}"
+        worldfile = world.toImage(mapScale = mapScale, colorRules = colorRules, filename = filename)
+
+        link = imgur.upload(worldfile)
+
+        logInfo("Created map image of the world and uploaded it")
+
+        gamehandling.insert_worldMap(world, self, worldfile, link, None)
+        
+        self.gamestate["mapChanged"] = False
+
+        logInfo("Successfully generated, uploaded and saved world map")
+
+
 class Nation:
     """
     Represents a nation, which controls a number of territories and ingame objects such as buildings and armies, as well as having an economy, meaning resources and their production.
@@ -178,6 +245,9 @@ class Nation:
         self.territories = territories or dict()
 
         self.role_id = role_id
+
+    
+    #Territory management
 
     def cedeTerritory(self, territoryName):
         """
@@ -215,3 +285,40 @@ class Nation:
             return self.territories[territory]
 
         return False
+
+
+    #New turn functions
+    
+    def get_TurnRevenue(self, savegame):
+        """Get the total amount of resources that each territory this nation owns will produce."""
+        logInfo(f"Nation {self.name} getting total amount of resources produced per turn")
+
+        totalrevenue = {}
+
+        worldmap = savegame.getWorld()
+
+        for territoryName in self.territories.keys():
+            
+            territory = worldmap[territoryName]
+            totalrevenue = ops.combineDicts(totalrevenue, territory.resources)
+
+        return totalrevenue
+
+    def newTurn_Resources(self, savegame, numMonths):
+        """Get the net change in resources for this nation for the new turn"""
+        logInfo(f"Nation {self.name} calculating total resource net income for this turn")
+
+        #Add resource revenue to self.resources
+        revenue = self.get_TurnRevenue(savegame)
+
+        for resource in revenue.keys():
+            revenue[resource] *= numMonths
+
+        self.resources = ops.combineDicts(self.resources, revenue)
+
+        logInfo(f"Successfully calculated net income for {self.name}")
+
+    def newTurn(self, savegame, numMonths):
+        """Perform tasks for the end of a current turn"""
+        
+        self.newTurn_Resources(savegame, numMonths)
