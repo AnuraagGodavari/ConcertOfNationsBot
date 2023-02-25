@@ -114,7 +114,7 @@ class Savegame:
     def advanceTurn(self, numMonths: int):
         """Move the date forward and calculate new turn changes for each nation"""
 
-        logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date}")
+        logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date} and current turn: {self.turn}")
 
         if (numMonths < 1):
             raise InputError(f"Cannot advance turn by {numMonths} months!")
@@ -126,7 +126,9 @@ class Savegame:
         newdate_raw = self.date['m'] + (self.date['y'] * 12) + numMonths
         self.date = {'m': (newdate_raw % 12) + 1, 'y': ceil(newdate_raw / 12)}
 
-        logInfo(f"Successfully advanced date to {self.date}")
+        self.turn += 1
+
+        logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
     #International operations
 
