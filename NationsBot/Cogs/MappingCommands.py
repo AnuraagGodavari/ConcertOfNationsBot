@@ -106,6 +106,7 @@ class MappingCommands(commands.Cog):
         menu = MenuEmbed(
             f"{savegame.name} World Map", 
             "_Territories are displayed by their IDs. Use the command \"terr\_lookup <id>\" to see more information about a territory!_", 
+            ctx.author.id,
             imgurl = worldMapInfo['link'],
             fields = [
                 (f"Territory {i}", {

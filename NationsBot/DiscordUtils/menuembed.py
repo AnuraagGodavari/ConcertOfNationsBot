@@ -19,6 +19,10 @@ class PaginationView(discord.ui.View):
 
     @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.green)
     async def previous_page(self, interaction, button):
+        
+        if (interaction.user.id != self.parentmenu.userid):
+            return
+        
         await interaction.response.edit_message(
             embed = self.parentmenu.toEmbed(self.page - 1), 
             view = self.parentmenu.embedView(self.page - 1)
@@ -26,6 +30,10 @@ class PaginationView(discord.ui.View):
 
     @discord.ui.button(label="Next Page", style=discord.ButtonStyle.green)
     async def next_page(self, interaction, button):
+        
+        if (interaction.user.id != self.parentmenu.userid):
+            return
+        
         await interaction.response.edit_message(
             embed = self.parentmenu.toEmbed(self.page + 1), 
             view = self.parentmenu.embedView(self.page + 1)
@@ -54,9 +62,10 @@ class MenuEmbed:
             ]
     """
 
-    def __init__(self, title, description, imgfile = None, imgurl = None, sortable = False, fields = None, pagesize = 25):
+    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, pagesize = 25):
         self.title = title
         self.description = description
+        self.userid = userid
         self.imgfile = imgfile
         self.imgurl = imgurl
         self.sortable = sortable
