@@ -123,8 +123,8 @@ class Savegame:
             
             nation.newTurn(self, numMonths)
 
-        newdate_raw = self.date['m'] + (self.date['y'] * 12) + numMonths
-        self.date = {'m': (newdate_raw % 12) + 1, 'y': ceil(newdate_raw / 12)}
+        newdate_raw = self.date['m'] - 1 + (self.date['y'] * 12) + numMonths
+        self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
 
         self.turn += 1
 
