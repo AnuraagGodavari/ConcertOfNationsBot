@@ -62,7 +62,7 @@ class MenuEmbed:
             ]
     """
 
-    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, pagesize = 25):
+    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25):
         self.title = title
         self.description = description
         self.userid = userid
@@ -70,6 +70,7 @@ class MenuEmbed:
         self.imgurl = imgurl
         self.sortable = sortable
         self.fields = fields or list()
+        self.isPaged = isPaged
         self.pagesize = max(1, min(pagesize, 25))
 
     def adjust_pagenumber(self, pagenumber):
@@ -104,7 +105,7 @@ class MenuEmbed:
         pagenumber = self.adjust_pagenumber(pagenumber)
 
         embed = discord.Embed(
-                title = f"{self.title} Page {pagenumber + 1}",
+                title = f"{self.title}" + (f" Page {pagenumber + 1}" * self.isPaged),
                 description = self.description
             )
 
@@ -118,24 +119,29 @@ class MenuEmbed:
         for field in paginatedFields:
 
             title = field[0]
-            contentDict = field[1]
             content = ""
-            
-            for key in contentDict.keys():
+
+            if (type(field[1]) == dict):
+
+                contentDict = field[1]
                 
-                if key == '__class__': continue
-                if key == '__module__': continue
+                for key in contentDict.keys():
+                    
+                    if key == '__class__': continue
+                    if key == '__module__': continue
 
-                '''
-                if type(contentDict[key]) == dict: continue
+                    '''
+                    if type(contentDict[key]) == dict: continue
 
-                if type(contentDict[key]) == list:
-                    if type(contentDict[key][0]) == dict:
-                        continue
-                '''
+                    if type(contentDict[key]) == list:
+                        if type(contentDict[key][0]) == dict:
+                            continue
+                    '''
 
-                content += f"{key}: {contentDict[key]}\n"
+                    content += f"{key}: {contentDict[key]}\n"
 
+            else:
+                content = str(field[1])
 
             embed.add_field(
                 name = title,
