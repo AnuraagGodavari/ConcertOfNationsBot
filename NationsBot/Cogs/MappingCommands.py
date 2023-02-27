@@ -117,7 +117,8 @@ class MappingCommands(commands.Cog):
                 ) 
                 for i, terr in enumerate(world.territories)
             ],
-            pagesize = 9
+            pagesize = 9,
+            sortable = True
             )
 
         assignMenu(ctx.author.id, menu)
