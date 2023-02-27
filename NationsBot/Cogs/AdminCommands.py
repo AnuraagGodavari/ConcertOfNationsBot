@@ -46,6 +46,32 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
+    async def advanceTurn(self, ctx, numMonths = None):
+        """Advance the turn for the current server's savegame, optionally by a number of months"""
+        
+        if not numMonths: numMonths = 1
+
+        logInfo(f"advanceTurn({ctx.guild.id}, {numMonths})")
+        
+        if (type(numMonths) == str):
+            if not(numMonths.isdigit()):
+                raise InputError(f"Invalid number of months \'{numMonths}\'")
+
+        numMonths = int(numMonths)
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        savegame.advanceTurn(numMonths)
+
+        await ctx.send(f"Advanced turn to turn {savegame.turn}, new date is {savegame.date['m']}/{savegame.date['y']}!")
+
+        pass
+
+
+    @commands.command()
+    @commands.has_permissions(administrator = True)
     async def addNation(self, ctx, roleid, playerid):
         """
         Add a nation (by role) and player to a savegame.
