@@ -192,7 +192,7 @@ def testSuite():
 
     savegame = generateGame(gamerule, testWorld)
 
-    testNewTurn(savegame, numMonths = 10)
+    testNewTurn(savegame, numMonths = 12)
 
     testResourceRevenue(savegame, savegame.nations["Nation01"])
     testResourceRevenue(savegame, savegame.nations["Nation02"])
