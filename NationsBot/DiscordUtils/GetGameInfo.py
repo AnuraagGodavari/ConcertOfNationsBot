@@ -12,12 +12,16 @@ from ConcertOfNationsEngine.CustomExceptions import *
 
 def get_PlayerID(playerid):
 
-    if (re.search("^<@[1234567890]*>$", roleid)):
+    playerid = str(playerid)
+
+    if (re.search("^<@[1234567890]*>$", playerid)):
         return int(playerid[2:-1])
 
     return int(playerid)
 
 def get_RoleID(roleid):
+
+    roleid = str(roleid)
 
     if (re.search("^<@&[1234567890]*>$", roleid)):
         return int(roleid[3:-1])
