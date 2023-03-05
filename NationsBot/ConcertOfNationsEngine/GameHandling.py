@@ -215,10 +215,11 @@ def get_player_byGame(savegame, player_id):
     cursor = db.cursor(buffered=True)
 
     stmt = """
-    SELECT * FROM 
+    SELECT *, Players.discord_id as player_discord_id, Roles.discord_id as role_discord_id FROM 
         PlayerGames 
             INNER JOIN Players ON PlayerGames.player_id=Players.id
             INNER JOIN Savegames ON PlayerGames.game_id=Savegames.id
+            INNER JOIN Roles ON PlayerGames.role_id=Roles.id
     WHERE Savegames.server_id=%s AND Players.discord_id=%s LIMIT 1;
     """
 
