@@ -1,3 +1,4 @@
+import re
 import discord
 from discord.ext import commands
 from discord.utils import get
@@ -10,17 +11,24 @@ from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 
 def get_PlayerID(playerid):
-    return int(playerid[2:-1])
+
+    if (re.search("^<@[1234567890]{19}>$", roleid)):
+        return int(playerid[2:-1])
+
+    return int(playerid)
 
 def get_RoleID(roleid):
-    return int(roleid[3:-1])
+
+    if (re.search("^<@&[1234567890]{19}>$", roleid)):
+        return int(roleid[3:-1])
+
+    return int(roleid)
 
 def get_NationFromRole(ctx, roleid, savegame):
     """Get nation info"""
 
     roleObj = ctx.guild.get_role(int(get_RoleID(roleid)))
     if not(roleObj):
-        logInfo(f"Unknown role {roleid}")
         raise InputError(f"Unknown role {roleid}")
         return False
 
