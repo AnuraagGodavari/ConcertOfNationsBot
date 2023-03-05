@@ -80,7 +80,6 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed())
 
-
         
 async def setup(client):
     await client.add_cog(InfoCommands(client))

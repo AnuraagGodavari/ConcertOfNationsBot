@@ -127,6 +127,8 @@ class MappingCommands(commands.Cog):
         logInfo(f"Created worldmap_full menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+        save_saveGame(savegame)
         
 
 async def setup(client):
