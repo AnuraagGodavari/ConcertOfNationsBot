@@ -205,6 +205,8 @@ class Savegame:
             logInfo("Tried to create world image but one should already exist.")
             return
 
+        logInfo("Creating new world map image")
+
         world = self.getWorld()
 
         colorRules = dict()

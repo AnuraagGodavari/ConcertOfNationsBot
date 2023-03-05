@@ -67,7 +67,7 @@ class AdminCommands(commands.Cog):
 
         await ctx.send(f"Advanced turn to turn {savegame.turn}, new date is {savegame.date['m']}/{savegame.date['y']}!")
 
-        pass
+        save_saveGame(savegame)
 
 
     @commands.command()
@@ -156,6 +156,8 @@ class AdminCommands(commands.Cog):
 
         logInfo(f"Successfully created savegame {savegame.name} for server {ctx.guild.id}")
         await ctx.send(f"Successfully initialized game \"{savegame.name}\" at date {savegame.date} and turn {savegame.turn} for this server!")
+
+        save_saveGame(savegame)
 
         
 async def setup(client):
