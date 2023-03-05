@@ -44,6 +44,43 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed())
 
+    @commands.command()
+    async def nationinfo(self, ctx, roleid = None):
+        """ Display basic info about the author's nation or, if another role is specified, the same info about that role's nation. """
+        logInfo(f"nationinfo({ctx.guild.id}, {roleid})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        if (not roleid):
+
+            playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+            if not (playerinfo):
+                raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+            roleid = playerinfo['role_discord_id']
+            logInfo(f"Got default role id {roleid} for this player")
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        if not (nation): 
+            return #Error will already have been handled
+
+        menu = MenuEmbed(
+            f"{nation.name} Information", 
+            None, 
+            None,
+            fields = [
+                ("Resources", nation.resources),
+            ]
+            )
+
+        logInfo(f"Created Nation info display")
+
+        await ctx.send(embed = menu.toEmbed())
+
+
         
 async def setup(client):
     await client.add_cog(InfoCommands(client))
