@@ -33,7 +33,7 @@ class AdminCommands(commands.Cog):
             return #Error will already have been handled
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (savegame): 
+        if not (nation): 
             return #Error will already have been handled
 
         try: savegame.transfer_territory(territoryName, nation)
