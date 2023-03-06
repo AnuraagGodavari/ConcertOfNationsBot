@@ -8,6 +8,7 @@ from common import *
 from database import *
 from logger import *
 
+import GameUtils.Operations as ops
 from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
@@ -19,7 +20,9 @@ class AdminCommands(commands.Cog):
     
     def __init__(self, client):
         self.client = client
-        
+
+    # Manage nations
+
     @commands.command()
     @commands.has_permissions(administrator = True)
     async def giveTerritory(self, ctx, roleid, territoryName, **args):
@@ -46,6 +49,59 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
+    async def giveResources(self, ctx, roleid, *args):
+        """
+        Give a specified amount of any resources to a specified nation.
+        
+        Args:
+            *args (tuple): A list of resources and numbers. Example:
+            ("Iron", "2", "Money", "3")
+        """
+
+        logInfo(f"giveResources({ctx.guild.id}, {roleid}, {args})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        if not (nation): 
+            return #Error will already have been handled
+
+        if len(args) < 1:
+            raise InputError("Not enough args!")
+
+        elif (len(args) % 2 != 0):
+            raise InputError("Odd number of args")
+
+        #Get and validate resources
+        resources_toadd = {args[n*2]: args[(n*2)+1] for n in range(int(len(args)/2))}
+
+        for k, v in resources_toadd.items():
+            
+            if not(k in savegame.getGamerule()["Resources"] + ["Money"]):
+                raise InputError(f"\"{k}\" is not a resource")
+
+            if not (ops.isInt(v)):
+                raise InputError(f"\"{v}\" is not a valid amount of resources")
+
+            else:
+                resources_toadd[k] = int(v)
+
+        logInfo(f"Adding resources to {nation.name}", details = resources_toadd)
+
+        nation.resources = ops.combineDicts(nation.resources, resources_toadd)
+
+        logInfo(f"Successfully added resources", details = nation.resources)
+        await ctx.send(f"Successfully added resources, type \"_n.nationinfo {roleid}_\" to view changes")
+
+        save_saveGame(savegame)
+
+
+    # Manage the savegame
+
+    @commands.command()
+    @commands.has_permissions(administrator = True)
     async def advanceTurn(self, ctx, numMonths = None):
         """Advance the turn for the current server's savegame, optionally by a number of months"""
         
@@ -68,7 +124,6 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Advanced turn to turn {savegame.turn}, new date is {savegame.date['m']}/{savegame.date['y']}!")
 
         save_saveGame(savegame)
-
 
     @commands.command()
     @commands.has_permissions(administrator = True)

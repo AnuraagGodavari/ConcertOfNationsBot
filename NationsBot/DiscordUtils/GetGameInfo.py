@@ -17,7 +17,10 @@ def get_PlayerID(playerid):
     if (re.search("^<@[1234567890]*>$", playerid)):
         return int(playerid[2:-1])
 
-    return int(playerid)
+    if ops.isInt(playerid):
+        return int(playerid)
+
+    raise InputError(f"\"{playerid}\" is not a valid player")
 
 def get_RoleID(roleid):
 
@@ -26,7 +29,10 @@ def get_RoleID(roleid):
     if (re.search("^<@&[1234567890]*>$", roleid)):
         return int(roleid[3:-1])
 
-    return int(roleid)
+    if ops.isInt(roleid):
+        return int(roleid)
+
+    raise InputError(f"\"{roleid}\" is not a valid role")
 
 def get_NationFromRole(ctx, roleid, savegame):
     """Get nation info"""
