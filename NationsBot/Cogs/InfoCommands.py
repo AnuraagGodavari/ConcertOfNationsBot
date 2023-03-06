@@ -80,6 +80,64 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed())
 
+    @commands.command()
+    async def territories(self, ctx, roleid = None):
+        """ Show all of the territories owned by a nation, either that of the author or one that is specified. """
+        logInfo(f"territories({ctx.guild.id}, {roleid})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        if (not roleid):
+
+            playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+            if not (playerinfo):
+                raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+            roleid = playerinfo['role_discord_id']
+            logInfo(f"Got default role id {roleid} for this player")
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        if not (nation): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        #Handles getting the world map if one exists that represents the current gamestate, or creating a new one otherwise.
+        savegame.world_toImage(mapScale = (100, 100))
+        worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
+
+        logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
+
+        menu = MenuEmbed(
+            f"{savegame.name} World Map", 
+            "_Territories are displayed by their IDs. Use the command \"terr\_lookup <id>\" to see more information about a territory!_", 
+            ctx.author.id,
+            imgurl = worldMapInfo['link'],
+            fields = [
+                (f"Territory {world[terr].id}", {
+                    "Name": world[terr].name, 
+                    "Coordinates": {'x': world[terr].pos[0], 'y': world[terr].pos[1]},
+                    "Resources": world[terr].resources
+                    }
+                ) 
+                for terr in nation.territories.keys()
+            ],
+            pagesize = 9,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created worldmap_full menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
         
 async def setup(client):
     await client.add_cog(InfoCommands(client))
