@@ -184,6 +184,12 @@ def testNewTurn(savegame, numMonths):
 
     logInfo(f"Turn has been advanced!")
 
+def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
+
+    logInfo(f"Testing buying building {buildingName} for {targetNation.name} territory {territoryName}")
+
+    targetNation.addBuilding(buildingName, territoryName, savegame)
+
 def testSuite():
 
     gamerule = load_gamerule("Test Gamerule")
@@ -198,4 +204,8 @@ def testSuite():
     testResourceRevenue(savegame, savegame.nations["Nation02"])
 
     testTerritoryTransfer(savegame, testWorld.territories[-1].name, savegame.nations["Nation02"])
+
+    savegame.nations["Nation01"].resources["Money"] = 100
+
+    testBuyBuilding(savegame.nations["Nation01"], "TestBarracks", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
 

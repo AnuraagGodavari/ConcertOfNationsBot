@@ -8,6 +8,7 @@ import imgur
 from GameUtils import Operations as ops
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
+import ConcertOfNationsEngine.Buildings as buildings
 
 class Savegame:
     """
@@ -59,6 +60,12 @@ class Savegame:
 
         #Generate an empty list of resources based on the gamerule, and make sure money is one of those included
         nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
+
+        #Add information to territories
+        for territory in nation.territories.values():
+
+            if ("Buildings" not in territory.keys()):
+                territory["Buildings"] = {} 
         
         self.nations[nation.name] = nation
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
@@ -287,6 +294,52 @@ class Nation:
             return self.territories[territory]
 
         return False
+
+
+    #Economic management
+    def canBuy(self, buildingName, blueprint, territoryName):
+        """
+        Validate that an building with a given blueprint can be bought by this country
+        """
+
+        #Does the building already exist in this territory?
+        territory = self.territories[territoryName]
+
+        if buildingName in territory["Buildings"].keys():
+            logInfo(f"Building {buildingName} already exists in territory {territoryName}")
+            return False
+
+        #Do we have enough resources to build the building?
+
+        for resource in blueprint["costs"].keys():
+            if (blueprint["costs"][resource] > self.resources[resource]):
+                logInfo(f"Not enough resources to build {buildingName}", details = {"Costs": blueprint["costs"], "Resources Available": self.resources})
+                return False
+
+        return True
+
+
+    #Building management
+
+    def addBuilding(self, buildingName, territoryName, savegame):
+        """ Try to add a building to a territory and subtract the resource cost """
+
+        logInfo(f"Nation {self.name} purchasing {buildingName} for {territoryName}")
+
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+
+        #Validate that building can be bought
+
+        if not (self.canBuy(buildingName, blueprint, territoryName)):
+            raise InputError(f"Could not buy {buildingName}")
+
+        costs = blueprint["costs"]
+
+        for k in costs.keys(): self.resources[k] = self.resources[k] - costs[k]
+
+        self.territories[territoryName]["Buildings"][buildingName] = "Active"
+
+        logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
 
 
     #New turn functions
