@@ -207,5 +207,9 @@ def testSuite():
 
     savegame.nations["Nation01"].resources["Money"] = 100
 
-    testBuyBuilding(savegame.nations["Nation01"], "TestBarracks", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
+
+    testNewTurn(savegame, numMonths = 12)
+
+    save_saveGame(savegame)
 
