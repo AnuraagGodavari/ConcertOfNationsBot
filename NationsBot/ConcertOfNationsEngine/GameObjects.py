@@ -285,19 +285,29 @@ class Nation:
 
         self.territories[territoryName] = territoryInfo
 
+        if ("Buildings" not in self.territories[territoryName].keys()):
+            self.territories[territoryName]["Buildings"] = {} 
+
         logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
 
-    def getTerritoryInfo(self, territory):
+    def getTerritoryInfo(self, territoryName, savegame):
         """Get a territory and all objects associated with that territory."""
 
-        if (territory in self.territories.values()):
-            return self.territories[territory]
+        worldmap = savegame.getWorld()
+
+        if (territoryName in self.territories.keys()):
+
+            territoryInfo = self.territories[territoryName]
+            territoryInfo["Resources"] = worldmap[territoryName].resources
+            territoryInfo["Details"] = worldmap[territoryName].details
+
+            return territoryInfo
 
         return False
 
 
     #Economic management
-    def canBuy(self, buildingName, blueprint, territoryName):
+    def canBuyBuilding(self, buildingName, blueprint, territoryName):
         """
         Validate that an building with a given blueprint can be bought by this country
         """
@@ -330,7 +340,7 @@ class Nation:
 
         #Validate that building can be bought
 
-        if not (self.canBuy(buildingName, blueprint, territoryName)):
+        if not (self.canBuyBuilding(buildingName, blueprint, territoryName)):
             raise InputError(f"Could not buy {buildingName}")
 
         costs = blueprint["costs"]
@@ -353,9 +363,10 @@ class Nation:
         worldmap = savegame.getWorld()
 
         for territoryName in self.territories.keys():
+
+            buildingsIncome = buildings.get_territories_buildingincome(self.getTerritoryInfo(territoryName, savegame), territoryName, savegame)
             
-            territory = worldmap[territoryName]
-            totalrevenue = ops.combineDicts(totalrevenue, territory.resources)
+            totalrevenue = ops.combineDicts(totalrevenue, buildingsIncome)
 
         return totalrevenue
 
