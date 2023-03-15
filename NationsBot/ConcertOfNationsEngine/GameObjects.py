@@ -8,7 +8,13 @@ import imgur
 from GameUtils import Operations as ops
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
+from ConcertOfNationsEngine.CustomExceptions import *
+
+import ConcertOfNationsEngine.dateoperations as dates
+
 import ConcertOfNationsEngine.Buildings as buildings
+import ConcertOfNationsEngine.Territories as territories
+
 
 class Savegame:
     """
@@ -123,17 +129,17 @@ class Savegame:
 
         logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date} and current turn: {self.turn}")
 
+        newdate_raw = self.date['m'] - 1 + (self.date['y'] * 12) + numMonths
+        self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
+
+        self.turn += 1
+
         if (numMonths < 1):
             raise InputError(f"Cannot advance turn by {numMonths} months!")
 
         for nation in self.nations.values():
             
             nation.newTurn(self, numMonths)
-
-        newdate_raw = self.date['m'] - 1 + (self.date['y'] * 12) + numMonths
-        self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
-
-        self.turn += 1
 
         logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
@@ -297,9 +303,13 @@ class Nation:
 
         if (territoryName in self.territories.keys()):
 
-            territoryInfo = self.territories[territoryName]
-            territoryInfo["Resources"] = worldmap[territoryName].resources
-            territoryInfo["Details"] = worldmap[territoryName].details
+            territoryInfo = dict()
+            territoryInfo["Savegame"] = self.territories[territoryName]
+            territoryInfo["Name"] = territoryName
+            territoryInfo["World"] = {
+                "Resources": worldmap[territoryName].resources,
+                "Details": worldmap[territoryName].details
+            }
 
             return territoryInfo
 
@@ -321,9 +331,9 @@ class Nation:
 
         #Do we have enough resources to build the building?
 
-        for resource in blueprint["costs"].keys():
-            if (blueprint["costs"][resource] > self.resources[resource]):
-                logInfo(f"Not enough resources to build {buildingName}", details = {"Costs": blueprint["costs"], "Resources Available": self.resources})
+        for resource in blueprint["Costs"].keys():
+            if (blueprint["Costs"][resource] > self.resources[resource]):
+                logInfo(f"Not enough resources to build {buildingName}", details = {"Costs": blueprint["Costs"], "Resources Available": self.resources})
                 return False
 
         return True
@@ -343,34 +353,46 @@ class Nation:
         if not (self.canBuyBuilding(buildingName, blueprint, territoryName)):
             raise InputError(f"Could not buy {buildingName}")
 
-        costs = blueprint["costs"]
-
+        costs = blueprint["Costs"]
         for k in costs.keys(): self.resources[k] = self.resources[k] - costs[k]
 
-        self.territories[territoryName]["Buildings"][buildingName] = "Active"
+        constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
+
+        self.territories[territoryName]["Buildings"][buildingName] = f"Constructing:{constructiondate}"
 
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
 
 
     #New turn functions
     
-    def get_TurnRevenue(self, savegame):
-        """Get the total amount of resources that each territory this nation owns will produce."""
+    def get_TurnRevenue(self, savegame, onlyestimate = False):
+        """
+        Get the total amount of resources that each territory this nation owns will produce.
+        
+        Args:
+            onlyestimate (bool): Skip new turn-related operations and only return the raw information. May be useful for display purposes.
+        """
         logInfo(f"Nation {self.name} getting total amount of resources produced per turn")
 
         totalrevenue = {}
+        revenuesources = []
 
         worldmap = savegame.getWorld()
 
         for territoryName in self.territories.keys():
 
-            buildingsIncome = buildings.get_territories_buildingincome(self.getTerritoryInfo(territoryName, savegame), territoryName, savegame)
-            
-            totalrevenue = ops.combineDicts(totalrevenue, buildingsIncome)
+            territoryInfo = self.getTerritoryInfo(territoryName, savegame)
+
+            if onlyestimate: continue
+            territories.territory_advanceconstruction(territoryInfo, savegame)
+
+            revenuesources.append(territories.territory_newturnresources(territoryInfo, savegame))
+
+        totalrevenue = ops.combineDicts(*revenuesources)
 
         return totalrevenue
 
-    def newTurn_Resources(self, savegame, numMonths):
+    def add_newTurn_Resources(self, savegame, numMonths):
         """Get the net change in resources for this nation for the new turn"""
         logInfo(f"Nation {self.name} calculating total resource net income for this turn")
 
@@ -387,4 +409,4 @@ class Nation:
     def newTurn(self, savegame, numMonths):
         """Perform tasks for the end of a current turn"""
         
-        self.newTurn_Resources(savegame, numMonths)
+        self.add_newTurn_Resources(savegame, numMonths)
