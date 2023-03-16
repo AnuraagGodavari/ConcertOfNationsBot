@@ -188,7 +188,11 @@ def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
 
     logInfo(f"Testing buying building {buildingName} for {targetNation.name} territory {territoryName}")
 
-    targetNation.addBuilding(buildingName, territoryName, savegame)
+    try:
+        targetNation.addBuilding(buildingName, territoryName, savegame)
+    except Exception as e:
+        logInfo(f"Could not build {buildingName} for {targetNation.name} in {territoryName}")
+        logError(e)
 
 def testSuite():
 

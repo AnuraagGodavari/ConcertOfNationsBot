@@ -24,6 +24,8 @@ def territory_newturnresources(territoryInfo, savegame):
 
 def territory_advanceconstruction(territoryInfo, savegame):
 
+    logInfo(f"Advancing construction for buildings in {territoryInfo['Name']}")
+
     for building, oldstatus in territoryInfo["Savegame"]["Buildings"].items():
 
         if ("Constructing" not in oldstatus):
@@ -31,3 +33,4 @@ def territory_advanceconstruction(territoryInfo, savegame):
 
         if (dates.date_grtrThan(savegame.date, dates.date_fromstr(oldstatus.split(':')[-1]))):
             territoryInfo["Savegame"]["Buildings"][building] = "Active"
+            logInfo(f"{building} now active from date {oldstatus.split(':')[-1]}")
