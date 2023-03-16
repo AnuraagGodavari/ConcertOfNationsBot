@@ -19,7 +19,7 @@ def generateTestWorld(gamerule, length, height, space):
             ''.join([chr(randint(97, 122)) for i in range(5)]), 
             (x, y), 
             details = {"Terrain": "Plains"},
-            resources = {resource: randint(0,5) for resource in gamerule["Resources"]}
+            resources = {resource: 1 for resource in gamerule["Resources"]}
             ) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
@@ -174,7 +174,7 @@ def testTerritoryTransfer(savegame, territoryName, targetNation):
 
 def testResourceRevenue(savegame, targetNation):
     
-    logInfo("Testing getting {targetNation.name}'s total resource income per turn:", details = targetNation.get_TurnRevenue(savegame)) 
+    logInfo(f"Testing getting {targetNation.name}'s total resource income per turn:", details = targetNation.get_TurnRevenue(savegame)) 
 
 def testNewTurn(savegame, numMonths):
 
@@ -188,7 +188,11 @@ def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
 
     logInfo(f"Testing buying building {buildingName} for {targetNation.name} territory {territoryName}")
 
-    targetNation.addBuilding(buildingName, territoryName, savegame)
+    try:
+        targetNation.addBuilding(buildingName, territoryName, savegame)
+    except Exception as e:
+        logInfo(f"Could not build {buildingName} for {targetNation.name} in {territoryName}")
+        logError(e)
 
 def testSuite():
 
@@ -208,8 +212,14 @@ def testSuite():
     savegame.nations["Nation01"].resources["Money"] = 100
 
     testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
+    territer = iter(savegame.nations["Nation01"].territories.keys())
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(territer), savegame)
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(territer), savegame)
 
-    testNewTurn(savegame, numMonths = 12)
+    testNewTurn(savegame, numMonths = 24)
+
+    testResourceRevenue(savegame, savegame.nations["Nation01"])
+    testResourceRevenue(savegame, savegame.nations["Nation02"])
 
     save_saveGame(savegame)
 

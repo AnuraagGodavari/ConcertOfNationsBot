@@ -32,7 +32,7 @@ def combineDicts(*args):
     rtnDict = {}
     for arg in args:
         if arg == None:
-            return
+            continue
 
         for key in arg.keys():
             if key in rtnDict.keys():
