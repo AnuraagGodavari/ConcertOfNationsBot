@@ -1,4 +1,3 @@
-import pprint
 from copy import copy
 
 from database import *
@@ -41,7 +40,7 @@ def get_maintenance(buildingName, allbuildings):
         allbuildings (dict): Represents gamerule["Buildings"], holds information for all the game's buildings.
     """
 
-    return {k: v * -1 for k, v in allbuildings[buildingName]["maintenance"].items()}
+    return {k: v * -1 for k, v in allbuildings[buildingName]["Maintenance"].items()}
 
 def get_minedresources(buildingName, allbuildings, resourcesLeft = None):
     """
@@ -51,7 +50,7 @@ def get_minedresources(buildingName, allbuildings, resourcesLeft = None):
         allbuildings (dict): Represents gamerule["Buildings"], holds information for all the game's buildings.
     """
 
-    max_mineable =  copy(allbuildings[buildingName]["mines"])
+    max_mineable =  copy(allbuildings[buildingName]["Mines"])
 
     if not resourcesLeft:
         return max_mineable
@@ -66,7 +65,6 @@ def get_minedresources(buildingName, allbuildings, resourcesLeft = None):
 
     return max_mineable
     
-
 def get_producedresources(buildingName, allbuildings):
     """
     Get the resources produced for a specific building.
@@ -75,12 +73,12 @@ def get_producedresources(buildingName, allbuildings):
         allbuildings (dict): Represents gamerule["Buildings"], holds information for all the game's buildings.
     """
 
-    return allbuildings[buildingName]["produces"]
+    return allbuildings[buildingName]["Produces"]
 
 
 #Calculate net income from buildings
 
-def get_building_netincome(buildingName, territoryInfo, territoryName, allbuildings, resourcesLeft = None):
+def building_newturn(buildingName, allbuildings, resourcesLeft = None):
     """ Get the total amount of resources consumed and produced by the building """
 
     if not (buildingName in allbuildings):
@@ -92,18 +90,22 @@ def get_building_netincome(buildingName, territoryInfo, territoryName, allbuildi
         get_producedresources(buildingName, allbuildings)
     )
 
-def get_territories_buildingincome(territoryInfo, territoryName, savegame):
+def get_territories_buildingincome(territoryInfo, savegame):
     """ Get the net income of a territory from all of the buildings in it """
 
-    logInfo(f"Getting net income from all buildings for {territoryName}")
+    logInfo(f"Getting net income from all buildings for {territoryInfo['Name']}")
 
     allbuildings = get_allbuildings(savegame)
     
-    resourcesLeft = copy(territoryInfo["Resources"])
+    resourcesLeft = copy(territoryInfo["World"]["Resources"])
 
     buildingIncomes = {}
 
-    for buildingName in territoryInfo["Buildings"].keys():
-        buildingIncomes[buildingName] = get_building_netincome(buildingName, territoryInfo, territoryName, allbuildings, resourcesLeft)
+    for buildingName in territoryInfo["Savegame"]["Buildings"].keys():
+
+        if (territoryInfo["Savegame"]["Buildings"][buildingName] != "Active"):
+            continue
+
+        buildingIncomes[buildingName] = building_newturn(buildingName, allbuildings, resourcesLeft)
 
     return ops.combineDicts(*list(buildingIncomes.values()))
