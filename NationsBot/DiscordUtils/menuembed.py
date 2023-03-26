@@ -88,11 +88,11 @@ class MenuEmbed:
         
         #If there is only one sorting key, we sort on that key within the field
         if (len(keys) == 1):
-            sortlambda = lambda field: field[1][keys[0]]
+            sortlambda = lambda field: field[1][keys[0]] if keys[0] in field[1].keys() else 0
 
         #If there are two sorting keys, we sort on the value of key1 within a dict at field[key0]
         else:
-            sortlambda = lambda field: field[1][keys[0]][keys[1]]
+            sortlambda = lambda field: field[1][keys[0]][keys[1]] if keys[1] in field[1][keys[0]].keys() else 0
 
         try:
             self.fields.sort(key = sortlambda)
