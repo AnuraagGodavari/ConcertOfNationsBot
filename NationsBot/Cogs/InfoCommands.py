@@ -14,6 +14,7 @@ from DiscordUtils.GetGameInfo import *
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 from ConcertOfNationsEngine.Buildings import *
+import ConcertOfNationsEngine.Territories as territories
 
 
 #The cog itself
@@ -117,7 +118,7 @@ class InfoCommands(commands.Cog):
 
         menu = MenuEmbed(
             f"{nation.name} Territories", 
-            "_Territories are displayed by their IDs. Use the command \"terr\_lookup <id>\" to see more information about a territory!_", 
+            "_Territories are displayed by their IDs. Use the command \"territory <id or name>\" to see more information about a territory!_", 
             ctx.author.id,
             imgurl = worldMapInfo['link'],
             fields = [
@@ -139,6 +140,59 @@ class InfoCommands(commands.Cog):
         logInfo(f"Created territories menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+    @commands.command()
+    async def territory(self, ctx, terrID):
+        """
+        Look at the details of a territory
+        """
+        logInfo(f"territory({ctx.guild.id, terrID})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        fields = [
+            ("Mineable Resources", world_terrInfo.resources)
+        ]
+
+        #Territory info from the game
+        terr_owner = savegame.find_terrOwner(world_terrInfo.name)
+        if terr_owner:
+
+            nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terrInfo.name, savegame)
+            
+            fields += [
+                ("Owner", terr_owner),
+                ("Number of buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
+                ("Impact on revenue", territories.territory_newturnresources(nation_terrInfo, savegame))
+            ]
+
+        
+        menu = MenuEmbed(
+            f"[{world_terrInfo.id}] {world_terrInfo.name}", 
+            "_For building information, use the command n.territorybuildings <territory name or id>_", 
+            ctx.author.id,
+            fields = fields
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created territory {world_terrInfo.id} menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed())
 
     @commands.command()
     async def buildings(self, ctx):
