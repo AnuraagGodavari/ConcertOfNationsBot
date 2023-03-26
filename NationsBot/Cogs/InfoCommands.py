@@ -13,6 +13,8 @@ from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.Buildings import *
+
 
 #The cog itself
 class InfoCommands(commands.Cog):
@@ -114,7 +116,7 @@ class InfoCommands(commands.Cog):
         logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
 
         menu = MenuEmbed(
-            f"{savegame.name} World Map", 
+            f"{nation.name} Territories", 
             "_Territories are displayed by their IDs. Use the command \"terr\_lookup <id>\" to see more information about a territory!_", 
             ctx.author.id,
             imgurl = worldMapInfo['link'],
@@ -134,10 +136,38 @@ class InfoCommands(commands.Cog):
 
         assignMenu(ctx.author.id, menu)
 
+        logInfo(f"Created territories menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+    @commands.command()
+    async def buildings(self, ctx):
+        """ Show all of the available buildings in the given server's game. """
+        logInfo(f"buildings({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        menu = MenuEmbed(
+            f"Buildings", 
+            "_Information about all of the buildings in this game's ruleset_", 
+            ctx.author.id,
+            fields = [
+                (buildingName, buildingInfo)
+                for buildingName, buildingInfo in get_allbuildings(savegame).items()
+            ],
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
         logInfo(f"Created worldmap_full menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-        
+
 async def setup(client):
     await client.add_cog(InfoCommands(client))
