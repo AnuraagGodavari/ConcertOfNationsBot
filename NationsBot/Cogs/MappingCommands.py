@@ -28,36 +28,6 @@ class MappingCommands(commands.Cog):
         pass
 
     @commands.command()
-    async def territory(self, ctx, terrID):
-        """
-        Look at the full world map associated with this game, without any fog of war unless admin specifies a country.
-        """
-        logInfo(f"territory({ctx.guild.id, terrID})")
-
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return
-
-        world = savegame.getWorld()
-        if not (world):
-            raise InputError("Savegame's world could not be retrieved")
-
-        if terrID.isdigit(): terrID = int(terrID)
-
-        world_terrInfo = world[terrID]
-
-        if not world_terrInfo:
-            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
-        
-        terrEmbed = discord.Embed(
-            title = world_terrInfo.name,
-            description = ""
-        )
-        terrEmbed.add_field(name = "Territory ID", value = terrID, inline = False)
-
-        await ctx.send(embed = terrEmbed)
-
-    @commands.command()
     async def worldmap(self, ctx, roleid = None):
         logInfo("Not accounting for 'known world'")
         """
