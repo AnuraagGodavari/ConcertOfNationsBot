@@ -209,12 +209,15 @@ def testSuite():
 
     testTerritoryTransfer(savegame, testWorld.territories[-1].name, savegame.nations["Nation02"])
 
-    savegame.nations["Nation01"].resources["Money"] = 100
+    savegame.nations["Nation01"].resources["Money"] = 1000
 
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
     territer = iter(savegame.nations["Nation01"].territories.keys())
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(territer), savegame)
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding", next(territer), savegame)
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(territer), savegame)
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(territer), savegame)
+
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding2", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding3", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
 
     testNewTurn(savegame, numMonths = 24)
 
