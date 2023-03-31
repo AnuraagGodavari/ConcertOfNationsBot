@@ -8,6 +8,8 @@ from common import *
 from database import *
 from logger import *
 
+from GameUtils import Operations as ops
+
 from DiscordUtils.menuembed import *
 from DiscordUtils.GetGameInfo import *
 
@@ -82,6 +84,9 @@ class InfoCommands(commands.Cog):
         logInfo(f"Created Nation info display")
 
         await ctx.send(embed = menu.toEmbed())
+
+
+    #Territory Information
 
     @commands.command()
     async def territories(self, ctx, roleid = None):
@@ -183,7 +188,7 @@ class InfoCommands(commands.Cog):
         
         menu = MenuEmbed(
             f"[{world_terrInfo.id}] {world_terrInfo.name}", 
-            "_For building information, use the command n.territorybuildings <territory name or id>_", 
+            "_For building information, use the command n.territory-buildings <territory name or id>_", 
             ctx.author.id,
             fields = fields
             )
@@ -193,6 +198,57 @@ class InfoCommands(commands.Cog):
         logInfo(f"Created territory {world_terrInfo.id} menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed())
+
+    @commands.command(aliases=['territorybuildings', 'territory-buildings'])
+    async def territory_buildings(self, ctx, terrID):
+        """ Show all of the available buildings in the given territory. """
+        logInfo(f"territory_buildings({ctx.guild.id}, {terrID})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terr = world[terrID]
+
+        if not world_terr:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        #Territory info from the game
+        terr_owner = savegame.find_terrOwner(world_terr.name)
+        if not terr_owner:
+            raise InputError(f"Territory \"{terrID}\" is unowned and has no buildings")
+
+        nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terr.name, savegame)
+
+        menu = MenuEmbed(
+            f"Buildings in {world_terr.name}", 
+            "_Information about all of the buildings in this territory_", 
+            ctx.author.id,
+            fields = [
+                (buildingName, 
+                ops.combineDicts({"Status": buildingStatus}, get_blueprint(buildingName, savegame))
+                )
+                for buildingName, buildingStatus in nation_terrInfo["Savegame"]["Buildings"].items()
+            ],
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+    #Building management
 
     @commands.command()
     async def buildings(self, ctx):
@@ -218,7 +274,7 @@ class InfoCommands(commands.Cog):
 
         assignMenu(ctx.author.id, menu)
 
-        logInfo(f"Created worldmap_full menu and assigned it to player {ctx.author.id}")
+        logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
