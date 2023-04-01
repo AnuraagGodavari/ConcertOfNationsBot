@@ -182,7 +182,7 @@ class InfoCommands(commands.Cog):
             fields += [
                 ("Owner", terr_owner),
                 ("Number of buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
-                ("Impact on revenue", territories.territory_newturnresources(nation_terrInfo, savegame))
+                ("Impact on revenue", territories.territory_newturnresources(nation_terrInfo, savegame) or None)
             ]
 
         
