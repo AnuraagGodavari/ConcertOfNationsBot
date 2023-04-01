@@ -14,12 +14,60 @@ from DiscordUtils.GetGameInfo import *
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 
+from ConcertOfNationsEngine.Buildings import *
+
 #The cog itself
 class AdminCommands(commands.Cog):
     """ A cog that allows its client bot to watch member statuses """
     
     def __init__(self, client):
         self.client = client
+
+
+    # Manage buildings
+
+    @commands.command(aliases = ["giveBuilding", "give-buildng", "give_building"])
+    @commands.has_permissions(administrator = True)
+    async def givebuilding(self, ctx, terrID, buildingName, **args):
+        """ """
+        logInfo(f"n.givebuilding({ctx.guild.id}, {terrID}, {buildingName})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        territoryName = world_terrInfo.name
+        
+        #Get nation info
+        nationName = savegame.find_terrOwner(territoryName)
+        if not (nationName): 
+            raise InputError("Territory is unowned and cannot have a building placed in it.")
+        nation = savegame.nations[nationName]
+
+        #Put building in territory
+        if (buildingName in nation.territories[territoryName]["Buildings"]):
+            raise InputError(f"{buildingName} already exists in {territoryName}")
+
+        if not (buildingName in get_allbuildings(savegame)):
+            raise InputError(f"Building {buildingName} does not exist")
+
+        nation.territories[territoryName]["Buildings"][buildingName] = "Active"
+
+        await ctx.send(f"Successfully added {buildingName} to {territoryName}!")
+
+        save_saveGame(savegame)
 
     # Manage nations
 
