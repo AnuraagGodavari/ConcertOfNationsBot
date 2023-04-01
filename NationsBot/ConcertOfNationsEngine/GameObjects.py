@@ -149,7 +149,7 @@ class Savegame:
         """
         Go through each nation and find which one owns a specific territory
 
-        Returns: The name of the owner nation.
+        Returns: The name of the owner nation or False.
         """
         for nation in self.nations.values():
             if territoryName in nation.territories: return nation.name
