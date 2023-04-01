@@ -325,6 +325,10 @@ class Nation:
         #Does the building already exist in this territory?
         territory = self.getTerritoryInfo(territoryName, savegame)
 
+        if not(territory):
+            logInfo(f"{self.name} does not own territory \"{territoryName}\"")
+            return False
+
         if buildingName in territory["Savegame"]["Buildings"].keys():
             logInfo(f"Building {buildingName} already exists in territory {territoryName}")
             return False
