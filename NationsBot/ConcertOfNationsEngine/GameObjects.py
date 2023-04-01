@@ -129,17 +129,17 @@ class Savegame:
 
         logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date} and current turn: {self.turn}")
 
+        newdate_raw = self.date['m'] - 1 + (self.date['y'] * 12) + numMonths
+        self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
+
+        self.turn += 1
+
         if (numMonths < 1):
             raise InputError(f"Cannot advance turn by {numMonths} months!")
 
         for nation in self.nations.values():
             
             nation.newTurn(self, numMonths)
-
-        newdate_raw = self.date['m'] - 1 + (self.date['y'] * 12) + numMonths
-        self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
-
-        self.turn += 1
 
         logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
@@ -317,15 +317,15 @@ class Nation:
 
 
     #Economic management
-    def canBuyBuilding(self, buildingName, blueprint, territoryName):
+    def canBuyBuilding(self, savegame, buildingName, blueprint, territoryName):
         """
         Validate that an building with a given blueprint can be bought by this country
         """
 
         #Does the building already exist in this territory?
-        territory = self.territories[territoryName]
+        territory = self.getTerritoryInfo(territoryName, savegame)
 
-        if buildingName in territory["Buildings"].keys():
+        if buildingName in territory["Savegame"]["Buildings"].keys():
             logInfo(f"Building {buildingName} already exists in territory {territoryName}")
             return False
 
@@ -350,7 +350,7 @@ class Nation:
 
         #Validate that building can be bought
 
-        if not (self.canBuyBuilding(buildingName, blueprint, territoryName)):
+        if not (self.canBuyBuilding(savegame, buildingName, blueprint, territoryName)):
             raise InputError(f"Could not buy {buildingName}")
 
         costs = blueprint["Costs"]
