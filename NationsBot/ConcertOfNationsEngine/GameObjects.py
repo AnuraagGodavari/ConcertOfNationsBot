@@ -143,7 +143,20 @@ class Savegame:
 
         logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
-    #International operations
+    #Territory operations
+
+    def get_territory_fromworld(self, territoryName):
+        
+        worldmap = self.getWorld()
+
+        if not(worldmap[territoryName]):
+            return False
+
+        return {
+                "Resources": worldmap[territoryName].resources,
+                "Details": worldmap[territoryName].details
+            }
+
 
     def find_terrOwner(self, territoryName):
         """
@@ -296,24 +309,30 @@ class Nation:
 
         logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
 
+    def get_territory(self, territoryName):
+        
+        if not (territoryName in self.territories.keys()):
+            return False
+
+        return self.territories[territoryName]
+
     def getTerritoryInfo(self, territoryName, savegame):
-        """Get a territory and all objects associated with that territory."""
+        """Get a reference to a territory as stored in this savegame and the associated world, as well as all objects within it."""
 
-        worldmap = savegame.getWorld()
+        world_terrInfo = savegame.get_territory_fromworld(territoryName)
 
-        if (territoryName in self.territories.keys()):
+        nation_terrInfo = self.get_territory(territoryName)
 
-            territoryInfo = dict()
-            territoryInfo["Savegame"] = self.territories[territoryName]
-            territoryInfo["Name"] = territoryName
-            territoryInfo["World"] = {
-                "Resources": worldmap[territoryName].resources,
-                "Details": worldmap[territoryName].details
-            }
+        if not(world_terrInfo and nation_terrInfo):
+            return False
 
-            return territoryInfo
+        territoryInfo = {
+            "Name": territoryName,
+            "Savegame": nation_terrInfo,
+            "World": world_terrInfo
+        }
 
-        return False
+        return territoryInfo
 
 
     #Economic management
