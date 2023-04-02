@@ -19,3 +19,7 @@ def date_add(date, numMonths):
 def date_grtrThan(date0, date1):
     
     return (date0['m'] + (date0['y']*12)) > (date1['m'] + (date1['y']*12))
+
+def date_grtrThan_EqlTo(date0, date1):
+    
+    return (date0['m'] + (date0['y']*12)) >= (date1['m'] + (date1['y']*12))
