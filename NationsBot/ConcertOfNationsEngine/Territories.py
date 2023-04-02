@@ -15,12 +15,29 @@ import ConcertOfNationsEngine.Buildings as buildings
 
 #New turn operations
 
+def territory_newbuildingstatus(nation, territoryName, buildingName, newstatus):
+
+    territoryInfo = nation.get_territory(territoryName)
+
+    if (buildingName not in territoryInfo["Buildings"]):
+        return False
+
+    logInfo(f"Territory {territoryName} changing building {buildingName} status from {territoryInfo['Buildings'][buildingName]}")
+
+    if buildings.validate_status(newstatus):
+        territoryInfo["Buildings"][buildingName] = newstatus
+
+    logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
+
+    return territoryInfo['Buildings'][buildingName]
+
+
 def territory_togglebuilding(nation, territoryName, buildingName):
 
     territoryInfo = nation.get_territory(territoryName)
 
     if (buildingName not in territoryInfo["Buildings"]):
-        return
+        return False
 
     logInfo(f"Territory {territoryName} toggling building {buildingName} with current status {territoryInfo['Buildings'][buildingName]}")
 
