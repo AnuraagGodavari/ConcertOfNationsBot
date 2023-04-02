@@ -26,9 +26,9 @@ class AdminCommands(commands.Cog):
 
     # Manage buildings
 
-    @commands.command(aliases = ["giveBuilding", "give-buildng", "give_building"])
+    @commands.command(aliases = ["giveBuilding", "give-buildng", "givebuilding"])
     @commands.has_permissions(administrator = True)
-    async def givebuilding(self, ctx, terrID, buildingName, **args):
+    async def give_building(self, ctx, terrID, buildingName, **args):
         """ """
         logInfo(f"n.givebuilding({ctx.guild.id}, {terrID}, {buildingName})")
 
@@ -68,7 +68,46 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Successfully added {buildingName} to {territoryName}!")
 
         save_saveGame(savegame)
+    
+    @commands.command(aliases = ["changebuildingstatus", "change-buildingstatus"])
+    @commands.has_permissions(administrator = True)
+    async def change_buildingstatus(self, ctx, terrID, buildingName, newstatus):
+        """ Change the status of any building """
+        logInfo(f"toggle_building({ctx.guild.id}, {terrID}, {buildingName})")
 
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        territoryName = world_terrInfo.name
+
+        #Get nation info
+        nationName = savegame.find_terrOwner(territoryName)
+        if not (nationName): 
+            raise InputError("Territory is unowned and cannot have a building placed in it.")
+        nation = savegame.nations[nationName]
+
+        if (territoryName not in nation.territories.keys()):
+            raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
+
+        newstatus = territories.territory_newbuildingstatus(nation, territoryName, buildingName, newstatus)
+
+        await ctx.send(f"New building status: {newstatus}")
+
+        save_saveGame(savegame)
+        
     # Manage nations
 
     @commands.command()

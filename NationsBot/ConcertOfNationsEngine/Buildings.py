@@ -1,4 +1,5 @@
 from copy import copy
+import re
 
 from database import *
 from logger import *
@@ -8,6 +9,18 @@ from GameUtils import Operations as ops
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
 from ConcertOfNationsEngine.CustomExceptions import *
+
+valid_statuspatterns = ["Active$", "Inactive$", "Constructing:0?[\d(11)(12)]/[\d]*$"]
+
+#Validation
+
+def validate_status(newstatus):
+    
+    for statuspattern in valid_statuspatterns:
+        if re.search(statuspattern, newstatus, flags=re.ASCII):
+            return True
+
+    return False
 
 #Get information from the gamedict
 
