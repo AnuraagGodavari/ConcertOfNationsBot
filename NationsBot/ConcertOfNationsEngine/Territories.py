@@ -15,6 +15,27 @@ import ConcertOfNationsEngine.Buildings as buildings
 
 #New turn operations
 
+def territory_togglebuilding(nation, territoryName, buildingName):
+
+    territoryInfo = nation.get_territory(territoryName)
+
+    if (buildingName not in territoryInfo["Buildings"]):
+        return
+
+    logInfo(f"Territory {territoryName} toggling building {buildingName} with current status {territoryInfo['Buildings'][buildingName]}")
+
+    # Switch between Active and Inactive if the building is one or the other
+
+    if (territoryInfo["Buildings"][buildingName] == "Active"):
+        territoryInfo["Buildings"][buildingName] = "Inactive"
+
+    elif (territoryInfo["Buildings"][buildingName] == "Inactive"):
+        territoryInfo["Buildings"][buildingName] = "Active"
+
+    logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
+
+    return territoryInfo['Buildings'][buildingName]
+
 def territory_newturnresources(territoryInfo, savegame):
 
     buildingsIncome = buildings.get_territories_buildingincome(territoryInfo, savegame)
