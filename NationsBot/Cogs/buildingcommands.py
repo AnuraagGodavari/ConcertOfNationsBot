@@ -108,6 +108,8 @@ class BuildingCommands(commands.Cog):
 
         await ctx.send(f"New building status: {newstatus}")
 
+        save_saveGame(savegame)
+
 
 
 async def setup(client):
