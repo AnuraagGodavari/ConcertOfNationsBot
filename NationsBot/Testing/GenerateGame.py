@@ -10,6 +10,7 @@ from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
 import ConcertOfNationsEngine.Territories as territories
+import ConcertOfNationsEngine.Buildings as buildings
 
 def generateTestWorld(gamerule, length, height, space):
     logInfo("Generating 'Test World' Worldmap...")
@@ -190,11 +191,10 @@ def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
 
     logInfo(f"Testing buying building {buildingName} for {targetNation.name} territory {territoryName}")
 
-    try:
-        targetNation.addBuilding(buildingName, territoryName, savegame)
-    except Exception as e:
+    if not (targetNation.canBuyBuilding(savegame, buildingName, buildings.get_blueprint(buildingName, savegame), territoryName)):
         logInfo(f"Could not build {buildingName} for {targetNation.name} in {territoryName}")
-        logError(e)
+
+    targetNation.addBuilding(buildingName, territoryName, savegame)
 
 def testSuite():
 
