@@ -9,6 +9,8 @@ from GameUtils import FileHandling, Mapping
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
+import ConcertOfNationsEngine.Territories as territories
+
 def generateTestWorld(gamerule, length, height, space):
     logInfo("Generating 'Test World' Worldmap...")
 
@@ -223,6 +225,8 @@ def testSuite():
 
     testResourceRevenue(savegame, savegame.nations["Nation01"])
     testResourceRevenue(savegame, savegame.nations["Nation02"])
+
+    territories.territory_destroybuilding(savegame.nations["Nation01"], next(iter(savegame.nations["Nation01"].territories.keys())), "TestBuilding3")
 
     save_saveGame(savegame)
 
