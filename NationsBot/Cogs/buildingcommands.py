@@ -110,10 +110,9 @@ class BuildingCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-
-    @commands.command(aliases = ["destroybuilding", "destroy-building", "deletebuilding", "delete-building"])
+    @commands.command(aliases = ["destroybuilding", "destroy-building", "deletebuilding", "delete_building", "delete-building"])
     async def destroy_building(self, ctx, terrID, buildingName):
-        """ Switch a building's status between Active and Inactive """
+        """ Remove a building from a territory owned by the user """
         logInfo(f"destroy_building({ctx.guild.id}, {terrID}, {buildingName})")
 
         savegame = get_SavegameFromCtx(ctx)

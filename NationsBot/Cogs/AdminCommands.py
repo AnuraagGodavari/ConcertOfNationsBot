@@ -15,6 +15,7 @@ from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 
 from ConcertOfNationsEngine.Buildings import *
+import ConcertOfNationsEngine.Territories as territories
 
 #The cog itself
 class AdminCommands(commands.Cog):
@@ -73,7 +74,7 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def change_buildingstatus(self, ctx, terrID, buildingName, newstatus):
         """ Change the status of any building """
-        logInfo(f"toggle_building({ctx.guild.id}, {terrID}, {buildingName})")
+        logInfo(f"change_buildingstatus({ctx.guild.id}, {terrID}, {buildingName}, {newstatus})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -96,7 +97,7 @@ class AdminCommands(commands.Cog):
         #Get nation info
         nationName = savegame.find_terrOwner(territoryName)
         if not (nationName): 
-            raise InputError("Territory is unowned and cannot have a building placed in it.")
+            raise InputError("Territory is unowned and does not have this building")
         nation = savegame.nations[nationName]
 
         if (territoryName not in nation.territories.keys()):
@@ -108,6 +109,48 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
         
+    @commands.command(aliases = ["takebuilding", "take-building", "removebuilding", "remove_building", "remove-building"])
+    @commands.has_permissions(administrator = True)
+    async def take_building(self, ctx, terrID, buildingName):
+        """ Remove a building from any territory """
+        logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        territoryName = world_terrInfo.name
+
+        #Get nation info
+        nationName = savegame.find_terrOwner(territoryName)
+        if not (nationName): 
+            raise InputError("Territory is unowned and does not have this building")
+        nation = savegame.nations[nationName]
+
+        #Can we do the operation on this territory
+
+        if (not territories.territory_hasbuilding(nation, territoryName, buildingName)):
+            raise InputError(f"Territory {territoryName} does not have building {buildingName}")
+
+        newstatus = territories.territory_destroybuilding(nation, territoryName, buildingName)
+
+        await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
+
+        save_saveGame(savegame)
+
+
     # Manage nations
 
     @commands.command()
