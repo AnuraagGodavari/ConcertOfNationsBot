@@ -111,6 +111,56 @@ class BuildingCommands(commands.Cog):
         save_saveGame(savegame)
 
 
+    @commands.command(aliases = ["destroybuilding", "destroy-building", "deletebuilding", "delete-building"])
+    async def destroy_building(self, ctx, terrID, buildingName):
+        """ Switch a building's status between Active and Inactive """
+        logInfo(f"destroy_building({ctx.guild.id}, {terrID}, {buildingName})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        territoryName = world_terrInfo.name
+
+        #Nation info
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        if not (nation): 
+            return #Error will already have been handled
+
+        #Can we do the operation on this territory
+
+        if (territoryName not in nation.territories.keys()):
+            raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
+
+        if (not territories.territory_hasbuilding(nation, territoryName, buildingName)):
+            raise InputError(f"Territory {territoryName} does not have building {buildingName}")
+
+        newstatus = territories.territory_destroybuilding(nation, territoryName, buildingName)
+
+        await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
+
+        save_saveGame(savegame)
+
+
 
 async def setup(client):
     await client.add_cog(BuildingCommands(client))
