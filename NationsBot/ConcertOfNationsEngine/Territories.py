@@ -13,9 +13,18 @@ import ConcertOfNationsEngine.dateoperations as dates
 
 import ConcertOfNationsEngine.Buildings as buildings
 
-#New turn operations
+#New turn operations    
+
+def territory_hasbuilding(nation, territoryName, buildingName):
+
+    territoryInfo = nation.get_territory(territoryName)
+
+    return bool(buildingName in territoryInfo["Buildings"])
 
 def territory_newbuildingstatus(nation, territoryName, buildingName, newstatus):
+
+    if (not territory_hasbuilding(nation, territoryName, buildingName)):
+        return False
 
     territoryInfo = nation.get_territory(territoryName)
 
@@ -31,13 +40,12 @@ def territory_newbuildingstatus(nation, territoryName, buildingName, newstatus):
 
     return territoryInfo['Buildings'][buildingName]
 
-
 def territory_togglebuilding(nation, territoryName, buildingName):
 
-    territoryInfo = nation.get_territory(territoryName)
-
-    if (buildingName not in territoryInfo["Buildings"]):
+    if (not territory_hasbuilding(nation, territoryName, buildingName)):
         return False
+
+    territoryInfo = nation.get_territory(territoryName)
 
     logInfo(f"Territory {territoryName} toggling building {buildingName} with current status {territoryInfo['Buildings'][buildingName]}")
 
@@ -52,6 +60,17 @@ def territory_togglebuilding(nation, territoryName, buildingName):
     logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
 
     return territoryInfo['Buildings'][buildingName]
+
+def territory_destroybuilding(nation, territoryName, buildingName):
+
+    if (not territory_hasbuilding(nation, territoryName, buildingName)):
+        return False
+
+    territoryInfo = nation.get_territory(territoryName)
+
+    territoryInfo["Buildings"].pop(buildingName)
+
+    logInfo(f"Territory {territoryName} destroyed building {buildingName}")
 
 def territory_newturnresources(territoryInfo, savegame):
 
