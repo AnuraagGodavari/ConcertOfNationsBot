@@ -365,16 +365,11 @@ class Nation:
     #Building management
 
     def addBuilding(self, buildingName, territoryName, savegame):
-        """ Try to add a building to a territory and subtract the resource cost """
+        """ Add a building to a territory and subtract the resource cost """
 
         logInfo(f"Nation {self.name} purchasing {buildingName} for {territoryName}")
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
-
-        #Validate that building can be bought
-
-        if not (self.canBuyBuilding(savegame, buildingName, blueprint, territoryName)):
-            raise InputError(f"Could not buy {buildingName}")
 
         costs = blueprint["Costs"]
         for k in costs.keys(): self.resources[k] = self.resources[k] - costs[k]
@@ -384,6 +379,8 @@ class Nation:
         self.territories[territoryName]["Buildings"][buildingName] = f"Constructing:{constructiondate}"
 
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
+
+        return self.territories[territoryName]['Buildings'][buildingName]
 
 
     #New turn functions

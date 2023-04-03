@@ -88,6 +88,6 @@ def territory_advanceconstruction(territoryInfo, savegame):
         if ("Constructing" not in oldstatus):
             continue
 
-        if (dates.date_grtrThan(savegame.date, dates.date_fromstr(oldstatus.split(':')[-1]))):
+        if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(oldstatus.split(':')[-1]))):
             territoryInfo["Savegame"]["Buildings"][building] = "Active"
             logInfo(f"{building} now active from date {oldstatus.split(':')[-1]}")
