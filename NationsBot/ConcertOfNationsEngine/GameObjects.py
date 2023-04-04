@@ -53,7 +53,8 @@ class Savegame:
         """Add a nation to this savegame if it does not already exist"""
 
         if nation.name in self.nations.keys():
-            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
+            logInfo(f"Nation {nation.name} already exists in savegame {self.name}")
+            return False
 
         gamerule = self.getGamerule()
 
@@ -68,6 +69,7 @@ class Savegame:
         
         self.nations[nation.name] = nation
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
+        return nation
 
 
     #Get outside files that define the savegame
