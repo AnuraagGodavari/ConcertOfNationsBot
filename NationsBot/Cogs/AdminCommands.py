@@ -14,6 +14,8 @@ from DiscordUtils.GetGameInfo import *
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 
+from ConcertOfNationsEngine.dateoperations import *
+
 from ConcertOfNationsEngine.Buildings import *
 import ConcertOfNationsEngine.Territories as territories
 
@@ -307,22 +309,26 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
-    async def initGame(self, ctx, name, date):
+    async def initGame(self, ctx, name, datestr):
         """
         Called in a server without an attached game to initialize a game
         """
 
-        logInfo(f"initGame({ctx.guild.id}, {name}, {date})")
+        logInfo(f"initGame({ctx.guild.id}, {name}, {datestr})")
 
-        try: month, year = (int(x) for x in re.split(r'[,/\\]', date))
+        try: month, year = (int(x) for x in re.split(r'[,/\\]', datestr))
         except:
             raise InputError("Could not parse the date. Please write in one of the following formats without spaces: \n> monthnumber,yearnumber\n> monthnumber/yearnumber")
-            return
+
+        date = {"m": month, "y": year}
+
+        if not (date_validate(date)):
+            raise InputError(f"Invalid date \"{datestr}\"")
 
         savegame = Savegame(
             name,
             ctx.guild.id,
-            {"m": month, "y": year},
+            date,
             1
         )
         
