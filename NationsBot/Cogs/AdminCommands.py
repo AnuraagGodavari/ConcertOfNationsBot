@@ -157,11 +157,11 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
-    async def giveTerritory(self, ctx, roleid, territoryName, **args):
+    async def giveTerritory(self, ctx, roleid, terrID, **args):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
         """
-        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {territoryName}, {args})")
+        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrID}, {args})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -171,11 +171,12 @@ class AdminCommands(commands.Cog):
         if not (nation): 
             return #Error will already have been handled
 
-        try: savegame.transfer_territory(territoryName, nation)
-        except Exception as e: raise e
+        transferred_terr =  savegame.transfer_territory(terrID, nation)
+        if not transferred_terr:
+            raise InputError(f"Territory {terrID} transfer to {nation.name} did not work")
 
-        logInfo(f"Successfully transferred the territory {territoryName} to {nation.name}")
-        await ctx.send(f"Successfully transferred the territory {territoryName} to {nation.name}")
+        logInfo(f"Successfully transferred the territory {terrID} to {nation.name}")
+        await ctx.send(f"Successfully transferred the territory {terrID} to {nation.name}")
 
         save_saveGame(savegame)
 
