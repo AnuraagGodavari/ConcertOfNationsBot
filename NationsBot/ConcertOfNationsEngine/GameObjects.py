@@ -1,5 +1,6 @@
 import pprint
 from math import *
+from copy import copy
 
 from database import *
 from logger import *
@@ -157,7 +158,7 @@ class Savegame:
         Returns: The name of the owner nation or False.
         """
         for nation in self.nations.values():
-            if territoryName in nation.territories: return nation.name
+            if territoryName in nation.territories.keys(): return nation.name
 
         return False
 
@@ -178,24 +179,22 @@ class Savegame:
             logInfo(f"Territory {territoryName} is unowned")
 
         if (prevOwner == targetNation.name):
-            raise NonFatalError(f"Territory {territoryName} already owned by {prevOwner}")
+            logInfo(f"Territory {territoryName} already owned by {prevOwner}")
             return False
 
-        try: 
-            #Check if territory is owned, remove it
-            if (prevOwner):
-                terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
+        #Check if territory is owned, remove it
+        if (prevOwner):
+            terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
 
-            else:
-                terrInfo = {"name": territoryName}
+        else:
+            terrInfo = {"name": territoryName}
 
-            #Add this territory to the nation
-            self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
-
-        except Exception as e:
-            raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {targetNation.name}")
-            logError(e)
+        if not (terrInfo):
+            logInfo("Ceding territory failed")
             return False
+
+        #Add this territory to the nation
+        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
 
         #Does a new map need to be generated?
         if not (self.gamestate["mapChanged"]):
@@ -205,7 +204,7 @@ class Savegame:
 
         logInfo(f"Transferred the territory {territoryName} from {prevOwner} to {targetNation.name}!")
 
-        return True
+        return self.nations[targetNation.name].territories[territoryName]
 
 
     #Display
@@ -279,7 +278,13 @@ class Nation:
 
         logInfo(f"Nation {self.name} ceding territory {territoryName}")
 
-        terrInfo = self.territories.pop(territoryName, False)
+        terrInfo = copy(self.get_territory(territoryName))
+
+        if not terrInfo: 
+            logInfo(f"Nation {self.name} could not cede territory {territoryName}!")
+            return False
+
+        self.territories.pop(territoryName)
 
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
         return terrInfo
