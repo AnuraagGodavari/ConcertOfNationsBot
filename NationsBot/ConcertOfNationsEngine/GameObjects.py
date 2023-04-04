@@ -129,9 +129,6 @@ class Savegame:
 
         self.turn += 1
 
-        if (numMonths < 1):
-            raise InputError(f"Cannot advance turn by {numMonths} months!")
-
         for nation in self.nations.values():
             
             nation.newTurn(self, numMonths)
