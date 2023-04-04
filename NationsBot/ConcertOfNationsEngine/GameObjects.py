@@ -38,13 +38,6 @@ class Savegame:
     
     def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
 
-        #Validate
-
-        if ('m' not in date.keys() or 'y' not in date.keys()):
-            raise InputError("Invalid date parameter", details = saveObject(date))
-
-        #Init
-
         self.name = name
         self.server_id = server_id
         self.date = {'m': date['m'], 'y': date['y']}
