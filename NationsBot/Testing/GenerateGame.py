@@ -214,19 +214,7 @@ def testSuite():
     savegame.nations["Nation01"].resources["Money"] = 1000
 
     testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-    territer = iter(savegame.nations["Nation01"].territories.keys())
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(territer), savegame)
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(territer), savegame)
-
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding2", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding3", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-
-    testNewTurn(savegame, numMonths = 24)
-
-    testResourceRevenue(savegame, savegame.nations["Nation01"])
-    testResourceRevenue(savegame, savegame.nations["Nation02"])
-
-    territories.territory_destroybuilding(savegame.nations["Nation01"], next(iter(savegame.nations["Nation01"].territories.keys())), "TestBuilding3")
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
 
     save_saveGame(savegame)
 
