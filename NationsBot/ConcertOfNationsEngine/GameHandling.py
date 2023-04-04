@@ -369,7 +369,7 @@ def add_Nation(savegame, nation, playerID):
                 "roleInfo": bool(roleInfo) * "Exists"
             }
             )
-        raise Exception(f"Something went wrong when adding nation {nation.name}")
+        return False
 
     try:
         stmt = "INSERT INTO PlayerGames (player_id, game_id, role_id) VALUES (%s, %s, %s)"
@@ -377,7 +377,8 @@ def add_Nation(savegame, nation, playerID):
         cursor.execute(stmt, params)
         db.commit()
     except Exception as e:
-        raise Exception(f"Could not insert nation into database: <{e}>")
+        logError(e, details = {"Message": "Could not insert nation into database"})
+        return False
 
     result = get_player_byGame(savegame, playerID)
 

@@ -269,37 +269,32 @@ class AdminCommands(commands.Cog):
 
         logInfo(f"addNation({ctx.guild.id}, {roleid}, {playerid})")
 
-        #Get savegame info from database
-        try:
-            savegame = FileHandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
-        except Exception as e:
-            raise InputError("Could not load a game for this server.")
-            return
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
 
         role = ctx.guild.get_role(get_RoleID(roleid))
         player = ctx.guild.get_member(get_PlayerID(playerid))
 
-        logInfo(f"Adding nation {role.name} to saveGame")
+        logInfo(f"Adding nation {role.name} to savegame")
 
         #Try adding the nation to the savegame
-        try:
-            savegame.add_Nation(Nation(role.name, role.id, (role.color.r, role.color.g, role.color.b)))
-        except Exception as e:
-            logError(e, {"Message": "Could not add nation to savegame"})
-            await ctx.send(f"Could not add {roleid}: {str(e)}")
-            return
+
+        nation = Nation(role.name, role.id, (role.color.r, role.color.g, role.color.b))
+        nation = savegame.add_Nation(nation)
+
+        if not (nation):
+            logInfo(f"Did not add nation {roleid} to savegame file; already exists")
 
         #Try adding the nation to the database - including player, role, and playergame tables
-        try:
-            add_Nation(
+        db_nation = add_Nation(
                 savegame, 
                 savegame.nations[role.name], 
                 player.id
                 )
-        except Exception as e:
-            logError(e, {"Message": f"Could not add nation to database"})
-            await ctx.send(f"Could not add {roleid}: {str(e)}")
-            return
+        
+        if not db_nation:
+            raise InputError(f"Could not add nation {roleid} with player {playerid} to the database")
 
         logInfo(f"Successfully added nation:", FileHandling.saveObject(savegame))
 
