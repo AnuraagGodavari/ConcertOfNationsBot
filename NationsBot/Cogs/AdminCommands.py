@@ -14,6 +14,8 @@ from DiscordUtils.GetGameInfo import *
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 
+from ConcertOfNationsEngine.dateoperations import *
+
 from ConcertOfNationsEngine.Buildings import *
 import ConcertOfNationsEngine.Territories as territories
 
@@ -155,11 +157,11 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
-    async def giveTerritory(self, ctx, roleid, territoryName, **args):
+    async def giveTerritory(self, ctx, roleid, terrID, **args):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
         """
-        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {territoryName}, {args})")
+        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrID}, {args})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -169,11 +171,12 @@ class AdminCommands(commands.Cog):
         if not (nation): 
             return #Error will already have been handled
 
-        try: savegame.transfer_territory(territoryName, nation)
-        except Exception as e: raise e
+        transferred_terr =  savegame.transfer_territory(terrID, nation)
+        if not transferred_terr:
+            raise InputError(f"Territory {terrID} transfer to {nation.name} did not work")
 
-        logInfo(f"Successfully transferred the territory {territoryName} to {nation.name}")
-        await ctx.send(f"Successfully transferred the territory {territoryName} to {nation.name}")
+        logInfo(f"Successfully transferred the territory {terrID} to {nation.name}")
+        await ctx.send(f"Successfully transferred the territory {terrID} to {nation.name}")
 
         save_saveGame(savegame)
 
@@ -267,37 +270,32 @@ class AdminCommands(commands.Cog):
 
         logInfo(f"addNation({ctx.guild.id}, {roleid}, {playerid})")
 
-        #Get savegame info from database
-        try:
-            savegame = FileHandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
-        except Exception as e:
-            raise InputError("Could not load a game for this server.")
-            return
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
 
         role = ctx.guild.get_role(get_RoleID(roleid))
         player = ctx.guild.get_member(get_PlayerID(playerid))
 
-        logInfo(f"Adding nation {role.name} to saveGame")
+        logInfo(f"Adding nation {role.name} to savegame")
 
         #Try adding the nation to the savegame
-        try:
-            savegame.add_Nation(Nation(role.name, role.id, (role.color.r, role.color.g, role.color.b)))
-        except Exception as e:
-            logError(e, {"Message": "Could not add nation to savegame"})
-            await ctx.send(f"Could not add {roleid}: {str(e)}")
-            return
+
+        nation = Nation(role.name, role.id, (role.color.r, role.color.g, role.color.b))
+        nation = savegame.add_Nation(nation)
+
+        if not (nation):
+            logInfo(f"Did not add nation {roleid} to savegame file; already exists")
 
         #Try adding the nation to the database - including player, role, and playergame tables
-        try:
-            add_Nation(
+        db_nation = add_Nation(
                 savegame, 
                 savegame.nations[role.name], 
                 player.id
                 )
-        except Exception as e:
-            logError(e, {"Message": f"Could not add nation to database"})
-            await ctx.send(f"Could not add {roleid}: {str(e)}")
-            return
+        
+        if not db_nation:
+            raise InputError(f"Could not add nation {roleid} with player {playerid} to the database")
 
         logInfo(f"Successfully added nation:", FileHandling.saveObject(savegame))
 
@@ -307,22 +305,26 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
-    async def initGame(self, ctx, name, date):
+    async def initGame(self, ctx, name, datestr):
         """
         Called in a server without an attached game to initialize a game
         """
 
-        logInfo(f"initGame({ctx.guild.id}, {name}, {date})")
+        logInfo(f"initGame({ctx.guild.id}, {name}, {datestr})")
 
-        try: month, year = (int(x) for x in re.split(r'[,/\\]', date))
+        try: month, year = (int(x) for x in re.split(r'[,/\\]', datestr))
         except:
             raise InputError("Could not parse the date. Please write in one of the following formats without spaces: \n> monthnumber,yearnumber\n> monthnumber/yearnumber")
-            return
+
+        date = {"m": month, "y": year}
+
+        if not (date_validate(date)):
+            raise InputError(f"Invalid date \"{datestr}\"")
 
         savegame = Savegame(
             name,
             ctx.guild.id,
-            {"m": month, "y": year},
+            date,
             1
         )
         

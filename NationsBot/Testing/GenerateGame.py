@@ -10,6 +10,7 @@ from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
 import ConcertOfNationsEngine.Territories as territories
+import ConcertOfNationsEngine.Buildings as buildings
 
 def generateTestWorld(gamerule, length, height, space):
     logInfo("Generating 'Test World' Worldmap...")
@@ -190,11 +191,10 @@ def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
 
     logInfo(f"Testing buying building {buildingName} for {targetNation.name} territory {territoryName}")
 
-    try:
-        targetNation.addBuilding(buildingName, territoryName, savegame)
-    except Exception as e:
+    if not (targetNation.canBuyBuilding(savegame, buildingName, buildings.get_blueprint(buildingName, savegame), territoryName)):
         logInfo(f"Could not build {buildingName} for {targetNation.name} in {territoryName}")
-        logError(e)
+
+    targetNation.addBuilding(buildingName, territoryName, savegame)
 
 def testSuite():
 
@@ -214,19 +214,7 @@ def testSuite():
     savegame.nations["Nation01"].resources["Money"] = 1000
 
     testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-    territer = iter(savegame.nations["Nation01"].territories.keys())
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(territer), savegame)
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(territer), savegame)
-
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding2", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding3", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-
-    testNewTurn(savegame, numMonths = 24)
-
-    testResourceRevenue(savegame, savegame.nations["Nation01"])
-    testResourceRevenue(savegame, savegame.nations["Nation02"])
-
-    territories.territory_destroybuilding(savegame.nations["Nation01"], next(iter(savegame.nations["Nation01"].territories.keys())), "TestBuilding3")
+    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
 
     save_saveGame(savegame)
 

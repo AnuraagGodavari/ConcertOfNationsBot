@@ -15,7 +15,7 @@ from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
-from ConcertOfNationsEngine.Buildings import *
+import ConcertOfNationsEngine.Buildings as buildings
 import ConcertOfNationsEngine.Territories as territories
 
 
@@ -59,8 +59,12 @@ class BuildingCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
         if not (nation): 
             return #Error will already have been handled
-        
-        #Execute the actual function
+
+        #Validate that building can be bought
+
+        if not (nation.canBuyBuilding(savegame, buildingName, buildings.get_blueprint(buildingName, savegame), territoryName)):
+            raise InputError(f"Could not buy {buildingName}")
+
         nation.addBuilding(buildingName, territoryName, savegame)
 
         await ctx.send(f"Successfully bought {buildingName} in {territoryName}!")

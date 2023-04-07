@@ -1,5 +1,6 @@
 import pprint
 from math import *
+from copy import copy
 
 from database import *
 from logger import *
@@ -38,13 +39,6 @@ class Savegame:
     
     def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
 
-        #Validate
-
-        if ('m' not in date.keys() or 'y' not in date.keys()):
-            raise InputError("Invalid date parameter", details = saveObject(date))
-
-        #Init
-
         self.name = name
         self.server_id = server_id
         self.date = {'m': date['m'], 'y': date['y']}
@@ -60,7 +54,8 @@ class Savegame:
         """Add a nation to this savegame if it does not already exist"""
 
         if nation.name in self.nations.keys():
-            raise Exception(f"Nation {nation.name} already exists in savegame {self.name}")
+            logInfo(f"Nation {nation.name} already exists in savegame {self.name}")
+            return False
 
         gamerule = self.getGamerule()
 
@@ -75,6 +70,7 @@ class Savegame:
         
         self.nations[nation.name] = nation
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
+        return nation
 
 
     #Get outside files that define the savegame
@@ -134,9 +130,6 @@ class Savegame:
 
         self.turn += 1
 
-        if (numMonths < 1):
-            raise InputError(f"Cannot advance turn by {numMonths} months!")
-
         for nation in self.nations.values():
             
             nation.newTurn(self, numMonths)
@@ -165,7 +158,7 @@ class Savegame:
         Returns: The name of the owner nation or False.
         """
         for nation in self.nations.values():
-            if territoryName in nation.territories: return nation.name
+            if territoryName in nation.territories.keys(): return nation.name
 
         return False
 
@@ -186,24 +179,22 @@ class Savegame:
             logInfo(f"Territory {territoryName} is unowned")
 
         if (prevOwner == targetNation.name):
-            raise NonFatalError(f"Territory {territoryName} already owned by {prevOwner}")
+            logInfo(f"Territory {territoryName} already owned by {prevOwner}")
             return False
 
-        try: 
-            #Check if territory is owned, remove it
-            if (prevOwner):
-                terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
+        #Check if territory is owned, remove it
+        if (prevOwner):
+            terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
 
-            else:
-                terrInfo = {"name": territoryName}
+        else:
+            terrInfo = {"name": territoryName}
 
-            #Add this territory to the nation
-            self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
-
-        except Exception as e:
-            raise InputError(f"Could not transfer the territory {territoryName} from {prevOwner} to {targetNation.name}")
-            logError(e)
+        if not (terrInfo):
+            logInfo("Ceding territory failed")
             return False
+
+        #Add this territory to the nation
+        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
 
         #Does a new map need to be generated?
         if not (self.gamestate["mapChanged"]):
@@ -213,7 +204,7 @@ class Savegame:
 
         logInfo(f"Transferred the territory {territoryName} from {prevOwner} to {targetNation.name}!")
 
-        return True
+        return self.nations[targetNation.name].territories[territoryName]
 
 
     #Display
@@ -287,7 +278,13 @@ class Nation:
 
         logInfo(f"Nation {self.name} ceding territory {territoryName}")
 
-        terrInfo = self.territories.pop(territoryName, False)
+        terrInfo = copy(self.get_territory(territoryName))
+
+        if not terrInfo: 
+            logInfo(f"Nation {self.name} could not cede territory {territoryName}!")
+            return False
+
+        self.territories.pop(territoryName)
 
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
         return terrInfo
@@ -365,16 +362,11 @@ class Nation:
     #Building management
 
     def addBuilding(self, buildingName, territoryName, savegame):
-        """ Try to add a building to a territory and subtract the resource cost """
+        """ Add a building to a territory and subtract the resource cost """
 
         logInfo(f"Nation {self.name} purchasing {buildingName} for {territoryName}")
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
-
-        #Validate that building can be bought
-
-        if not (self.canBuyBuilding(savegame, buildingName, blueprint, territoryName)):
-            raise InputError(f"Could not buy {buildingName}")
 
         costs = blueprint["Costs"]
         for k in costs.keys(): self.resources[k] = self.resources[k] - costs[k]
@@ -384,6 +376,8 @@ class Nation:
         self.territories[territoryName]["Buildings"][buildingName] = f"Constructing:{constructiondate}"
 
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
+
+        return self.territories[territoryName]['Buildings'][buildingName]
 
 
     #New turn functions
