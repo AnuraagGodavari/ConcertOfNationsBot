@@ -1,5 +1,21 @@
 from math import *
 
+def date_validate(date):
+
+    if ('m' not in date.keys() or 'y' not in date.keys()):
+        logInfo("Invalid date", details = saveObject(date))
+        return False
+
+    if (type(date['m']) not in (int, float)):
+        logInfo(f"Invalid month {date['m']}")
+        return False
+
+    if (type(date['y']) not in (int, float)):
+        logInfo(f"Invalid year {date['y']}")
+        return False
+
+    return True
+
 def date_fromstr(datestr):
 
     dateSplit = datestr.split('/')
