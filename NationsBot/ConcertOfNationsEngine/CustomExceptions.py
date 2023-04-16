@@ -22,4 +22,4 @@ class LogicError(CustomException):
     """Something went wrong in the program logic."""
     def __init__(self, args):
         super().__init__(args)
-        logInfo(f"Game Error: \"{str(args)}\"", stackLevel = 1)
+        logInfo(f"Logic Error: \"{str(args)}\"", stackLevel = 1)
