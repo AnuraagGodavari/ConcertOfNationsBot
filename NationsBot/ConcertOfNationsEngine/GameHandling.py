@@ -160,6 +160,19 @@ def dbget_saveGame_byServer(server_id):
         logInfo("Successfully retrieved savegame!")
         return result
 
+def insert_savegame(savegame, worldInfo, gamerule_name):
+    """
+    Try to put a savegame in the database
+    """
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "INSERT INTO Savegames (server_id, savefile, world_id, gamerulefile) VALUES (%s, %s, %s, %s)"
+    params = [savegame.server_id, savegame.name, worldInfo['id'], gamerule_name]
+    cursor.execute(stmt, params)
+    db.commit()
+
+
 def setupNew_saveGame(savegame, world_name, gamerule_name):
     """
     Given a new savegame object, create a savefile for it and save it to the database.
@@ -178,17 +191,10 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
         raise InputError(f"World {world_name} does not exist in the database")
 
     #Update database
-    try:
-        db = getdb()
-        cursor = db.cursor(buffered=True)
-
-        stmt = "INSERT INTO Savegames (server_id, savefile, world_id, gamerulefile) VALUES (%s, %s, %s, %s)"
-        params = [server_id, savegame.name, worldInfo['id'], gamerule_name]
-        cursor.execute(stmt, params)
-        db.commit()
+    try: insert_savegame(savegame, worldInfo, gamerule_name)
     except Exception as e:
         logError(e)
-        raise GameException(f"Savegame could not be inserted!")
+        raise LogicError(f"Savegame could not be inserted!")
 
     #Generate savefile for the game
     save_saveGame(savegame)

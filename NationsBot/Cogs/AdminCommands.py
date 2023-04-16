@@ -327,7 +327,7 @@ class AdminCommands(commands.Cog):
             date,
             1
         )
-        
+
         try:
             setupNew_saveGame(
                 savegame, 
@@ -338,7 +338,7 @@ class AdminCommands(commands.Cog):
             raise e
             return
         except Exception as e:
-            raise NonFatalError("Something went wrong when initializing the savegame.")
+            raise NonFatalError("Something unexpected went wrong when initializing the savegame.")
             return
 
         logInfo(f"Successfully created savegame {savegame.name} for server {ctx.guild.id}")
