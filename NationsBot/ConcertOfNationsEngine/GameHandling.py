@@ -179,8 +179,16 @@ def setupNew_saveGame(savegame, world_name, gamerule_name):
     """
     logInfo("Setting up a new savegame in the savefiles and database")
 
+    server_id = savegame.server_id
+    
+    if (dbget_saveGame_byServer(server_id)):
+        raise InputError(f"Savegame already exists for the server {server_id}")
+
     #World must already exist in the database
     worldInfo = dbget_world_byName(world_name)
+    
+    if not (worldInfo):
+        raise InputError(f"World {world_name} does not exist in the database")
 
     #Update database
     try: insert_savegame(savegame, worldInfo, gamerule_name)
