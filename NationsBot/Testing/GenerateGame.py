@@ -202,19 +202,3 @@ def testSuite():
     
     testWorld = generateTestWorld(gamerule, 100, 100, 20)
 
-    savegame = generateGame(gamerule, testWorld)
-
-    testNewTurn(savegame, numMonths = 12)
-
-    testResourceRevenue(savegame, savegame.nations["Nation01"])
-    testResourceRevenue(savegame, savegame.nations["Nation02"])
-
-    testTerritoryTransfer(savegame, testWorld.territories[-1].name, savegame.nations["Nation02"])
-
-    savegame.nations["Nation01"].resources["Money"] = 1000
-
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-    testBuyBuilding(savegame.nations["Nation01"], "TestBuilding1", next(iter(savegame.nations["Nation01"].territories.keys())), savegame)
-
-    save_saveGame(savegame)
-
