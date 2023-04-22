@@ -7,7 +7,7 @@ from database import *
 from common import *
 from GameUtils import FileHandling
 
-from ConcertOfNationsEngine.GameObjects import *
+from ConcertOfNationsEngine.gameobjects import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 #Deal with worlds
