@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 from logger import *
 from common import *
 
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 class Territory:
     """

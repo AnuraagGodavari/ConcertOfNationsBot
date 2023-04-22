@@ -5,7 +5,7 @@ import discord
 from common import *
 from logger import *
 
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 """ A dictionary of depth 1 where keys are player IDs and values are menu objects """
 menucache = dict()

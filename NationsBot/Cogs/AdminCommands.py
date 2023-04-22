@@ -12,7 +12,7 @@ import GameUtils.Operations as ops
 from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 from ConcertOfNationsEngine.dateoperations import *
 
