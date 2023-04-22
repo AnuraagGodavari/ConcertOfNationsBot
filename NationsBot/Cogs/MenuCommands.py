@@ -11,7 +11,7 @@ from logger import *
 from DiscordUtils.menuembed import *
 from DiscordUtils.GetGameInfo import *
 
-from ConcertOfNationsEngine.GameHandling import *
+from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 from GameUtils.FileHandling import *

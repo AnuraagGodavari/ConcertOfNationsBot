@@ -6,7 +6,7 @@ from random import *
 
 from GameUtils import FileHandling, Mapping
 
-from ConcertOfNationsEngine.GameHandling import *
+from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.gameobjects import *
 
 import ConcertOfNationsEngine.territories as territories
