@@ -8,7 +8,7 @@ from database import *
 from logger import *
 
 from ConcertOfNationsEngine.GameHandling import *
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 def get_PlayerID(playerid):
 
