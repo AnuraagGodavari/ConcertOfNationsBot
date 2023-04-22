@@ -10,7 +10,7 @@ from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
 import ConcertOfNationsEngine.Territories as territories
-import ConcertOfNationsEngine.Buildings as buildings
+import ConcertOfNationsEngine.buildings as buildings
 
 def generateTestWorld(gamerule, length, height, space):
     logInfo("Generating 'Test World' Worldmap...")
