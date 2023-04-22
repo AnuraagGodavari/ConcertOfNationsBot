@@ -12,7 +12,7 @@ from DiscordUtils.menuembed import *
 from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 from GameUtils.FileHandling import *
 

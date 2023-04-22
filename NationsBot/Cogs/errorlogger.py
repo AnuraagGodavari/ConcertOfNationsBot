@@ -7,7 +7,7 @@ from common import *
 from database import *
 from logger import *
 
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 #The cog itself
 class ErrorLogger(commands.Cog):

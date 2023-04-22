@@ -9,7 +9,7 @@ import imgur
 from GameUtils import Operations as ops
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 import ConcertOfNationsEngine.dateoperations as dates
 

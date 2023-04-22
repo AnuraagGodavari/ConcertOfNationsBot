@@ -8,7 +8,7 @@ import imgur
 from GameUtils import Operations as ops
 
 import ConcertOfNationsEngine.GameHandling as gamehandling
-from ConcertOfNationsEngine.CustomExceptions import *
+from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 valid_statuspatterns = ["Active$", "Inactive$", "Constructing:0?[\d(11)(12)]/[\d]*$"]
 
