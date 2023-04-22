@@ -16,7 +16,7 @@ from ConcertOfNationsEngine.CustomExceptions import *
 
 from ConcertOfNationsEngine.dateoperations import *
 
-from ConcertOfNationsEngine.Buildings import *
+from ConcertOfNationsEngine.buildings import *
 import ConcertOfNationsEngine.Territories as territories
 
 #The cog itself

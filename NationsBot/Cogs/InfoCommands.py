@@ -15,7 +15,7 @@ from DiscordUtils.GetGameInfo import *
 
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
-from ConcertOfNationsEngine.Buildings import *
+from ConcertOfNationsEngine.buildings import *
 import ConcertOfNationsEngine.Territories as territories
 
 

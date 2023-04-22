@@ -11,7 +11,7 @@ from ConcertOfNationsEngine.CustomExceptions import *
 
 import ConcertOfNationsEngine.dateoperations as dates
 
-import ConcertOfNationsEngine.Buildings as buildings
+import ConcertOfNationsEngine.buildings as buildings
 
 #New turn operations    
 
