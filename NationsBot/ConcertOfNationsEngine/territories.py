@@ -6,7 +6,7 @@ import imgur
 
 from GameUtils import Operations as ops
 
-import ConcertOfNationsEngine.GameHandling as gamehandling
+import ConcertOfNationsEngine.gamehandling as gamehandling
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 import ConcertOfNationsEngine.dateoperations as dates

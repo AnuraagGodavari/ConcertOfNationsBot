@@ -11,7 +11,7 @@ from logger import *
 import GameUtils.Operations as ops
 from DiscordUtils.GetGameInfo import *
 
-from ConcertOfNationsEngine.GameHandling import *
+from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 from ConcertOfNationsEngine.dateoperations import *
