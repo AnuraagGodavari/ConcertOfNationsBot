@@ -17,7 +17,7 @@ from ConcertOfNationsEngine.CustomExceptions import *
 from ConcertOfNationsEngine.dateoperations import *
 
 from ConcertOfNationsEngine.buildings import *
-import ConcertOfNationsEngine.Territories as territories
+import ConcertOfNationsEngine.territories as territories
 
 #The cog itself
 class AdminCommands(commands.Cog):

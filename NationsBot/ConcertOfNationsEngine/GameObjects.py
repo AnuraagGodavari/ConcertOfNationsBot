@@ -14,7 +14,7 @@ from ConcertOfNationsEngine.CustomExceptions import *
 import ConcertOfNationsEngine.dateoperations as dates
 
 import ConcertOfNationsEngine.buildings as buildings
-import ConcertOfNationsEngine.Territories as territories
+import ConcertOfNationsEngine.territories as territories
 
 
 class Savegame:

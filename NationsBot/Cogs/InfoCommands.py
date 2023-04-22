@@ -16,7 +16,7 @@ from DiscordUtils.GetGameInfo import *
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.CustomExceptions import *
 from ConcertOfNationsEngine.buildings import *
-import ConcertOfNationsEngine.Territories as territories
+import ConcertOfNationsEngine.territories as territories
 
 
 #The cog itself
