@@ -9,7 +9,7 @@ from GameUtils import FileHandling, Mapping
 from ConcertOfNationsEngine.GameHandling import *
 from ConcertOfNationsEngine.GameObjects import *
 
-import ConcertOfNationsEngine.Territories as territories
+import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.buildings as buildings
 
 def generateTestWorld(gamerule, length, height, space):
