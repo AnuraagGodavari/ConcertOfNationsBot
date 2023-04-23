@@ -5,7 +5,7 @@ from logger import *
 
 from database import *
 from common import *
-from GameUtils import FileHandling
+from GameUtils import filehandling
 
 from ConcertOfNationsEngine.gameobjects import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -14,7 +14,7 @@ from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 def save_world(world):
     with open(f"{worldsDir}/Test World.json", 'w') as f:
-        json.dump(FileHandling.saveObject(world), f, indent = 4)
+        json.dump(filehandling.saveObject(world), f, indent = 4)
 
     logInfo(f"Successfully saved world {world.name}")
 
@@ -23,7 +23,7 @@ def load_world(world_name):
     """
     Load a world from a .json file representing a map without nations, buildings etc; only terrain, resources etc.
     """
-    world = FileHandling.easyLoad(world_name, worldsDir)
+    world = filehandling.easyLoad(world_name, worldsDir)
     logInfo(f"World {world.name} successfully loaded")
     return world
 
@@ -203,7 +203,7 @@ def save_saveGame(savegame):
     """
     Save the savegame to its file based on its id
     """
-    FileHandling.easySave(savegame, savegame.name, savesDir)
+    filehandling.easySave(savegame, savegame.name, savesDir)
     logInfo(f"Saved {savegame.name} to file: {savesDir}/{savegame.name}.json")
 
 @lru_cache(maxsize=16)
@@ -211,7 +211,7 @@ def load_saveGame(savegame_name):
     """
     Load a savegame object from its savefile
     """
-    savegame = FileHandling.easyLoad(savegame_name, savesDir)
+    savegame = filehandling.easyLoad(savegame_name, savesDir)
     logInfo(f"Savegame {savegame.name} successfully loaded and added to cache")
     return savegame
 
@@ -243,7 +243,7 @@ def load_gamerule(gamerule_name):
     """
     Load a dictionary from a .json file representing a game's ruleset
     """
-    gamerule = FileHandling.easyLoad(gamerule_name, gameruleDir)
+    gamerule = filehandling.easyLoad(gamerule_name, gameruleDir)
     logInfo("Gamerule successfully loaded")
     return gamerule
 

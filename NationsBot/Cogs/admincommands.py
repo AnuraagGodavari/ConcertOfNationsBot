@@ -8,8 +8,8 @@ from common import *
 from database import *
 from logger import *
 
-import GameUtils.Operations as ops
-from DiscordUtils.GetGameInfo import *
+import GameUtils.operations as ops
+from DiscordUtils.getgameinfo import *
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -297,7 +297,7 @@ class AdminCommands(commands.Cog):
         if not db_nation:
             raise InputError(f"Could not add nation {roleid} with player {playerid} to the database")
 
-        logInfo(f"Successfully added nation:", FileHandling.saveObject(savegame))
+        logInfo(f"Successfully added nation:", filehandling.saveObject(savegame))
 
         save_saveGame(savegame)
 

@@ -8,10 +8,10 @@ from common import *
 from database import *
 from logger import *
 
-from GameUtils import Operations as ops
+from GameUtils import operations as ops
 
 from DiscordUtils.menuembed import *
-from DiscordUtils.GetGameInfo import *
+from DiscordUtils.getgameinfo import *
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
