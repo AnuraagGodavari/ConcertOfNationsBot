@@ -4,7 +4,7 @@ from database import *
 from logger import *
 import imgur
 
-from GameUtils import Operations as ops
+from GameUtils import operations as ops
 
 import ConcertOfNationsEngine.gamehandling as gamehandling
 from ConcertOfNationsEngine.concertofnations_exceptions import *
