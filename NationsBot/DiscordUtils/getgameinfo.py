@@ -67,7 +67,7 @@ def get_SavegameFromCtx(ctx):
     """Get savegame info from database"""
 
     try:
-        savegame = FileHandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
+        savegame = filehandling.loadObject(load_saveGame(dbget_saveGame_byServer(ctx.guild.id)["savefile"]))
     except Exception as e:
         logInfo("Could not load a game for this server.")
         logError(e)

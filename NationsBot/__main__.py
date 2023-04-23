@@ -14,7 +14,7 @@ from database import *
 from logger import *
 
 #For NationsBot
-from Testing import GenerateGame
+from Testing import generategame
 
 
 #CLI options
@@ -55,7 +55,7 @@ async def setup():
     if options["debug"]: 
         logInfo("Launching in Debug Mode")
 
-        try: GenerateGame.testSuite()
+        try: generategame.testSuite()
         except Exception as e: logError(e)
 
         if options["abort"]:

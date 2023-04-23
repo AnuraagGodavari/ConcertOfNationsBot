@@ -9,12 +9,12 @@ from database import *
 from logger import *
 
 from DiscordUtils.menuembed import *
-from DiscordUtils.GetGameInfo import *
+from DiscordUtils.getgameinfo import *
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
-from GameUtils.FileHandling import *
+from GameUtils.filehandling import *
 
 #The cog itself
 class MenuCommands(commands.Cog):

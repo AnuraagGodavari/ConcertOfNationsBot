@@ -4,7 +4,7 @@ from logger import *
 import pprint
 from random import *
 
-from GameUtils import FileHandling, Mapping
+from GameUtils import filehandling, mapping
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.gameobjects import *
@@ -15,7 +15,7 @@ import ConcertOfNationsEngine.buildings as buildings
 def generateTestWorld(gamerule, length, height, space):
     logInfo("Generating 'Test World' Worldmap...")
 
-    world = Mapping.World("Test World")
+    world = mapping.World("Test World")
 
     [
         world.addNewTerritory(
@@ -55,7 +55,7 @@ def generateTestWorld(gamerule, length, height, space):
 
 def generateGame(gamerule, world):
 
-    conf = FileHandling.easyLoad("debugConf", pwdir)
+    conf = filehandling.easyLoad("debugConf", pwdir)
 
     logInfo("Beginning game generation!")
 
@@ -156,7 +156,7 @@ def generateGame(gamerule, world):
     save_saveGame(savegame)
     savegame = load_saveGame("TestGame")
 
-    logInfo("Generated and saved game", FileHandling.saveObject(savegame))
+    logInfo("Generated and saved game", filehandling.saveObject(savegame))
 
     #savegame.world_toImage(mapScale = (100, 100))
     #logInfo(dbget_worldMap(world, savegame, savegame.turn))
