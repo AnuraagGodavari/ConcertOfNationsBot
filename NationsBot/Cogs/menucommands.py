@@ -32,6 +32,9 @@ class MenuCommands(commands.Cog):
         playerID = ctx.author.id
         menu = getMenu(playerID)
 
+        if not (menu):
+            raise InputError(f"Player <@{ctx.author.id}> does not have a menu assigned")
+
         menu.sortContent(*sortargs)
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
@@ -43,6 +46,9 @@ class MenuCommands(commands.Cog):
         
         playerID = ctx.author.id
         menu = getMenu(playerID)
+
+        if not (menu):
+            raise InputError(f"Player <@{ctx.author.id}> does not have a menu assigned")
 
         menu.fields.reverse()
 
