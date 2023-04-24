@@ -80,7 +80,7 @@ class MenuEmbed:
     def sortContent(self, *keys):
 
         if not (self.sortable):
-            raise InputError("Cannot sort this menu")
+            return False
 
         if len(keys) > 2: keys = keys[0:2]                
         
