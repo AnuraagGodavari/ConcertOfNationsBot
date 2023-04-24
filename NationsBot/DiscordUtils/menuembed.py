@@ -152,6 +152,9 @@ class MenuEmbed:
 
     def embedView(self, pagenumber = 0):
         
+        if not (self.isPaged):
+            return None
+
         pagenumber = self.adjust_pagenumber(pagenumber)
 
         return PaginationView(self, pagenumber)
@@ -161,4 +164,8 @@ def assignMenu(playerid, menu):
     menucache[str(playerid)] = menu
 
 def getMenu(playerid):
+    
+    if not(str(playerid) in menucache.keys()):
+        return False
+
     return menucache[str(playerid)]
