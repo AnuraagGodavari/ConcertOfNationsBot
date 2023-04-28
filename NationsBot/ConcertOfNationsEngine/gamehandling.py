@@ -28,21 +28,41 @@ def load_world(world_name):
     return world
 
 def dbget_world_byName(world_name):
-        """
-        Get the row in the database table Worlds with this name
-        """
+    """
+    Get the row in the database table Worlds with this name
+    """
 
-        db = getdb()
-        cursor = db.cursor(buffered=True)
+    db = getdb()
+    cursor = db.cursor(buffered=True)
 
-        stmt = "SELECT * FROM Worlds WHERE name=%s LIMIT 1;"
-        params = [world_name]
-        cursor.execute(stmt, params)
-        result = fetch_assoc(cursor)
+    stmt = "SELECT * FROM Worlds WHERE name=%s LIMIT 1;"
+    params = [world_name]
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
 
-        if not (result): return False
-        logInfo(f"Retrieved world {world_name} from database")
-        return result
+    if not (result): return False
+    logInfo(f"Retrieved world {world_name} from database")
+    return result
+
+def dbget_world_bysavegame(server_id):
+    """
+    Get the row in the database table Worlds associated with this savegame
+    """
+        
+    logInfo(f"Getting world for savegame {server_id} from database")
+    db = getdb()
+    cursor = db.cursor()
+
+    stmt = "SELECT Worlds.* FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE Savegames.server_id=%s LIMIT 1;"
+    params = [server_id]
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result):
+        return False
+
+    logInfo("Got worldfile info")
+    return gamehandling.load_world(result["name"])
 
 def setupNew_world(world):
     """
@@ -247,6 +267,25 @@ def load_gamerule(gamerule_name):
     logInfo("Gamerule successfully loaded")
     return gamerule
 
+def dbget_gamerule(server_id):
+    """
+    Get the name of the gamerule associated with this savegame
+    """
+        
+    logInfo(f"Getting gamerule for savegame {server_id} from database")
+    db = getdb()
+    cursor = db.cursor()
+
+    stmt = "SELECT gamerulefile FROM Savegames WHERE server_id=%s LIMIT 1;"
+    params = [server_id]
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result):
+        return False
+
+    logInfo("Got gamerule info")
+    return gamehandling.load_gamerule(result["gamerulefile"])
 
 #Player
 def add_Player(playerID):
