@@ -83,39 +83,13 @@ class Savegame:
 
     def getWorld(self):
         """Get the world object that is associated with this game"""
-        
-        logInfo(f"Getting world for savegame {self.name} from database")
-        db = getdb()
-        cursor = db.cursor()
 
-        stmt = "SELECT Worlds.* FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE savefile=%s LIMIT 1;"
-        params = [self.name]
-        cursor.execute(stmt, params)
-        result = fetch_assoc(cursor)
-
-        if not (result):
-            return False
-
-        logInfo("Got worldfile info")
-        return gamehandling.load_world(result["name"])
+        return gamehandling.dbget_world_bysavegame(self.server_id)
 
     def getGamerule(self):
         """Get the gamerule that is associated with this game"""
-        
-        logInfo(f"Getting gamerule for savegame {self.name} from database")
-        db = getdb()
-        cursor = db.cursor()
 
-        stmt = "SELECT gamerulefile FROM Savegames WHERE savefile=%s LIMIT 1;"
-        params = [self.name]
-        cursor.execute(stmt, params)
-        result = fetch_assoc(cursor)
-
-        if not (result):
-            return False
-
-        logInfo("Got gamerule info")
-        return gamehandling.load_gamerule(result["gamerulefile"])
+        return gamehandling.dbget_gamerule(self.server_id)
 
 
     #Main operations
