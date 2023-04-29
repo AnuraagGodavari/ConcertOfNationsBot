@@ -1,6 +1,7 @@
 #Python libraries
 import sys, asyncio
 import os, json, logging
+import importlib
 
 #Packages
 from dotenv import load_dotenv
@@ -14,7 +15,7 @@ from database import *
 from logger import *
 
 #For NationsBot
-from Testing import generategame
+from Testing import tests
 
 
 #CLI options
@@ -54,9 +55,26 @@ async def setup():
     #Non-bot related setup
     if options["debug"]: 
         logInfo("Launching in Debug Mode")
+    
+        load_dotenv()
+        testsuite = None
 
-        try: generategame.testSuite()
+        logInfo("Loading Test Suite from module specified under 'TESTSUITE_SCRIPT' in .env")
+
+        try: 
+            testsuite_module = importlib.import_module(os.getenv('TESTSUITE_SCRIPT'))
+            testsuite = testsuite_module.testsuite
+        except Exception as e: 
+            logError(e)
+            options["abort"] = True
+            return
+
+        logInfo("Executing Test Suite...")
+
+        try: testsuite()
         except Exception as e: logError(e)
+
+        logInfo("Test Suite successfully executed")
 
         if options["abort"]:
             logInfo("Aborting before bot launch\n\n")
