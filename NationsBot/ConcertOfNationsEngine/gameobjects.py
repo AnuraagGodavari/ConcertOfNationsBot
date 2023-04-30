@@ -68,6 +68,11 @@ class Savegame:
             if ("Buildings" not in territory.keys()):
                 territory["Buildings"] = {} 
         
+        #Add base bureaucratic capacity
+
+        base_bureaucracy = gamerule["Base Bureaucracy"]
+        nation.bureaucracy = {category: [0, base_bureaucracy[category]] for category in base_bureaucracy.keys()}
+
         self.nations[nation.name] = nation
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
         return nation
@@ -231,11 +236,12 @@ class Nation:
         territories (list): Holds the name of every territory owned by the nation.
     """
 
-    def __init__(self, name, role_id, mapcolor, resources = None, territories = None):
+    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None):
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
         self.territories = territories or dict()
+        self.bureaucracy = bureaucracy or dict()
 
         self.role_id = role_id
 
