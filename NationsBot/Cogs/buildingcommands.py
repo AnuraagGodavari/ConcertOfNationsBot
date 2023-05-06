@@ -108,7 +108,7 @@ class BuildingCommands(commands.Cog):
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
 
-        newstatus = territories.territory_togglebuilding(nation, territoryName, buildingName, savegame)
+        newstatus = territories.togglebuilding(nation, territoryName, buildingName, savegame)
 
         await ctx.send(f"New building status: {newstatus}")
 
@@ -154,10 +154,10 @@ class BuildingCommands(commands.Cog):
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
 
-        if (not territories.territory_hasbuilding(nation, territoryName, buildingName)):
+        if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
-        newstatus = territories.territory_destroybuilding(nation, territoryName, buildingName)
+        newstatus = territories.destroybuilding(nation, territoryName, buildingName)
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
