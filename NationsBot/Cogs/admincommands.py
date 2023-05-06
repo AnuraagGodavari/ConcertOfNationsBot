@@ -155,9 +155,9 @@ class AdminCommands(commands.Cog):
 
     # Manage nations
 
-    @commands.command()
+    @commands.command(aliases = ["giveTerritory", "give-territory", "giveterritory"])
     @commands.has_permissions(administrator = True)
-    async def giveTerritory(self, ctx, roleid, terrID, **args):
+    async def give_territory(self, ctx, roleid, terrID, **args):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
         """
@@ -180,9 +180,9 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-    @commands.command()
+    @commands.command(aliases = ["giveResources", "give-resources", "giveresources"])
     @commands.has_permissions(administrator = True)
-    async def giveResources(self, ctx, roleid, *args):
+    async def give_resources(self, ctx, roleid, *args):
         """
         Give a specified amount of any resources to a specified nation.
         
@@ -233,9 +233,9 @@ class AdminCommands(commands.Cog):
 
     # Manage the savegame
 
-    @commands.command()
+    @commands.command(aliases = ["advanceTurn", "advanceturn", "advance-turn"])
     @commands.has_permissions(administrator = True)
-    async def advanceTurn(self, ctx, numMonths = None):
+    async def advance_turn(self, ctx, numMonths = None):
         """Advance the turn for the current server's savegame, optionally by a number of months"""
         
         if not numMonths: numMonths = 1
@@ -258,9 +258,9 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-    @commands.command()
+    @commands.command(aliases = ["addNation", "add-nation", "addnation"])
     @commands.has_permissions(administrator = True)
-    async def addNation(self, ctx, roleid, playerid):
+    async def add_nation(self, ctx, roleid, playerid):
         """
         Add a nation (by role) and player to a savegame.
 
@@ -303,9 +303,9 @@ class AdminCommands(commands.Cog):
 
         await ctx.send(f"Added {roleid} to this game!")
 
-    @commands.command()
+    @commands.command(aliases = ["initgame", "initGame", "init-game"])
     @commands.has_permissions(administrator = True)
-    async def initGame(self, ctx, name, datestr):
+    async def init_game(self, ctx, name, datestr):
         """
         Called in a server without an attached game to initialize a game
         """
