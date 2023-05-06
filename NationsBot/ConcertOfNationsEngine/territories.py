@@ -79,7 +79,7 @@ def territory_newturnresources(territoryInfo, savegame):
     totalrevenue = ops.combineDicts(buildingsIncome)
     return totalrevenue
 
-def territory_advanceconstruction(territoryInfo, savegame):
+def territory_advanceconstruction(territoryInfo, savegame, bureaucracy):
 
     logInfo(f"Advancing construction for buildings in {territoryInfo['Name']}")
 
@@ -90,4 +90,8 @@ def territory_advanceconstruction(territoryInfo, savegame):
 
         if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(oldstatus.split(':')[-1]))):
             territoryInfo["Savegame"]["Buildings"][building] = "Active"
+
+            for category, cost in buildings.get_blueprint(building, savegame)["Bureaucratic Cost"].items():
+                bureaucracy[category] = (bureaucracy[category][0] - cost, bureaucracy[category][1])
+
             logInfo(f"{building} now active from date {oldstatus.split(':')[-1]}")
