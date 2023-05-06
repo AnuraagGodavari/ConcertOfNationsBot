@@ -71,7 +71,7 @@ class Savegame:
         #Add base bureaucratic capacity
 
         base_bureaucracy = gamerule["Base Bureaucracy"]
-        nation.bureaucracy = {category: [0, base_bureaucracy[category]] for category in base_bureaucracy.keys()}
+        nation.bureaucracy = {category: (0, base_bureaucracy[category]) for category in base_bureaucracy.keys()}
 
         self.nations[nation.name] = nation
         logInfo(f"Successfully added nation {nation.name} to game {self.name}")
@@ -234,6 +234,7 @@ class Nation:
     Attributes:
         resources (dict): Represents the total resources available for spending by the nation.
         territories (list): Holds the name of every territory owned by the nation.
+        bureaucracy (dict): Represents the capacity and current load on each bureaucratic category of the nation, with values being tuples (load, capacity)
     """
 
     def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None):
@@ -241,7 +242,10 @@ class Nation:
         self.mapcolor = mapcolor
         self.resources = resources or dict()
         self.territories = territories or dict()
+
         self.bureaucracy = bureaucracy or dict()
+        for key, value in self.bureaucracy.items():
+            self.bureaucracy[key] = tuple(value)
 
         self.role_id = role_id
 
@@ -336,6 +340,11 @@ class Nation:
                 logInfo(f"Not enough resources to build {buildingName}", details = {"Costs": blueprint["Costs"], "Resources Available": self.resources})
                 return False
 
+        for category, cost in blueprint["Bureaucratic Cost"].items():
+            if (cost > self.bureaucracy[category][1] - self.bureaucracy[category][0]):
+                logInfo(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
+                return False
+
         return True
 
 
@@ -348,8 +357,12 @@ class Nation:
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
+        #Subtract resource costs
         costs = blueprint["Costs"]
-        for k in costs.keys(): self.resources[k] = self.resources[k] - costs[k]
+        for k, v in costs.items(): self.resources[k] = self.resources[k] - v
+
+        bureaucratic_costs = blueprint["Bureaucratic Cost"]
+        for k, v in bureaucratic_costs.items(): self.bureaucracy[k] = (self.bureaucracy[k][0] + v, self.bureaucracy[k][1])
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
@@ -381,7 +394,7 @@ class Nation:
             territoryInfo = self.getTerritoryInfo(territoryName, savegame)
 
             if onlyestimate: continue
-            territories.territory_advanceconstruction(territoryInfo, savegame)
+            territories.territory_advanceconstruction(territoryInfo, savegame, self.bureaucracy)
 
             revenuesources.append(territories.territory_newturnresources(territoryInfo, savegame))
 
