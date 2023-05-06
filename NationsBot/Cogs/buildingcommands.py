@@ -108,7 +108,7 @@ class BuildingCommands(commands.Cog):
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
 
-        newstatus = territories.territory_togglebuilding(nation, territoryName, buildingName)
+        newstatus = territories.territory_togglebuilding(nation, territoryName, buildingName, savegame)
 
         await ctx.send(f"New building status: {newstatus}")
 

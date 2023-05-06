@@ -89,6 +89,30 @@ def get_producedresources(buildingName, allbuildings):
     return allbuildings[buildingName]["Produces"]
 
 
+#Get information about the building's effects
+
+def get_alleffects(buildingName, savegame):
+
+    blueprint = get_blueprint(buildingName, savegame)
+
+    if not (blueprint): return False
+
+    if not ("Effects" in blueprint.keys()): return False
+
+    return blueprint["Effects"]
+
+def get_effect(buildingName, effect, savegame):
+
+    effects = get_alleffects(buildingName, savegame)
+
+    if not (effects): return False
+
+    if not (effect in effects.keys()): return False
+
+    return effects[effect]
+
+
+
 #Calculate net income from buildings
 
 def building_newturn(buildingName, allbuildings, resourcesLeft = None):

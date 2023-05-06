@@ -163,7 +163,7 @@ class Savegame:
 
         #Check if territory is owned, remove it
         if (prevOwner):
-            terrInfo = self.nations[prevOwner].cedeTerritory(territoryName)
+            terrInfo = self.nations[prevOwner].cedeTerritory(territoryName, self)
 
         else:
             terrInfo = {"name": territoryName}
@@ -173,7 +173,7 @@ class Savegame:
             return False
 
         #Add this territory to the nation
-        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo)
+        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo, self)
 
         #Does a new map need to be generated?
         if not (self.gamestate["mapChanged"]):
@@ -252,7 +252,7 @@ class Nation:
     
     #Territory management
 
-    def cedeTerritory(self, territoryName):
+    def cedeTerritory(self, territoryName, savegame):
         """
         Removes a territory and all associated objects from this nation
         
@@ -268,12 +268,19 @@ class Nation:
             logInfo(f"Nation {self.name} could not cede territory {territoryName}!")
             return False
 
+        for buildingName, status in terrInfo["Buildings"].items():
+
+            if status != "Active":
+                continue
+
+            self.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+
         self.territories.pop(territoryName)
 
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
         return terrInfo
 
-    def annexTerritory(self, territoryName, territoryInfo):
+    def annexTerritory(self, territoryName, territoryInfo, savegame):
         """
         Add a territory and related objects to this nation.
         
@@ -288,10 +295,20 @@ class Nation:
         if ("Buildings" not in self.territories[territoryName].keys()):
             self.territories[territoryName]["Buildings"] = {} 
 
+        for buildingName, status in territoryInfo["Buildings"].items():
+
+            if status != "Active":
+                continue
+
+            self.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+
         logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
 
     def get_territory(self, territoryName):
-        
+        """
+        Get the nation-related information about a territory this nation owns
+        """
+
         if not (territoryName in self.territories.keys()):
             return False
 
@@ -372,6 +389,19 @@ class Nation:
 
         return self.territories[territoryName]['Buildings'][buildingName]
 
+    def add_buildingeffects(self, effects):
+        """
+        Given a building, add its effects to the nation
+        """
+
+        pass
+
+    def remove_buildingeffects(self, effects):
+        """
+        Given a building, add its effects to the nation
+        """
+
+        pass
 
     #New turn functions
     
