@@ -16,15 +16,15 @@ import ConcertOfNationsEngine.buildings as buildings
 
 #New turn operations    
 
-def territory_hasbuilding(nation, territoryName, buildingName):
+def hasbuilding(nation, territoryName, buildingName):
 
     territoryInfo = nation.get_territory(territoryName)
 
     return bool(buildingName in territoryInfo["Buildings"])
 
-def territory_newbuildingstatus(nation, territoryName, buildingName, newstatus):
+def newbuildingstatus(nation, territoryName, buildingName, newstatus):
 
-    if (not territory_hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, territoryName, buildingName)):
         return False
 
     territoryInfo = nation.get_territory(territoryName)
@@ -41,9 +41,9 @@ def territory_newbuildingstatus(nation, territoryName, buildingName, newstatus):
 
     return territoryInfo['Buildings'][buildingName]
 
-def territory_togglebuilding(nation, territoryName, buildingName, savegame):
+def togglebuilding(nation, territoryName, buildingName, savegame):
 
-    if (not territory_hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, territoryName, buildingName)):
         return False
 
     territoryInfo = nation.get_territory(territoryName)
@@ -64,9 +64,9 @@ def territory_togglebuilding(nation, territoryName, buildingName, savegame):
 
     return territoryInfo['Buildings'][buildingName]
 
-def territory_destroybuilding(nation, territoryName, buildingName):
+def destroybuilding(nation, territoryName, buildingName):
 
-    if (not territory_hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, territoryName, buildingName)):
         return False
 
     territoryInfo = nation.get_territory(territoryName)
@@ -75,14 +75,14 @@ def territory_destroybuilding(nation, territoryName, buildingName):
 
     logInfo(f"Territory {territoryName} destroyed building {buildingName}")
 
-def territory_newturnresources(territoryInfo, savegame):
+def newturnresources(territoryInfo, savegame):
 
     buildingsIncome = buildings.get_territories_buildingincome(territoryInfo, savegame)
             
     totalrevenue = ops.combineDicts(buildingsIncome)
     return totalrevenue
 
-def territory_advanceconstruction(territoryInfo, savegame, bureaucracy):
+def advanceconstruction(territoryInfo, savegame, bureaucracy):
     """
     Enable all buildings that have completed construction by current savegame date
     """

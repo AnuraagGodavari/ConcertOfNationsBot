@@ -424,9 +424,9 @@ class Nation:
             territoryInfo = self.getTerritoryInfo(territoryName, savegame)
 
             if onlyestimate: continue
-            territories.territory_advanceconstruction(territoryInfo, savegame, self.bureaucracy)
+            territories.advanceconstruction(territoryInfo, savegame, self.bureaucracy)
 
-            revenuesources.append(territories.territory_newturnresources(territoryInfo, savegame))
+            revenuesources.append(territories.newturnresources(territoryInfo, savegame))
 
         totalrevenue = ops.combineDicts(*revenuesources)
 
