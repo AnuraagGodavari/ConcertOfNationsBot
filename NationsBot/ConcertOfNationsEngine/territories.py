@@ -5,6 +5,7 @@ from logger import *
 import imgur
 
 from GameUtils import operations as ops
+from GameUtils import filehandling
 
 import ConcertOfNationsEngine.gamehandling as gamehandling
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -40,7 +41,7 @@ def territory_newbuildingstatus(nation, territoryName, buildingName, newstatus):
 
     return territoryInfo['Buildings'][buildingName]
 
-def territory_togglebuilding(nation, territoryName, buildingName):
+def territory_togglebuilding(nation, territoryName, buildingName, savegame):
 
     if (not territory_hasbuilding(nation, territoryName, buildingName)):
         return False
@@ -53,9 +54,11 @@ def territory_togglebuilding(nation, territoryName, buildingName):
 
     if (territoryInfo["Buildings"][buildingName] == "Active"):
         territoryInfo["Buildings"][buildingName] = "Inactive"
+        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
 
     elif (territoryInfo["Buildings"][buildingName] == "Inactive"):
         territoryInfo["Buildings"][buildingName] = "Active"
+        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
 
     logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
 
@@ -80,6 +83,11 @@ def territory_newturnresources(territoryInfo, savegame):
     return totalrevenue
 
 def territory_advanceconstruction(territoryInfo, savegame, bureaucracy):
+    """
+    Enable all buildings that have completed construction by current savegame date
+    """
+
+    neweffects = []
 
     logInfo(f"Advancing construction for buildings in {territoryInfo['Name']}")
 
@@ -95,3 +103,7 @@ def territory_advanceconstruction(territoryInfo, savegame, bureaucracy):
                 bureaucracy[category] = (bureaucracy[category][0] - cost, bureaucracy[category][1])
 
             logInfo(f"{building} now active from date {oldstatus.split(':')[-1]}")
+
+            neweffects.append(buildings.get_alleffects(building, savegame))
+
+    return ops.combineDicts(*neweffects)
