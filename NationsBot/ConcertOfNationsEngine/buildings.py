@@ -10,7 +10,8 @@ from GameUtils import operations as ops
 import ConcertOfNationsEngine.gamehandling as gamehandling
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
-valid_statuspatterns = ["Active$", "Inactive$", "Constructing:0?[\d(11)(12)]/[\d]*$"]
+valid_statuspatterns = ["Active$", "Inactive$", "Constructing:((0?[1-9])|(11)|(12))/-?[\d]*$"]
+
 
 #Validation
 
