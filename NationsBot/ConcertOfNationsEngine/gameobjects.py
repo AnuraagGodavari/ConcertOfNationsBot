@@ -394,14 +394,19 @@ class Nation:
         Given a building, add its effects to the nation
         """
 
-        pass
+        #Add bureaucracy values
+        if ("Bureaucracy" in effects.keys()):
+            for category, val in effects["Bureaucracy"].items(): self.bureaucracy[category] = (self.bureaucracy[category][0], self.bureaucracy[category][1] + val)
+            
 
     def remove_buildingeffects(self, effects):
         """
         Given a building, add its effects to the nation
         """
 
-        pass
+        #Remove bureaucracy values
+        if ("Bureaucracy" in effects.keys()):
+            for category, val in effects["Bureaucracy"].items(): self.bureaucracy[category] = (self.bureaucracy[category][0], self.bureaucracy[category][1] - val)
 
     #New turn functions
     
