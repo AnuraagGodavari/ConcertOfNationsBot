@@ -68,6 +68,8 @@ class AdminCommands(commands.Cog):
 
         nation.territories[territoryName]["Buildings"][buildingName] = "Active"
 
+        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+
         await ctx.send(f"Successfully added {buildingName} to {territoryName}!")
 
         save_saveGame(savegame)
@@ -105,7 +107,7 @@ class AdminCommands(commands.Cog):
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
 
-        newstatus = territories.newbuildingstatus(nation, territoryName, buildingName, newstatus)
+        newstatus = territories.newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame)
 
         await ctx.send(f"New building status: {newstatus}")
 
@@ -147,6 +149,8 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
         newstatus = territories.destroybuilding(nation, territoryName, buildingName)
+
+        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 

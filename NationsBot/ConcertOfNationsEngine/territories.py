@@ -22,7 +22,7 @@ def hasbuilding(nation, territoryName, buildingName):
 
     return bool(buildingName in territoryInfo["Buildings"])
 
-def newbuildingstatus(nation, territoryName, buildingName, newstatus):
+def newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame):
 
     if (not hasbuilding(nation, territoryName, buildingName)):
         return False
@@ -35,7 +35,18 @@ def newbuildingstatus(nation, territoryName, buildingName, newstatus):
     logInfo(f"Territory {territoryName} changing building {buildingName} status from {territoryInfo['Buildings'][buildingName]}")
 
     if buildings.validate_status(newstatus):
+
+        oldstatus = territoryInfo["Buildings"][buildingName]
+
         territoryInfo["Buildings"][buildingName] = newstatus
+
+        #Change whether or not the building's effects are active
+
+        if (oldstatus != "Active" and newstatus == "Active"): 
+            nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+
+        elif (oldstatus == "Active" and newstatus != "Active"): 
+            nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
 
     logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
 
