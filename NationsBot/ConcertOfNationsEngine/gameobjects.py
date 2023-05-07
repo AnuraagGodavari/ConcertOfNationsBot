@@ -429,7 +429,9 @@ class Nation:
             territoryInfo = self.getTerritoryInfo(territoryName, savegame)
 
             if onlyestimate: continue
-            territories.advanceconstruction(territoryInfo, savegame, self.bureaucracy)
+            neweffects = territories.advanceconstruction(territoryInfo, savegame, self.bureaucracy)
+
+            if (neweffects): self.add_buildingeffects(neweffects)
 
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
 
