@@ -22,7 +22,7 @@ def hasbuilding(nation, territoryName, buildingName):
 
     return bool(buildingName in territoryInfo["Buildings"])
 
-def newbuildingstatus(nation, territoryName, buildingName, newstatus):
+def newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame):
 
     if (not hasbuilding(nation, territoryName, buildingName)):
         return False
@@ -35,7 +35,32 @@ def newbuildingstatus(nation, territoryName, buildingName, newstatus):
     logInfo(f"Territory {territoryName} changing building {buildingName} status from {territoryInfo['Buildings'][buildingName]}")
 
     if buildings.validate_status(newstatus):
+
+        oldstatus = territoryInfo["Buildings"][buildingName]
+
         territoryInfo["Buildings"][buildingName] = newstatus
+
+        #Change whether or not the building's effects are active
+
+        if (oldstatus != "Active" and newstatus == "Active"): 
+            nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+
+        elif (oldstatus == "Active" and newstatus != "Active"): 
+            nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+
+        #Change nation bureaucratic load based on if the building is under construction or not
+
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+
+        if (oldstatus.startswith("Constructing:") and not newstatus.startswith("Constructing:")):
+            
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (nation.bureaucracy[category][0] - val, nation.bureaucracy[category][1])
+
+        elif (newstatus.startswith("Constructing:") and not oldstatus.startswith("Constructing:")):
+            
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (nation.bureaucracy[category][0] + val, nation.bureaucracy[category][1])
 
     logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
 
