@@ -234,6 +234,34 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases = ["changeCapacity", "change-capacity", "changecapacity", "change_bureaucracy", "changeBureaucracy", "change-bureaucracy", "changebureaucracy"])
+    @commands.has_permissions(administrator = True)
+    async def change_capacity(self, ctx, roleid, category, amount):
+        """ Change the bureaucratic capacity for any category of a specific nation's bureaucracy """
+
+        logInfo(f"change_capacity({ctx.guild.id}, {roleid}, {category}, {amount})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        if not (nation): 
+            return #Error will already have been handled
+
+        if not(category in nation.bureaucracy.keys()):
+            raise InputError(f"No such bureaucratic category \"{category}\"")
+
+        if (amount.startswith('-') or not (ops.isInt(amount))):
+            raise InputError(f"{category} capacity cannot have value \"{amount}\"")
+
+        logInfo(f"Changing bureaucratic capacity for {nation.name} for category {category} from {nation.bureaucracy[category]} to {amount}")
+
+        nation.bureaucracy[category] = (nation.bureaucracy[category][0], int(amount))
+
+        logInfo(f"Successfully changed national bureaucracy", details = nation.bureaucracy)
+        await ctx.send(f"Successfully changed bureaucratic capacity for {category} category to {amount}, type \"_n.nationinfo {roleid}_\" to view changes")
+
 
     # Manage the savegame
 
