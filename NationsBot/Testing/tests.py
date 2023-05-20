@@ -11,6 +11,7 @@ from ConcertOfNationsEngine.gameobjects import *
 
 import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.buildings as buildings
+import ConcertOfNationsEngine.populations as populations
 
 
 def generateTestWorld(gamerule, length, height, space):
@@ -197,5 +198,14 @@ def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
 
     targetNation.addBuilding(buildingName, territoryName, savegame)
 
+def testAddPopulation(gamerule, targetNation, territoryName, size, growth, occupation, identifiers):
+    
+    if not(populations.validate_population(gamerule, size, growth, occupation, identifiers)):
+        return
 
+    population = populations.Population(size, growth, occupation, identifiers)
+
+    territories.add_population(targetNation, territoryName, population)
+
+    
 
