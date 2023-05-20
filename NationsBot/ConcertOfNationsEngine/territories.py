@@ -14,7 +14,8 @@ import ConcertOfNationsEngine.dateoperations as dates
 
 import ConcertOfNationsEngine.buildings as buildings
 
-#New turn operations    
+
+#Building operations
 
 def hasbuilding(nation, territoryName, buildingName):
 
@@ -99,6 +100,14 @@ def destroybuilding(nation, territoryName, buildingName):
     territoryInfo["Buildings"].pop(buildingName)
 
     logInfo(f"Territory {territoryName} destroyed building {buildingName}")
+
+
+#Population management
+def add_population(nation, territoryName, population):
+    nation.territories[territoryName]["Population"].append(population)
+
+
+#New turn operations    
 
 def newturnresources(territoryInfo, savegame):
 

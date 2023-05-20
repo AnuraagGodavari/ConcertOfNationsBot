@@ -49,5 +49,8 @@ def combineDicts(*args):
 def isInt(inStr: str):
      return bool(re.search("^-?[1234567890]*$", inStr))
 
+def isPositiveInt(inStr: str):
+     return bool(re.search("^[1234567890]*$", inStr))
+
 def isFloat(inStr: str):
      return bool(re.search("^-?[1234567890]*(\.[1234567890])?$", inStr))
