@@ -66,7 +66,10 @@ class Savegame:
         for territory in nation.territories.values():
 
             if ("Buildings" not in territory.keys()):
-                territory["Buildings"] = {} 
+                territory["Buildings"] = dict()
+
+            if ("Population" not in territory.keys()):
+                territory["Population"] = list()
         
         #Add base bureaucratic capacity
 
@@ -293,7 +296,10 @@ class Nation:
         self.territories[territoryName] = territoryInfo
 
         if ("Buildings" not in self.territories[territoryName].keys()):
-            self.territories[territoryName]["Buildings"] = {} 
+            self.territories[territoryName]["Buildings"] = dict()
+
+        if ("Population" not in self.territories[territoryName].keys()):
+            self.territories[territoryName]["Population"] = list()
 
         for buildingName, status in territoryInfo["Buildings"].items():
 
