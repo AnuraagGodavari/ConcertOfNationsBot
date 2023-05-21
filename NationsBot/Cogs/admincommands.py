@@ -216,9 +216,61 @@ class AdminCommands(commands.Cog):
             pop = territories.change_population(nation, territoryName, size, occupation, identifiers)
 
         if not (pop):
-            raise InputError(f"Adding population failed")
+            raise InputError(f"Changing population failed")
 
         await ctx.send(f"Population {' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation} in {territoryName} now has size {size}")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases = ["changePopulationGrowth", "changePopulationgrowth","changepopulationGrowth", "changepopulationgrowth", "changepopulation_growth", "change_populationgrowth"])
+    @commands.has_permissions(administrator = True)
+    async def change_population_growth(self, ctx, terrID, growthrate: int | float, occupation, *identifiers):
+        """ Change the size of an existing population or add a new one """
+        logInfo(f"change_population({ctx.guild.id}, {terrID}, {growthrate}, {occupation}, {identifiers})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        gamerule = savegame.getGamerule()
+        if not (gamerule):
+            raise InputError("Savegame's gamerule could not be retrieved")
+
+        identifiers = populations.identifiers_list_toDict(gamerule, *identifiers)
+
+        #If no error thrown, then we can continue
+        populations.validate_population(gamerule, 1, occupation, identifiers, growth = growthrate)
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        territoryName = world_terrInfo.name
+
+        #Get nation info
+        nationName = savegame.find_terrOwner(territoryName)
+        if not (nationName): 
+            raise InputError("Territory is unowned and does not have this building")
+        nation = savegame.nations[nationName]
+
+        #Add population if doesn't exist
+        if not (territories.get_population(nation, territoryName, occupation, identifiers)):
+            raise InputError("Cannot change growth rate for a population that does not already exist")
+
+        pop = territories.change_populationgrowth(nation, territoryName, growthrate, occupation, identifiers)
+
+        if not (pop):
+            raise InputError(f"Changing population growth rate failed")
+
+        await ctx.send(f"Population {' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation} in {territoryName} now has growth rate {growthrate}")
 
         save_saveGame(savegame)
 
