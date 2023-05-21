@@ -106,8 +106,52 @@ def destroybuilding(nation, territoryName, buildingName):
 def add_population(nation, territoryName, population):
     nation.territories[territoryName]["Population"].append(population)
 
-def all_populations(nation, territoryName):
-    return nation[territoryName]["population"]
+    return population
+
+def get_population(nation, territoryName, occupation, identifiers):
+    """ Returns a population in this territory matching specified occupation and identifiers or False if none exists """
+
+    territory_info = nation.get_territory(territoryName)
+
+    pop = next(
+        (
+            pop for pop in territory_info["Population"] 
+            if pop.occupation == occupation
+            and identifiers == pop.identifiers
+        ), False)
+
+    return pop
+
+def remove_population(nation, territoryName, occupation, identifiers):
+    
+    pop = get_population(nation, territoryName, occupation, identifiers)
+
+    territory_info = nation.get_territory(territoryName)
+
+    pop = next(
+        (
+            pop for pop in territory_info["Population"] 
+            if pop.occupation == occupation
+            and identifiers == pop.identifiers
+        ), 
+        False
+        )
+
+    if (pop): territory_info["Population"].remove(pop)
+
+    return pop
+
+def change_population(nation, territoryName, newsize, occupation, identifiers):
+    """ Changes the size of a population in this territory matching specified occupation and identifiers or False if none exists """
+    
+    pop = get_population(nation, territoryName, occupation, identifiers)
+
+    if not(pop):
+        return False
+
+    pop.size = newsize
+
+    return pop
 
 #New turn operations    
 
