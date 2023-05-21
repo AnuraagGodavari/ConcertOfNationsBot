@@ -57,8 +57,7 @@ class BuildingCommands(commands.Cog):
         roleid = playerinfo['role_discord_id']
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         #Validate that building can be bought
 
@@ -102,8 +101,7 @@ class BuildingCommands(commands.Cog):
         roleid = playerinfo['role_discord_id']
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
@@ -146,8 +144,7 @@ class BuildingCommands(commands.Cog):
         roleid = playerinfo['role_discord_id']
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         #Can we do the operation on this territory
 
