@@ -153,6 +153,18 @@ def change_population(nation, territoryName, newsize, occupation, identifiers):
 
     return pop
 
+def change_populationgrowth(nation, territoryName, growthrate, occupation, identifiers):
+    """ Changes the size of a population in this territory matching specified occupation and identifiers or False if none exists """
+    
+    pop = get_population(nation, territoryName, occupation, identifiers)
+
+    if not(pop):
+        return False
+
+    pop.growth = growthrate
+
+    return pop
+
 #New turn operations    
 
 def newturnresources(territoryInfo, savegame):
