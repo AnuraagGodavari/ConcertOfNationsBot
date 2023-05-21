@@ -34,30 +34,30 @@ def get_RoleID(roleid):
 
     raise InputError(f"\"{roleid}\" is not a valid role")
 
-def get_NationFromRole(ctx, roleid, savegame):
+def get_NationFromRole(ctx, roleid, savegame, isOptionalArg = False):
     """Get nation info"""
 
     roleObj = ctx.guild.get_role(int(get_RoleID(roleid)))
     if not(roleObj):
+        if isOptionalArg: return False
         raise InputError(f"Unknown role {roleid}")
-        return False
 
     role = get_Role(roleObj.id)
     
     if not(role):
-        logInfo(f"Could not load information for the role {roleid}")
+        if isOptionalArg: return False
         raise InputError(f"Could not load information for the role {roleid}")
-        return False
 
     if not(role['name'] in savegame.nations.keys()):
+        if isOptionalArg: return False
         raise InputError(f"Nation {role['name']} does not exist in this game")
-        return False
+        
 
     nation = savegame.nations[role['name']]
 
     if not(role['discord_id'] == nation.role_id):
+        if isOptionalArg: return False
         raise InputError(f"The role for {role['name']} does not match with an existing nation {nation.name}")
-        return False
 
     logInfo(f"Successfully got nation {nation.name} by role!")
 
