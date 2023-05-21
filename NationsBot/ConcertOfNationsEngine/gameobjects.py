@@ -403,7 +403,6 @@ class Nation:
         #Add bureaucracy values
         if ("Bureaucracy" in effects.keys()):
             for category, val in effects["Bureaucracy"].items(): self.bureaucracy[category] = (self.bureaucracy[category][0], self.bureaucracy[category][1] + val)
-            
 
     def remove_buildingeffects(self, effects):
         """
@@ -413,6 +412,15 @@ class Nation:
         #Remove bureaucracy values
         if ("Bureaucracy" in effects.keys()):
             for category, val in effects["Bureaucracy"].items(): self.bureaucracy[category] = (self.bureaucracy[category][0], self.bureaucracy[category][1] - val)
+
+
+    #Population management
+
+    def all_populations(self):
+        """Get a list of all the populations in all of this nation's territories"""
+
+        return {territoryName: territoryInfo["Population"] for territoryName, territoryInfo in self.territories.items()}
+
 
     #New turn functions
     

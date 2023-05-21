@@ -69,8 +69,7 @@ class InfoCommands(commands.Cog):
             logInfo(f"Got default role id {roleid} for this player")
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         menu = MenuEmbed(
             f"{nation.name} Information", 
@@ -109,8 +108,7 @@ class InfoCommands(commands.Cog):
             logInfo(f"Got default role id {roleid} for this player")
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         world = savegame.getWorld()
         if not (world):
@@ -279,6 +277,112 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
+
+    #Population Information
+
+    def nation_population(self, ctx, nation):
+
+        menu = MenuEmbed(
+            f"Populations", 
+            "_List of each individual population in this nation by territory, occupation and other identifiers_", 
+            ctx.author.id,
+            fields = [
+                (territoryName + ' ' + ' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
+                {
+                    "Population": pop.size,
+                    "Growth Rate": pop.growth
+                }
+                )
+                for territoryName, popslist in nation.all_populations().items() for pop in popslist
+            ],
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        return menu
+
+    def territory_population(self, ctx, terrID, savegame):
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        pops = []
+
+        #Territory info from the game
+        terr_owner = savegame.find_terrOwner(world_terrInfo.name)
+        if terr_owner:
+
+            nation_terrInfo = savegame.nations[terr_owner].get_territory(world_terrInfo.name)
+            
+            pops = [
+                (' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
+                {
+                    "Population": pop.size,
+                    "Growth Rate": pop.growth
+                }
+                )
+                for pop in nation_terrInfo["Population"]
+            ]
+
+        menu = MenuEmbed(
+            f"{world_terrInfo.name} Populations", 
+            "_List of each individual population in this nation by territory, occupation and other identifiers_", 
+            ctx.author.id,
+            fields = pops,
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        return menu
+
+    @commands.command(aliases=['people', 'populations'])
+    async def population(self, ctx, optionalID = None):
+        """ Show all of the populations in a nation or a territory"""
+        logInfo(f"population({ctx.guild.id}, {optionalID})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        roleid = optionalID
+
+        if not (roleid):
+
+            playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+            if not (playerinfo):
+                raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+            roleid = playerinfo['role_discord_id']
+            logInfo(f"Got default role id {roleid} for this player")
+
+        nation = get_NationFromRole(ctx, roleid, savegame, isOptionalArg=True)
+
+        if (nation): 
+            menu = self.nation_population(ctx, nation)
+
+        #Else, assume this is a territory, this may or may not be true, the function will handle any errors
+        else:
+            menu = self.territory_population(ctx, optionalID, savegame)
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created populations menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+        
 
 async def setup(client):
     await client.add_cog(InfoCommands(client))
