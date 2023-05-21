@@ -198,9 +198,9 @@ def testBuyBuilding(targetNation, buildingName, territoryName, savegame):
 
     targetNation.addBuilding(buildingName, territoryName, savegame)
 
-def testAddPopulation(gamerule, targetNation, territoryName, size, growth, occupation, identifiers):
+def testAddPopulation(gamerule, targetNation, territoryName, size, occupation, identifiers, growth = 0):
     
-    if not(populations.validate_population(gamerule, size, growth, occupation, identifiers)):
+    if not(populations.validate_population(gamerule, size, occupation, identifiers, growth)):
         return
 
     population = populations.Population(size, growth, occupation, identifiers)
