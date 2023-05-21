@@ -11,14 +11,21 @@ from GameUtils import filehandling
 import ConcertOfNationsEngine.gamehandling as gamehandling
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
-def validate_population(gamerule, size, growth, occupation, identifiers):
+def identifiers_list_toDict(gamerule, *identifiers):
+    return {
+        category: identifier
+        for category, identifiers_list in gamerule["Population Identifiers"].items() for identifier in identifiers_list 
+        if identifier in identifiers
+    }
+
+def validate_population(gamerule, size, occupation, identifiers, growth = 0):
     
     #Validate size
     if (type(size) == int):
-        if size <= 0:
-            raise InputError(f"Invalid size {size}, must be a positive integer")
+        if size < 0:
+            raise InputError(f"Invalid size {size}, must be a non-negative integer")
     elif (type(size) == str):
-        if not(ops.isPositiveInt(size)):
+        if not(ops.isNonnegativeInt(size)):
             raise InputError(f"Invalid size {size}, must be a positive integer")
     else:
         raise InputError(f"Invalid size {size}, must be a positive integer")
