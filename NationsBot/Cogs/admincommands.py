@@ -18,6 +18,7 @@ from ConcertOfNationsEngine.dateoperations import *
 
 from ConcertOfNationsEngine.buildings import *
 import ConcertOfNationsEngine.territories as territories
+import ConcertOfNationsEngine.populations as populations
 
 #The cog itself
 class AdminCommands(commands.Cog):
@@ -153,6 +154,71 @@ class AdminCommands(commands.Cog):
         nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
+
+        save_saveGame(savegame)
+
+
+    # Manage population
+
+    @commands.command(aliases = ["changePopulation", "changepopulation", "add_population", "addPopulation", "addpopulation"])
+    @commands.has_permissions(administrator = True)
+    async def change_population(self, ctx, terrID, size: int, occupation, *identifiers):
+        """ Change the size of an existing population or add a new one """
+        logInfo(f"change_population({ctx.guild.id}, {terrID}, {size}, {occupation}, {identifiers})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        gamerule = savegame.getGamerule()
+        if not (gamerule):
+            raise InputError("Savegame's gamerule could not be retrieved")
+
+        identifiers = populations.identifiers_list_toDict(gamerule, *identifiers)
+
+        #If no error thrown, then we can continue
+        populations.validate_population(gamerule, size, occupation, identifiers)
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terrInfo = world[terrID]
+
+        if not world_terrInfo:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+        
+        territoryName = world_terrInfo.name
+
+        #Get nation info
+        nationName = savegame.find_terrOwner(territoryName)
+        if not (nationName): 
+            raise InputError("Territory is unowned and does not have this building")
+        nation = savegame.nations[nationName]
+
+        #Add population if doesn't exist
+        if not (territories.get_population(nation, territoryName, occupation, identifiers)):
+            if size == 0:
+                raise InputError("Cannot delete a population that does not already exist")
+            logInfo("Specified population does not exist, adding new population")
+            pop = territories.add_population(nation, territoryName, populations.Population(size, gamerule["Base Population Growth"], occupation, identifiers))
+
+        #Delete the population if size is 0
+        elif size == 0:
+            logInfo("Specified population exists and will be deleted")
+            pop = territories.remove_population(nation, territoryName, occupation, identifiers)
+            
+        #Else, change the population size
+        else:
+            pop = territories.change_population(nation, territoryName, size, occupation, identifiers)
+
+        if not (pop):
+            raise InputError(f"Adding population failed")
+
+        await ctx.send(f"Population {' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation} in {territoryName} now has size {size}")
 
         save_saveGame(savegame)
 
