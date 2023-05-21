@@ -106,6 +106,8 @@ def destroybuilding(nation, territoryName, buildingName):
 def add_population(nation, territoryName, population):
     nation.territories[territoryName]["Population"].append(population)
 
+def all_populations(nation, territoryName):
+    return nation[territoryName]["population"]
 
 #New turn operations    
 

@@ -172,8 +172,7 @@ class AdminCommands(commands.Cog):
             return #Error will already have been handled
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         transferred_terr =  savegame.transfer_territory(terrID, nation)
         if not transferred_terr:
@@ -202,8 +201,7 @@ class AdminCommands(commands.Cog):
             return #Error will already have been handled
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         if len(args) < 1:
             raise InputError("Not enough args!")
@@ -246,8 +244,7 @@ class AdminCommands(commands.Cog):
             return #Error will already have been handled
 
         nation = get_NationFromRole(ctx, roleid, savegame)
-        if not (nation): 
-            return #Error will already have been handled
+        
 
         if not(category in nation.bureaucracy.keys()):
             raise InputError(f"No such bureaucratic category \"{category}\"")
