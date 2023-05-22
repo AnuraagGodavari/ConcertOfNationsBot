@@ -62,8 +62,8 @@ class Population:
         identifiers (dict): A dict with string values, each value representing an identifying characteristic of this population.
     """
 
-    def __init__(self, size, growth, occupation, identifiers):
+    def __init__(self, size, growth_modifier, occupation, identifiers):
         self.size = size
-        self.growth = growth
+        self.growth_modifier = growth_modifier
         self.occupation = occupation
         self.identifiers = identifiers

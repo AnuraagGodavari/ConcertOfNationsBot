@@ -161,7 +161,7 @@ def change_populationgrowth(nation, territoryName, growthrate, occupation, ident
     if not(pop):
         return False
 
-    pop.growth = growthrate
+    pop.growth_modifier = growthrate
 
     return pop
 

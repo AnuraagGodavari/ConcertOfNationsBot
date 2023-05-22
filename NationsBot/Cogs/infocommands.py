@@ -290,7 +290,7 @@ class InfoCommands(commands.Cog):
                 (territoryName + ' ' + ' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
                 {
                     "Population": pop.size,
-                    "Growth Rate": pop.growth
+                    "Growth Rate": pop.growth_modifier
                 }
                 )
                 for territoryName, popslist in nation.all_populations().items() for pop in popslist
@@ -328,7 +328,7 @@ class InfoCommands(commands.Cog):
                 (' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
                 {
                     "Population": pop.size,
-                    "Growth Rate": pop.growth
+                    "Growth Rate": pop.growth_modifier
                 }
                 )
                 for pop in nation_terrInfo["Population"]
