@@ -204,7 +204,7 @@ class AdminCommands(commands.Cog):
             if size == 0:
                 raise InputError("Cannot delete a population that does not already exist")
             logInfo("Specified population does not exist, adding new population")
-            pop = territories.add_population(nation, territoryName, populations.Population(size, gamerule["Base Population Growth"], occupation, identifiers))
+            pop = territories.add_population(nation, territoryName, populations.Population(size, 0, occupation, identifiers))
 
         #Delete the population if size is 0
         elif size == 0:
@@ -222,11 +222,11 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-    @commands.command(aliases = ["changePopulationGrowth", "changePopulationgrowth","changepopulationGrowth", "changepopulationgrowth", "changepopulation_growth", "change_populationgrowth"])
+    @commands.command(aliases = ["changePopulationGrowth", "changePopulationgrowth","changepopulationGrowth", "changepopulationgrowth", "changepopulation_growth", "change_populationgrowth", "populationgrowth", "populationGrowth", "population-growth"])
     @commands.has_permissions(administrator = True)
     async def change_population_growth(self, ctx, terrID, growthrate: int | float, occupation, *identifiers):
-        """ Change the size of an existing population or add a new one """
-        logInfo(f"change_population({ctx.guild.id}, {terrID}, {growthrate}, {occupation}, {identifiers})")
+        """ Change the growth rate modifier of an existing population """
+        logInfo(f"change_population_growth({ctx.guild.id}, {terrID}, {growthrate}, {occupation}, {identifiers})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -270,7 +270,7 @@ class AdminCommands(commands.Cog):
         if not (pop):
             raise InputError(f"Changing population growth rate failed")
 
-        await ctx.send(f"Population {' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation} in {territoryName} now has growth rate {growthrate}")
+        await ctx.send(f"Population {' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation} in {territoryName} now has growth rate modifier {growthrate}")
 
         save_saveGame(savegame)
 
