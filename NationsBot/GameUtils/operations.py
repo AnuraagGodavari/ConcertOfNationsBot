@@ -56,4 +56,7 @@ def isNonnegativeInt(inStr: str):
      return bool(re.search("^[1234567890]*$", inStr))
 
 def isFloat(inStr: str):
-     return bool(re.search("^-?[1234567890]*(\.[1234567890])?$", inStr))
+     return bool(re.search("^-?[1234567890]*(\.[1234567890]*)?$", inStr))
+
+def isNonnegativeFloat(inStr: str):
+     return bool(re.search("^[1234567890]*(\.[1234567890])?$", inStr))
