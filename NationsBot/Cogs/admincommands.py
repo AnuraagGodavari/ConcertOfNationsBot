@@ -377,6 +377,30 @@ class AdminCommands(commands.Cog):
         logInfo(f"Successfully changed national bureaucracy", details = nation.bureaucracy)
         await ctx.send(f"Successfully changed bureaucratic capacity for {category} category to {amount}, type \"_n.nationinfo {roleid}_\" to view changes")
 
+    @commands.command(aliases = ["changeTax", "change-tax", "changetax"])
+    @commands.has_permissions(administrator = True)
+    async def change_tax(self, ctx, roleid, amount):
+        """ Change a nation's national tax modifier """
+
+        logInfo(f"change_capacity({ctx.guild.id}, {roleid}, {amount})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (ops.isFloat(amount)):
+            raise InputError(f"Tax modifier cannot have value \"{amount}\"")
+
+        logInfo(f"Changing tax modifier for {nation.name} from {nation.modifiers['Tax']} to {amount}")
+
+        nation.modifiers['Tax'] = float(amount)
+
+        logInfo(f"Successfully changed national tax modifier to {nation.modifiers['Tax']}")
+        await ctx.send(f"Successfully changed national tax modifier to {nation.modifiers['Tax']}, type \"_n.nationinfo {roleid}_\" to view changes")
+
+
 
     # Manage the savegame
 
