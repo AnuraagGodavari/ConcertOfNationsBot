@@ -77,7 +77,8 @@ class InfoCommands(commands.Cog):
             None,
             fields = [
                 ("Resources", nation.resources),
-                ("Bureaucracy", {f"{category}": f"{cap[0]}/{cap[1]}" for category, cap in nation.bureaucracy.items()})
+                ("Bureaucracy", {f"{category}": f"{cap[0]}/{cap[1]}" for category, cap in nation.bureaucracy.items()}),
+                ("Modifiers", nation.modifiers)
             ]
             )
 
