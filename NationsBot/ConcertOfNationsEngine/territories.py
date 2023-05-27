@@ -1,3 +1,4 @@
+import math
 from copy import copy
 
 from database import *
@@ -140,6 +141,20 @@ def remove_population(nation, territoryName, occupation, identifiers):
     if (pop): territory_info["Population"].remove(pop)
 
     return pop
+
+def grow_all_populations(gamerule, nation, territoryInfo, compound):
+    """
+    Grow the territory's population
+
+    Args:
+        compound (int): Exponent applied to 1 + the population growth rate
+    """
+
+    base_growth = gamerule["Base Population Growth"]
+
+    for pop in territoryInfo["Population"]:
+        pop.size = math.floor(pop.size * ((1 + base_growth + pop.growth_modifier) ** compound))
+
 
 def change_population(nation, territoryName, newsize, occupation, identifiers):
     """ Changes the size of a population in this territory matching specified occupation and identifiers or False if none exists """
