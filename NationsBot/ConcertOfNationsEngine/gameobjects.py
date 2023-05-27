@@ -230,6 +230,10 @@ class Savegame:
         logInfo("Successfully generated, uploaded and saved world map")
 
 
+nationmodifiers_template = {
+    "Tax": 0
+}
+
 class Nation:
     """
     Represents a nation, which controls a number of territories and ingame objects such as buildings and armies, as well as having an economy, meaning resources and their production.
@@ -238,9 +242,10 @@ class Nation:
         resources (dict): Represents the total resources available for spending by the nation.
         territories (list): Holds the name of every territory owned by the nation.
         bureaucracy (dict): Represents the capacity and current load on each bureaucratic category of the nation, with values being tuples (load, capacity)
+        tax_modifier (float): Added onto the base national tax rate and used to calculate the tax revenue from the national population
     """
 
-    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None):
+    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, modifiers = None):
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
@@ -251,6 +256,8 @@ class Nation:
             self.bureaucracy[key] = tuple(value)
 
         self.role_id = role_id
+        
+        self.modifiers = modifiers or copy(nationmodifiers_template)
 
     
     #Territory management
@@ -340,6 +347,7 @@ class Nation:
 
 
     #Economic management
+
     def canBuyBuilding(self, savegame, buildingName, blueprint, territoryName):
         """
         Validate that an building with a given blueprint can be bought by this country
@@ -424,6 +432,12 @@ class Nation:
 
     #New turn functions
     
+    def get_taxrate(self, gamerule):
+        return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]
+
+    def get_taxincome(self, gamerule):
+        return sum([pop.size for popslist in self.all_populations().values() for pop in popslist]) * self.get_taxrate(gamerule)
+
     def get_TurnRevenue(self, savegame, onlyestimate = False):
         """
         Get the total amount of resources that each territory this nation owns will produce.
@@ -457,6 +471,8 @@ class Nation:
         """Get the net change in resources for this nation for the new turn"""
         logInfo(f"Nation {self.name} calculating total resource net income for this turn")
 
+        gamerule = savegame.getGamerule()
+
         #Add resource revenue to self.resources
         revenue = self.get_TurnRevenue(savegame)
 
@@ -464,6 +480,9 @@ class Nation:
             revenue[resource] *= numMonths
 
         self.resources = ops.combineDicts(self.resources, revenue)
+
+        print(self.get_taxincome(gamerule))
+        self.resources["Money"] = (self.resources["Money"] + self.get_taxincome(gamerule) * numMonths)
 
         logInfo(f"Successfully calculated net income for {self.name}")
 
