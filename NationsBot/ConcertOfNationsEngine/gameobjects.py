@@ -467,7 +467,22 @@ class Nation:
 
         logInfo(f"Successfully calculated net income for {self.name}")
 
+    def grow_population(self, gamerule, numMonths):
+        """Grow the population of each territory in this nation"""
+
+        logInfo(f"Nation {self.name} growing population")
+
+        for territoryName, territoryInfo in self.territories.items():
+
+            territories.grow_all_populations(gamerule, self, territoryInfo, numMonths)
+
+            logInfo(f"Territory {territoryName} grew population")
+
+        logInfo(f"Nation {self.name} successfully grew population")
+
     def newTurn(self, savegame, numMonths):
         """Perform tasks for the end of a current turn"""
         
+        self.grow_population(savegame.getGamerule(), numMonths)
+
         self.add_newTurn_Resources(savegame, numMonths)
