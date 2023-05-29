@@ -207,5 +207,26 @@ def testAddPopulation(gamerule, targetNation, territoryName, size, occupation, i
 
     territories.add_population(targetNation, territoryName, population)
 
+def testRecruitManpower(targetNation, territoryName, recruitment_size):
     
+    if (territories.get_totalpopulation(targetNation, territoryName) <= 0):
+        raise InputError(f"{territoryName} is not populated")
+
+    logInfo(f"Recruiting {recruitment_size} manpower from {territoryName}", details = filehandling.saveObject(targetNation.get_territory(territoryName)))
+
+    territories.recruit_manpower(targetNation, territoryName, recruitment_size)
+
+    logInfo(f"Recruited {recruitment_size} manpower from {territoryName}", details = filehandling.saveObject(targetNation.get_territory(territoryName)))
+
+def testDisbandManpower(targetNation, territoryName, disband_size):
+
+    logInfo(f"Disbanding {disband_size} manpower from {territoryName}", details = filehandling.saveObject(targetNation.get_territory(territoryName)))
+
+    territories.disband_manpower(targetNation, territoryName, disband_size)
+
+    logInfo(f"Disbanded {disband_size} manpower from {territoryName}", details = filehandling.saveObject(targetNation.get_territory(territoryName)))
+
+
+
+
 

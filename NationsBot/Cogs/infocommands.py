@@ -21,7 +21,7 @@ import ConcertOfNationsEngine.territories as territories
 
 #The cog itself
 class InfoCommands(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ A cog for commands that deliver information to a player """
     
     def __init__(self, client):
         self.client = client
@@ -181,8 +181,10 @@ class InfoCommands(commands.Cog):
             
             fields += [
                 ("Owner", terr_owner),
-                ("Number of buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
-                ("Impact on revenue", territories.newturnresources(nation_terrInfo, savegame) or None)
+                ("Buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
+                ("Revenue", territories.newturnresources(nation_terrInfo, savegame) or None),
+                ("Population", territories.get_totalpopulation(savegame.nations[terr_owner], world_terrInfo.name)),
+                ("Manpower", nation_terrInfo["Savegame"]["Manpower"])
             ]
 
         
@@ -291,7 +293,8 @@ class InfoCommands(commands.Cog):
                 (territoryName + ' ' + ' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
                 {
                     "Population": pop.size,
-                    "Growth Rate": pop.growth_modifier
+                    "Growth": pop.growth_modifier,
+                    "Mobilization": pop.manpower / pop.size
                 }
                 )
                 for territoryName, popslist in nation.all_populations().items() for pop in popslist
@@ -329,7 +332,8 @@ class InfoCommands(commands.Cog):
                 (' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
                 {
                     "Population": pop.size,
-                    "Growth Rate": pop.growth_modifier
+                    "Growth Rate": pop.growth_modifier,
+                    "Percent Raised as Manpower": pop.manpower / pop.size
                 }
                 )
                 for pop in nation_terrInfo["Population"]
