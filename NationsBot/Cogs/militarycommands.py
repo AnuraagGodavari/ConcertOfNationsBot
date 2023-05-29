@@ -62,7 +62,7 @@ class MilitaryCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (territoryName in nation.territories.keys()):
-            raise InputError(f"<@{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         total_pop = territories.get_totalpopulation(nation, territoryName)
 
@@ -118,7 +118,7 @@ class MilitaryCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (territoryName in nation.territories.keys()):
-            raise InputError(f"<@{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         total_pop = territories.get_totalpopulation(nation, territoryName)
 
