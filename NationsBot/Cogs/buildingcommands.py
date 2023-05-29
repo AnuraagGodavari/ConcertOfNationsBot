@@ -49,6 +49,7 @@ class BuildingCommands(commands.Cog):
         
         territoryName = world_terrInfo.name
 
+        #Validate that the player owns this territory
         playerinfo = get_player_byGame(savegame, ctx.author.id)
 
         if not (playerinfo):
@@ -57,6 +58,9 @@ class BuildingCommands(commands.Cog):
         roleid = playerinfo['role_discord_id']
 
         nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (territoryName in nation.territories.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
         
 
         #Validate that building can be bought
@@ -102,9 +106,8 @@ class BuildingCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
         
-
         if (territoryName not in nation.territories.keys()):
-            raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         newstatus = territories.togglebuilding(nation, territoryName, buildingName, savegame)
 
@@ -145,11 +148,10 @@ class BuildingCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
         
-
         #Can we do the operation on this territory
 
         if (territoryName not in nation.territories.keys()):
-            raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
@@ -159,7 +161,6 @@ class BuildingCommands(commands.Cog):
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
         save_saveGame(savegame)
-
 
 
 async def setup(client):
