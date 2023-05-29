@@ -103,7 +103,48 @@ def destroybuilding(nation, territoryName, buildingName):
     logInfo(f"Territory {territoryName} destroyed building {buildingName}")
 
 
+#Manpower management
+
+def get_manpower(nation, territoryName):
+
+    return nation.get_territory(territoryName)["Manpower"]
+
+def recruit_manpower(nation, territoryName, recruitment_amt):
+    """ Recruit manpower for this territory proportionally from among the population """
+
+    territoryInfo = nation.get_territory(territoryName)
+
+    total_pop = sum([pop.size for pop in territoryInfo["Population"]])
+
+    pop_shares = [pop.size/total_pop for pop in territoryInfo["Population"]]
+
+    for i, pop in enumerate(territoryInfo["Population"]):
+
+        pop.manpower += round(pop_shares[i] * recruitment_amt)
+
+    territoryInfo["Manpower"] += recruitment_amt
+
+def disband_manpower(nation, territoryName, disband_amt):
+    """ Reduce the available manpower of this territory and distribute it proportionally among the population """
+
+    territoryInfo = nation.get_territory(territoryName)
+
+    pop_shares = [pop.manpower/territoryInfo["Manpower"] for pop in territoryInfo["Population"]]
+
+    for i, pop in enumerate(territoryInfo["Population"]):
+
+        pop.manpower -= round(pop_shares[i] * disband_amt)
+
+    territoryInfo["Manpower"] -= disband_amt
+
+
 #Population management
+
+def get_totalpopulation(nation, territoryName):
+    """ Returns True if the sum of the populations in this territory is greater than 0, otherwise returns False """
+
+    return sum([pop.size for pop in nation.get_territory(territoryName)["Population"]])
+
 def add_population(nation, territoryName, population):
     nation.territories[territoryName]["Population"].append(population)
 
