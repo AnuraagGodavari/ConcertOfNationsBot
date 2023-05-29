@@ -71,6 +71,9 @@ class Savegame:
             if ("Population" not in territory.keys()):
                 territory["Population"] = list()
         
+            if ("Manpower" not in territory.keys()):
+                territory["Manpower"] = 0
+
         #Add base bureaucratic capacity
 
         base_bureaucracy = gamerule["Base Bureaucracy"]
@@ -308,6 +311,9 @@ class Nation:
         if ("Population" not in self.territories[territoryName].keys()):
             self.territories[territoryName]["Population"] = list()
 
+        if ("Manpower" not in self.territories[territoryName].keys()):
+            self.territories[territoryName]["Manpower"] = 0
+
         for buildingName, status in territoryInfo["Buildings"].items():
 
             if status != "Active":
@@ -436,7 +442,7 @@ class Nation:
         return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]
 
     def get_taxincome(self, gamerule):
-        return sum([pop.size for popslist in self.all_populations().values() for pop in popslist]) * self.get_taxrate(gamerule)
+        return sum([pop.size - pop.manpower for popslist in self.all_populations().values() for pop in popslist]) * self.get_taxrate(gamerule)
 
     def get_TurnRevenue(self, savegame, onlyestimate = False):
         """

@@ -50,7 +50,7 @@ def isInt(inStr: str):
      return bool(re.search("^-?[1234567890]*$", inStr))
 
 def isPositiveInt(inStr: str):
-     return bool(re.search("^0*?[123456789]+0*$", inStr))
+     return bool(re.search("^0*?[123456789]+[1234567890]*$", inStr))
 
 def isNonnegativeInt(inStr: str):
      return bool(re.search("^[1234567890]*$", inStr))

@@ -60,10 +60,12 @@ class Population:
         growth (float): The growth rate of this population per turn
         occupation (string): The job that all of these people share.
         identifiers (dict): A dict with string values, each value representing an identifying characteristic of this population.
+        manpower (int): The amount of this population's size that has mobilized as manpower
     """
 
-    def __init__(self, size, growth_modifier, occupation, identifiers):
+    def __init__(self, size, growth_modifier, occupation, identifiers, manpower = 0):
         self.size = size
         self.growth_modifier = growth_modifier
         self.occupation = occupation
         self.identifiers = identifiers
+        self.manpower = manpower
