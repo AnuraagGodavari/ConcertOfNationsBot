@@ -53,7 +53,7 @@ async def test_bot(ctx):
             start_ctx = await nationsbot.get_context(await ctx.send("Starting Bot Test"))
             await testsuite(start_ctx, nationsbot)
 
-            start_ctx = await ctx.send("Bot testing ended without any errors")
+            start_ctx = await ctx.send("Bot testing ended without any unexpected errors")
 
         except Exception as e: logError(e)
 
