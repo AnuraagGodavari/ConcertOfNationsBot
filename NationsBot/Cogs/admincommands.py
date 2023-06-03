@@ -274,6 +274,75 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases = ["changeManpower", "change-manpower", "changemanpower"])
+    @commands.has_permissions(administrator = True)
+    async def change_manpower(self, ctx, terrID, amount):
+        """ Raise manpower in a given territory. """
+        logInfo(f"change_manpower({ctx.guild.id}, {terrID}, {amount})")
+
+        if not (ops.isInt(amount)):
+            raise InputError(f"Invalid amount {amount}, must be integer")
+
+        amount = int(amount)
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terr = world[terrID]
+
+        if not world_terr:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        territoryName = world_terr.name
+
+        nationName = savegame.find_terrOwner(territoryName)
+        if not (nationName): 
+            raise InputError("Territory is unowned and cannot have manpower changed for it.")
+        nation = savegame.nations[nationName]
+
+        total_pop = territories.get_totalpopulation(nation, territoryName)
+
+        #If change amount is positive, raise manpower
+
+        if (amount > 0):
+
+            if (total_pop <= 0):
+                raise InputError("Manpower cannot be raised from this territory because it has no population")
+
+            if (territories.get_manpower(nation, territoryName) + amount > total_pop):
+                raise InputError(f"Cannot raise {amount} manpower because it exceeds total ummobilized population of {total_pop}")
+
+            territories.recruit_manpower(nation, territoryName, amount)
+
+        #If change amount is negative, disband manpower
+
+        elif (amount < 0):
+
+            amount = abs(amount)
+
+            if (total_pop <= 0):
+                raise InputError("Manpower cannot be disbanded from this territory because it has no population")
+
+            manpower = territories.get_manpower(nation, territoryName)
+
+            if (manpower < amount):
+                raise InputError(f"Cannot disband {amount} manpower because it exceeds total manpower {manpower}")
+
+            territories.disband_manpower(nation, territoryName, amount)
+
+        logInfo(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, territoryName)}")
+        await ctx.send(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, territoryName)}")
+
+        save_saveGame(savegame)
+
 
     # Manage nations
 
