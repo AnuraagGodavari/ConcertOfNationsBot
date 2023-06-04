@@ -442,7 +442,7 @@ class Nation:
         return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]
 
     def get_taxincome(self, gamerule):
-        return sum([pop.size - pop.manpower for popslist in self.all_populations().values() for pop in popslist]) * self.get_taxrate(gamerule)
+        return sum([min(pop.size - pop.manpower, pop.size) for popslist in self.all_populations().values() for pop in popslist]) * self.get_taxrate(gamerule)
 
     def get_TurnRevenue(self, savegame, onlyestimate = False):
         """
