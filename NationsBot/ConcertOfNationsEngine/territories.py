@@ -129,11 +129,18 @@ def disband_manpower(nation, territoryName, disband_amt):
 
     territoryInfo = nation.get_territory(territoryName)
 
-    pop_shares = [pop.manpower/territoryInfo["Manpower"] for pop in territoryInfo["Population"]]
+    #Account for manpower edited in manually
+    real_manpower = sum([pop.manpower for pop in territoryInfo["Population"]])
+
+    pop_shares = [pop.manpower/(real_manpower or 1) for pop in territoryInfo["Population"]]
 
     for i, pop in enumerate(territoryInfo["Population"]):
 
-        pop.manpower -= round(pop_shares[i] * disband_amt)
+        pop_disbandamt = round(pop_shares[i] * disband_amt)
+
+        if (pop_disbandamt > pop.manpower): pop_disbandamt = pop.manpower
+
+        pop.manpower -= pop_disbandamt
 
     territoryInfo["Manpower"] -= disband_amt
 

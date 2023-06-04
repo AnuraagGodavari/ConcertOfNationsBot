@@ -333,6 +333,7 @@ class InfoCommands(commands.Cog):
                 {
                     "Population": pop.size,
                     "Growth Rate": pop.growth_modifier,
+                    "Manpower": pop.manpower,
                     "Percent Raised as Manpower": pop.manpower / pop.size
                 }
                 )
