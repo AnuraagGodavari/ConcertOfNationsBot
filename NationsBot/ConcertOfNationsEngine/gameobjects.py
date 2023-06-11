@@ -15,6 +15,8 @@ import ConcertOfNationsEngine.dateoperations as dates
 
 import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.territories as territories
+import ConcertOfNationsEngine.populations as populations
+import ConcertOfNationsEngine.military as military
 
 
 class Savegame:
@@ -248,11 +250,12 @@ class Nation:
         tax_modifier (float): Added onto the base national tax rate and used to calculate the tax revenue from the national population
     """
 
-    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, modifiers = None):
+    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, military = None, modifiers = None):
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
         self.territories = territories or dict()
+        self.military = military or dict()
 
         self.bureaucracy = bureaucracy or dict()
         for key, value in self.bureaucracy.items():
@@ -263,7 +266,7 @@ class Nation:
         self.modifiers = modifiers or copy(nationmodifiers_template)
 
     
-    #Territory management
+    # Territory management
 
     def cedeTerritory(self, territoryName, savegame):
         """
@@ -352,7 +355,23 @@ class Nation:
         return territoryInfo
 
 
-    #Economic management
+    # Economic management
+
+    def can_buyBlueprint(self, blueprintName, blueprint):
+
+        #Do we have enough resources to build the unit?
+
+        for resource in blueprint["Costs"].keys():
+            if (blueprint["Costs"][resource] > self.resources[resource]):
+                logInfo(f"Not enough resources to build {blueprintName}", details = {"Costs": blueprint["Costs"], "Resources Available": self.resources})
+                return False
+
+        for category, cost in blueprint["Bureaucratic Cost"].items():
+            if (cost > self.bureaucracy[category][1] - self.bureaucracy[category][0]):
+                logInfo(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
+                return False
+
+        return True
 
     def canBuyBuilding(self, savegame, buildingName, blueprint, territoryName):
         """
@@ -370,22 +389,10 @@ class Nation:
             logInfo(f"Building {buildingName} already exists in territory {territoryName}")
             return False
 
-        #Do we have enough resources to build the building?
-
-        for resource in blueprint["Costs"].keys():
-            if (blueprint["Costs"][resource] > self.resources[resource]):
-                logInfo(f"Not enough resources to build {buildingName}", details = {"Costs": blueprint["Costs"], "Resources Available": self.resources})
-                return False
-
-        for category, cost in blueprint["Bureaucratic Cost"].items():
-            if (cost > self.bureaucracy[category][1] - self.bureaucracy[category][0]):
-                logInfo(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
-                return False
-
-        return True
+        return self.can_buyBlueprint(buildingName, blueprint)
 
 
-    #Building management
+    # Building management
 
     def addBuilding(self, buildingName, territoryName, savegame):
         """ Add a building to a territory and subtract the resource cost """
@@ -428,7 +435,41 @@ class Nation:
             for category, val in effects["Bureaucracy"].items(): self.bureaucracy[category] = (self.bureaucracy[category][0], self.bureaucracy[category][1] - val)
 
 
-    #Population management
+    # Military management
+
+    def can_build_unit(self, savegame, territoryName, unitType, blueprint, size):
+        """ Validate whether a territory can build a unit """
+
+        #Does the building already exist in this territory?
+        territory = self.getTerritoryInfo(territoryName, savegame)
+
+        if not(territory):
+            logInfo(f"{self.name} does not own territory \"{territoryName}\"")
+            return False
+
+        if (size > territories.get_manpower(self, territoryName)):
+            logInfo(f"{territoryName} has too little manpower to recruit {size} {unitType}")
+            return False
+
+        return self.can_buyBlueprint(unitType, blueprint)
+
+    def build_unit(self, territoryName, unitType, size, blueprint, savegame):
+        """ Build a unit of a specified size in a territory """
+
+        logInfo(f"{self.name} creating {unitType} of size {size} in territory {territoryName}")
+
+        territory = self.get_territory(territoryName)
+        name = military.new_unitName(self.military, name_template = f"{self.name} {territoryName} {unitType}")
+        constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
+
+        newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
+
+        territory["Manpower"] -= size
+
+        self.military[name] = newunit
+
+        
+    # Population management
 
     def all_populations(self):
         """Get a list of all the populations in all of this nation's territories"""
@@ -436,7 +477,7 @@ class Nation:
         return {territoryName: territoryInfo["Population"] for territoryName, territoryInfo in self.territories.items()}
 
 
-    #New turn functions
+    # New turn functions
     
     def get_taxrate(self, gamerule):
         return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]
