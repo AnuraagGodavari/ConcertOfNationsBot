@@ -447,7 +447,7 @@ class Nation:
             logInfo(f"{self.name} does not own territory \"{territoryName}\"")
             return False
 
-        if not (territories.get_manpower(self, territoryName)):
+        if (size > territories.get_manpower(self, territoryName)):
             logInfo(f"{territoryName} has too little manpower to recruit {size} {unitType}")
             return False
 
