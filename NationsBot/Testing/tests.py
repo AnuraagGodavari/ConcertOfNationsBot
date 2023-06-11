@@ -12,6 +12,7 @@ from ConcertOfNationsEngine.gameobjects import *
 import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.populations as populations
+import ConcertOfNationsEngine.military as military
 
 
 def generateTestWorld(gamerule, length, height, space):
@@ -226,7 +227,12 @@ def testDisbandManpower(targetNation, territoryName, disband_size):
 
     logInfo(f"Disbanded {disband_size} manpower from {territoryName}", details = filehandling.saveObject(targetNation.get_territory(territoryName)))
 
+def testBuildUnit(targetNation, territoryName, unitType, size, savegame):
+    
+    gamerule = savegame.getGamerule()
 
+    if not (targetNation.can_build_unit(savegame, territoryName, unitType, military.get_blueprint(unitType, gamerule), size)):
+        logInfo(f"Could not build {unitType} for {targetNation.name} in {territoryName}")
 
 
 
