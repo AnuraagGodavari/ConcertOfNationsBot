@@ -453,6 +453,21 @@ class Nation:
 
         return self.can_buyBlueprint(unitType, blueprint)
 
+    def build_unit(self, territoryName, unitType, size, blueprint, savegame):
+        """ Build a unit of a specified size in a territory """
+
+        logInfo(f"{self.name} creating {unitType} of size {size} in territory {territoryName}")
+
+        territory = self.get_territory(territoryName)
+        name = military.new_unitName(self.military, name_template = f"{self.name} {territoryName} {unitType}")
+        constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
+
+        newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
+
+        territory["Manpower"] -= size
+
+        self.military[name] = newunit
+
         
     # Population management
 

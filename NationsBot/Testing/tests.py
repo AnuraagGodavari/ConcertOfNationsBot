@@ -233,10 +233,15 @@ def testBuildUnit(targetNation, territoryName, unitType, size, savegame):
 
     gamerule = savegame.getGamerule()
 
-    if not (targetNation.can_build_unit(savegame, territoryName, unitType, military.get_blueprint(unitType, gamerule), size)):
+    blueprint = military.get_blueprint(unitType, gamerule)
+
+    if not (targetNation.can_build_unit(savegame, territoryName, unitType, blueprint, size)):
         logInfo(f"Could not build {unitType} for {targetNation.name} in {territoryName}")
+        return
 
-    #targetNation.build_unit(territoryName, unitType, size, gamerule)
+    targetNation.build_unit(territoryName, unitType, size, blueprint, savegame)
 
+    logInfo(f"{targetNation} Military", details = filehandling.saveObject(targetNation.military))
+    logInfo(f"{territoryName} Info", details = filehandling.saveObject(targetNation.territories[territoryName]))
 
 
