@@ -229,10 +229,14 @@ def testDisbandManpower(targetNation, territoryName, disband_size):
 
 def testBuildUnit(targetNation, territoryName, unitType, size, savegame):
     
+    logInfo(f"Building {size} {unitType} in {territoryName} in {targetNation.name} ")
+
     gamerule = savegame.getGamerule()
 
     if not (targetNation.can_build_unit(savegame, territoryName, unitType, military.get_blueprint(unitType, gamerule), size)):
         logInfo(f"Could not build {unitType} for {targetNation.name} in {territoryName}")
+
+    #targetNation.build_unit(territoryName, unitType, size, gamerule)
 
 
 
