@@ -31,7 +31,7 @@ def get_blueprint(unitType, gamerule):
 
     return allunits[unitType]
 
-def new_unitName(military_dict, name_template = "Unit", num = 1):
+def new_unitName(military_dict, name_template = "Unit", num = 1, unitnames = None):
     """ 
     Generate a name for a unit, adding the lowest possible number to the unit name_template
     
@@ -40,12 +40,24 @@ def new_unitName(military_dict, name_template = "Unit", num = 1):
         num (int): The number the function is checking to see if it is available
     """
 
-    if (f"{name_template} {num}" not in military_dict.keys()):
+    unitnames = unitnames or [unit.name for force in military_dict for unit in unitnames]
+
+    if (f"{name_template} {num}" not in unitnames):
         return f"{name_template} {num}"
 
-    return new_unitName(military_dict, name_template, num + 1)
+    return new_unitName(military_dict, name_template, num + 1, unitnames)
 
+def new_forceName(military_dict, name_template = "Force"):
+    """ 
+    Generate a name for a force
+    """
 
+    num = 1
+
+    while f"{name_template} {num}" in military_dict.keys():
+        num += 1
+
+    return f"{name_template} {num}"
     
 
 class Unit:
