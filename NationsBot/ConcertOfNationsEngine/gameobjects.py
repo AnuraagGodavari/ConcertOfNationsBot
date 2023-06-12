@@ -466,7 +466,11 @@ class Nation:
 
         territory["Manpower"] -= size
 
-        self.military[name] = newunit
+        self.military[military.new_forceName(self.military, name_template = f"{self.name} Force")] = {
+            "Status": "Constructing",
+            "Location": territoryName,
+            "Units": {name: newunit}
+        }
 
         
     # Population management
