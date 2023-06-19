@@ -87,7 +87,56 @@ class InfoCommands(commands.Cog):
         await ctx.send(embed = menu.toEmbed())
 
 
-    #Territory Information
+    # Military Information
+
+    @commands.command(aliases=['military'])
+    async def forces(self, ctx,roleid = None):
+        """ Show all of the forces controlled by a nation, either that of the author or one that is specified. """
+        logInfo(f"forces({ctx.guild.id}, {roleid})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        if (not roleid):
+
+            playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+            if not (playerinfo):
+                raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+            roleid = playerinfo['role_discord_id']
+            logInfo(f"Got default role id {roleid} for this player")
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        menu = MenuEmbed(
+            f"{nation.name} Military Forces", 
+            "_Use the command \"force <id or name>\" to see more information about a force!_", 
+            ctx.author.id,
+            fields = [
+                (forcename, {
+                    "Status": force["Status"],
+                    "Location": force["Location"],
+                    "Units": len(force["Units"]),
+                    "Size": sum(unit.size for unit in force["Units"].values())
+                    }
+                ) 
+                for forcename, force in nation.military.items()
+            ],
+            pagesize = 9,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created territories menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+
+    # Territory Information
 
     @commands.command()
     async def territories(self, ctx, roleid = None):
@@ -250,7 +299,7 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    #Building management
+    # Building management
 
     @commands.command()
     async def buildings(self, ctx):
@@ -281,7 +330,7 @@ class InfoCommands(commands.Cog):
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
 
-    #Population Information
+    # Population Information
 
     def nation_population(self, ctx, nation):
 
