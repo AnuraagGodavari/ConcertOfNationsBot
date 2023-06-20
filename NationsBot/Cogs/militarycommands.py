@@ -13,6 +13,7 @@ from DiscordUtils.getgameinfo import *
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
+import ConcertOfNationsEngine.military as military
 
 from GameUtils.filehandling import *
 import GameUtils.operations as ops
@@ -21,7 +22,7 @@ import GameUtils.operations as ops
 class MilitaryCommands(commands.Cog):
     """ A cog for player commands related to the military """
 
-    #Manpower
+    # Manpower
 
     @commands.command(aliases=['raiseManpower', 'raise-manpower', 'raisemanpower'])
     async def raise_manpower(self, ctx, terrID, amount):
@@ -134,6 +135,64 @@ class MilitaryCommands(commands.Cog):
 
         logInfo(f"Successfully disbanded {amount} manpower in territory {territoryName}")
         await ctx.send(f"Successfully disbanded {amount} manpower in territory {territoryName}")
+
+        save_saveGame(savegame)
+
+
+    # Force management
+
+    @commands.command(aliases=['buildUnit', 'build-unit', 'buildunit'])
+    async def build_unit(self, ctx, terrID, unitType, amount):
+        """ Disband manpower in a given territory. """
+        logInfo(f"build_unit({ctx.guild.id}, {terrID}, {unitType}, {amount})")
+
+        if not (ops.isPositiveInt(amount)):
+            raise InputError(f"Invalid amount {amount}, must be positive integer")
+
+        amount = int(amount)
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terr = world[terrID]
+
+        if not world_terr:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        territoryName = world_terr.name
+
+        #Validate that the player owns this territory
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (territoryName in nation.territories.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
+
+        gamerule = savegame.getGamerule()
+
+        blueprint = military.get_blueprint(unitType, gamerule)
+
+        if not (nation.can_build_unit(savegame, territoryName, unitType, blueprint, amount)):
+            raise InputError(f"Could not build {unitType} for {nation.name} in {territoryName}")
+
+        newforcename = nation.build_unit(territoryName, unitType, amount, blueprint, savegame)
+        newforce = nation.military[newforcename]
+
+        await ctx.send(f"New force \"{newforcename}\" created in territory {territoryName} with status of {newforce['Status']}")
 
         save_saveGame(savegame)
 
