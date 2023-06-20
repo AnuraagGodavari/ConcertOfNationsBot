@@ -465,13 +465,14 @@ class Nation:
         newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
 
         territory["Manpower"] -= size
-
-        self.military[military.new_forceName(self.military, name_template = f"{self.name} Force")] = {
+        forcename = military.new_forceName(self.military, name_template = f"{self.name} Force")
+        self.military[forcename] = {
             "Status": "Constructing",
             "Location": territoryName,
             "Units": {name: newunit}
         }
 
+        return forcename
         
     # Population management
 
