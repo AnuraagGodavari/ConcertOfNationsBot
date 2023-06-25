@@ -112,6 +112,8 @@ class Savegame:
 
         logInfo(f"Advancing Savegame {self.name} by {numMonths} from current date: {self.date} and current turn: {self.turn}")
 
+        gamerule = self.getGamerule()
+
         newdate_raw = self.date['m'] - 1 + (self.date['y'] * 12) + numMonths
         self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
 
@@ -119,7 +121,7 @@ class Savegame:
 
         for nation in self.nations.values():
             
-            nation.newTurn(self, numMonths)
+            nation.newTurn(self, gamerule, numMonths)
 
         logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
@@ -460,6 +462,14 @@ class Nation:
 
         territory = self.get_territory(territoryName)
         name = military.new_unitName(self.military, name_template = f"{self.name} {territoryName} {unitType}")
+
+        #Subtract resource costs
+        costs = blueprint["Costs"]
+        for k, v in costs.items(): self.resources[k] = self.resources[k] - v
+
+        bureaucratic_costs = blueprint["Bureaucratic Cost"]
+        for k, v in bureaucratic_costs.items(): self.bureaucracy[k] = (self.bureaucracy[k][0] + v, self.bureaucracy[k][1])
+
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
         newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
@@ -503,17 +513,22 @@ class Nation:
         revenuesources = []
 
         worldmap = savegame.getWorld()
+        gamerule = savegame.getGamerule()
 
         for territoryName in self.territories.keys():
 
             territoryInfo = self.getTerritoryInfo(territoryName, savegame)
 
-            if onlyestimate: continue
-            neweffects = territories.advanceconstruction(territoryInfo, savegame, self.bureaucracy)
+            if (not onlyestimate):
+                neweffects = territories.advanceconstruction(territoryInfo, savegame, self.bureaucracy)
 
-            if (neweffects): self.add_buildingeffects(neweffects)
+                if (neweffects): self.add_buildingeffects(neweffects)
 
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
+
+        if (onlyestimate):
+            for force in self.military.values():
+                for unit in force["Units"].values(): revenuesources.append(unit.get_resources(military.get_blueprint(unit.unitType, gamerule)))
 
         totalrevenue = ops.combineDicts(*revenuesources)
 
@@ -532,8 +547,6 @@ class Nation:
             revenue[resource] *= numMonths
 
         self.resources = ops.combineDicts(self.resources, revenue)
-
-        print(self.get_taxincome(gamerule))
         self.resources["Money"] = (self.resources["Money"] + self.get_taxincome(gamerule) * numMonths)
 
         logInfo(f"Successfully calculated net income for {self.name}")
@@ -551,9 +564,23 @@ class Nation:
 
         logInfo(f"Nation {self.name} successfully grew population")
 
-    def newTurn(self, savegame, numMonths):
+    def military_newTurn(self, savegame, gamerule, numMonths):
+        """Get military costs and advance unit construction for this nation"""
+
+        logInfo(f"Nation {self.name} doing new turn military functions")
+
+        resourcecosts = []
+
+        for force in self.military.values():
+            resourcecosts.append(military.newturn(force, savegame, gamerule, numMonths, self.bureaucracy))
+
+        ops.combineDicts(self.resources, *resourcecosts)
+
+    def newTurn(self, savegame, gamerule, numMonths):
         """Perform tasks for the end of a current turn"""
-        
-        self.grow_population(savegame.getGamerule(), numMonths)
+
+        self.grow_population(gamerule, numMonths)
 
         self.add_newTurn_Resources(savegame, numMonths)
+
+        self.military_newTurn(savegame, gamerule, numMonths)
