@@ -77,6 +77,7 @@ class InfoCommands(commands.Cog):
             None,
             fields = [
                 ("Resources", nation.resources),
+                ("Revenue", nation.get_TurnRevenue(savegame, onlyestimate = True)),
                 ("Bureaucracy", {f"{category}": f"{cap[0]}/{cap[1]}" for category, cap in nation.bureaucracy.items()}),
                 ("Modifiers", nation.modifiers)
             ]
@@ -179,7 +180,8 @@ class InfoCommands(commands.Cog):
                 (f"Territory {world[terr].id}", {
                     "Name": world[terr].name, 
                     "Coordinates": {'x': world[terr].pos[0], 'y': world[terr].pos[1]},
-                    "Resources": world[terr].resources
+                    "Natural Resources": world[terr].resources,
+                    "Buildings": len(nation.territories[terr]["Buildings"])
                     }
                 ) 
                 for terr in nation.territories.keys()
