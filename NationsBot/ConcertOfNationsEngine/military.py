@@ -58,7 +58,31 @@ def new_forceName(military_dict, name_template = "Force"):
         num += 1
 
     return f"{name_template} {num}"
+
+def newturn(force, savegame, gamerule, numMonths, bureaucracy):
+    """ Advance unit construction and return cost of unit maintenance."""
+
+    costs = []
     
+    for unit in force["Units"].values():
+
+        blueprint = get_blueprint(unit.unitType, gamerule)
+
+        #advance construction
+        unit.advance_construction(savegame, numMonths, bureaucracy, blueprint)
+
+        #get resource costs
+        costs.append(unit.get_resources(blueprint, numMonths))
+
+    if ("Constructing" in force["Status"]):
+        units_underconstruction = [unit for unit in force["Units"].values() if "Constructing" in unit.status]
+
+        if not (units_underconstruction):
+            force["Status"] = "Active"
+            logInfo("Force is now active")
+
+    return ops.combineDicts(*costs)
+
 
 class Unit:
     """
@@ -79,3 +103,24 @@ class Unit:
         self.unitType = unitType
         self.size = size
         self.home = home
+
+    def get_resources(self, blueprint, numMonths = 1):
+        
+        return {k: v * numMonths * -1 for k, v in blueprint["Maintenance"].items()} 
+
+    def advance_construction(self, savegame, numMonths, bureaucracy, blueprint):
+        
+        if ("Constructing" not in self.status):
+            return
+
+        oldstatus = self.status
+
+        if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(self.status.split(':')[-1]))):
+            self.status = "Active"
+
+            for category, cost in blueprint["Bureaucratic Cost"].items():
+                bureaucracy[category] = (bureaucracy[category][0] - cost, bureaucracy[category][1])
+
+        logInfo(f"Unit {self.name} now active from date {oldstatus.split(':')[-1]}")
+
+        
