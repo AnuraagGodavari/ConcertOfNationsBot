@@ -91,7 +91,7 @@ class InfoCommands(commands.Cog):
     # Military Information
 
     @commands.command(aliases=['military'])
-    async def forces(self, ctx,roleid = None):
+    async def forces(self, ctx, roleid = None):
         """ Show all of the forces controlled by a nation, either that of the author or one that is specified. """
         logInfo(f"forces({ctx.guild.id}, {roleid})")
 
@@ -124,6 +124,46 @@ class InfoCommands(commands.Cog):
                     }
                 ) 
                 for forcename, force in nation.military.items()
+            ],
+            pagesize = 9,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created territories menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+    @commands.command(aliases=['force', 'militaryforce', 'military-force', 'militaryForce', 'military_force'])
+    async def units(self, ctx, forcename):
+        """ Show a specific force controlled by a nation, either that of the author or one that is specified. """
+        logInfo(f"units({ctx.guild.id}, {forcename})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+            
+        nationname = savegame.find_forceOwner(forcename)        
+        if (not nationname):
+            raise InputError(f"Force {forcename} does not exist in this game! If the name has spaces, encase it in quotes like this: \"name\"")
+        nation = savegame.nations[nationname]
+
+        force = nation.military[forcename]
+
+        menu = MenuEmbed(
+            f"{forcename} Units", 
+            f"Owner: {nation.name}\nStatus: {force['Status']}\nLocation: {force['Location']}", 
+            ctx.author.id,
+            fields = [
+                (unit.name, {
+                    "Status": unit.status,
+                    "Type": unit.unitType,
+                    "Size": unit.size,
+                    "Home Territory": unit.home
+                })
+                for unit in force["Units"].values()
             ],
             pagesize = 9,
             sortable = True,
