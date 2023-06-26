@@ -47,14 +47,14 @@ def new_unitName(military_dict, name_template = "Unit", num = 1, unitnames = Non
 
     return new_unitName(military_dict, name_template, num + 1, unitnames)
 
-def new_forceName(military_dict, name_template = "Force"):
+def new_forceName(existing_military_names, name_template = "Force"):
     """ 
     Generate a name for a force
     """
 
     num = 1
 
-    while f"{name_template} {num}" in military_dict.keys():
+    while f"{name_template} {num}" in existing_military_names:
         num += 1
 
     return f"{name_template} {num}"
