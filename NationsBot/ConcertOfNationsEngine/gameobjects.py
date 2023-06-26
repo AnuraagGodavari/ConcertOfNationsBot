@@ -139,7 +139,6 @@ class Savegame:
                 "Details": worldmap[territoryName].details
             }
 
-
     def find_terrOwner(self, territoryName):
         """
         Go through each nation and find which one owns a specific territory
@@ -195,6 +194,19 @@ class Savegame:
 
         return self.nations[targetNation.name].territories[territoryName]
 
+
+    # Military operations
+
+    def find_forceOwner(self, forcename):
+        """
+        Go through each nation and find which one owns a specific military force
+
+        Returns: The name of the owner nation or False.
+        """
+        for nation in self.nations.values():
+            if forcename in nation.military.keys(): return nation.name
+
+        return False
 
     #Display
 
@@ -475,7 +487,7 @@ class Nation:
         newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
 
         territory["Manpower"] -= size
-        forcename = military.new_forceName(self.military, name_template = f"{self.name} Force")
+        forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.values()], name_template = f"{self.name} Force")
         self.military[forcename] = {
             "Status": "Constructing",
             "Location": territoryName,
