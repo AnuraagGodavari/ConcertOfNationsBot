@@ -487,7 +487,7 @@ class Nation:
         newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
 
         territory["Manpower"] -= size
-        forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.values()], name_template = f"{self.name} Force")
+        forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{self.name} Force")
         self.military[forcename] = {
             "Status": "Constructing",
             "Location": territoryName,
@@ -495,7 +495,18 @@ class Nation:
         }
 
         return forcename
-        
+    
+    def combine_forces(self, base_force, added_forces):
+
+        military.combine_forces(base_force, added_forces)
+
+        return base_force
+
+    def pop_force(self, forcename):
+
+        return self.military.pop(forcename)
+
+
     # Population management
 
     def all_populations(self):
