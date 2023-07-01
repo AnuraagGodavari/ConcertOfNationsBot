@@ -14,6 +14,21 @@ import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.populations as populations
 
 
+# Validations
+
+def units_addable(baseUnit, *addedUnits):
+    return all((unit.unitType == baseUnit.unitType) and (unit.home == baseUnit.home) for unit in addedUnits)
+
+def forces_addable(baseForce, *addedForces):
+    return all(
+        (force["Location"] == baseForce["Location"]) 
+        and (force["Status"] == baseForce["Status"])
+        for force in addedForces
+        )
+
+
+# Get Information
+
 def get_allunits(gamerule):
     """ Return the information relating to all units in a savegame's gamerule """
 
@@ -31,6 +46,9 @@ def get_blueprint(unitType, gamerule):
 
     return allunits[unitType]
 
+
+# Processes
+
 def new_unitName(military_dict, name_template = "Unit", num = 1, unitnames = None):
     """ 
     Generate a name for a unit, adding the lowest possible number to the unit name_template
@@ -40,7 +58,7 @@ def new_unitName(military_dict, name_template = "Unit", num = 1, unitnames = Non
         num (int): The number the function is checking to see if it is available
     """
 
-    unitnames = unitnames or [unit.name for force in military_dict for unit in unitnames]
+    unitnames = unitnames or [unit for force in military_dict.values() for unit in force["Units"].keys()]
 
     if (f"{name_template} {num}" not in unitnames):
         return f"{name_template} {num}"
@@ -83,6 +101,24 @@ def newturn(force, savegame, gamerule, numMonths, bureaucracy):
 
     return ops.combineDicts(*costs)
 
+def combine_units(baseUnit, *addedUnits):
+
+    baseUnit.size += sum(unit.size for unit in addedUnits)
+
+def combine_units_inForce(force, baseUnit, *addedUnits):
+
+    combine_units(baseUnit, *addedUnits)
+
+    for unit in addedUnits:
+        force["Units"].pop(unit.name)
+
+def combine_forces(baseForce, *addedForces):
+
+    for force in addedForces:
+        baseForce["Units"].update(force["Units"])
+
+    return baseForce
+    
 
 class Unit:
     """
