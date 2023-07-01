@@ -239,9 +239,52 @@ def testBuildUnit(targetNation, territoryName, unitType, size, savegame):
         logInfo(f"Could not build {unitType} for {targetNation.name} in {territoryName}")
         return
 
-    targetNation.build_unit(territoryName, unitType, size, blueprint, savegame)
+    new_forcename = targetNation.build_unit(territoryName, unitType, size, blueprint, savegame)
 
     logInfo(f"{targetNation} Military", details = filehandling.saveObject(targetNation.military))
     logInfo(f"{territoryName} Info", details = filehandling.saveObject(targetNation.territories[territoryName]))
 
+    return new_forcename
 
+def testCombineUnits(force, units):
+
+    if not(military.units_addable(units[0], *units[1:])):
+        raise InputError("Could not combine units")
+    
+    military.combine_units_inForce(force, units[0], *units[1:])
+
+def testCombineUnitsandForces(targetNation, territoryName, numMonths, unitsDict, savegame):
+    """
+    Args:
+        unitsDict (dict): Has the format {unitType: [unitSize]}
+    """
+
+    logInfo("Testing building and combining several created units and forces in a territory")
+
+    newForcenames = []
+
+    for unitType, unitSizes in unitsDict.items():
+        for unitSize in unitSizes:
+            newForcenames.append(testBuildUnit(targetNation, territoryName, unitType, unitSize, savegame))
+
+    testNewTurn(savegame, numMonths = 24)
+
+    logInfo(f"{targetNation.name} Military - Initial", details = filehandling.saveObject(targetNation.military))
+
+    forces = [targetNation.pop_force(forcename) for forcename in newForcenames[1:]]
+    baseForce = targetNation.military[newForcenames[0]]
+
+    if not(military.forces_addable(baseForce, *forces)):
+        raise InputError("Could not combine forces")
+
+    combined_force = military.combine_forces(baseForce, *forces)
+    
+    logInfo(f"{targetNation.name} Military - After combining forces", details = filehandling.saveObject(targetNation.military))
+
+    for unitType in unitsDict.keys():
+        testCombineUnits(combined_force, [unit for unit in combined_force["Units"].values() if unit.unitType == unitType])
+
+    logInfo(f"{targetNation.name} Military - After combining units", details = filehandling.saveObject(targetNation.military))
+
+
+    
