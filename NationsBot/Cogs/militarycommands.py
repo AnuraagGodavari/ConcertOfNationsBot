@@ -236,6 +236,49 @@ class MilitaryCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases=['combineunits', 'combine-units', 'combineUnits'])
+    async def combine_units(self, ctx, base_forcename, base_unitname, *additional_unitnames):
+        """ Combine multiple units of a given nation. """
+        logInfo(f"combine_units({ctx.guild.id}, {base_forcename}, {base_unitname}, {additional_unitnames})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+
+        if not (base_unitname in base_force["Units"].keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> force {base_forcename} does not contain a unit named {base_unitname}.")
+
+        for unitname in additional_unitnames:
+            if not (unitname in base_force["Units"].keys()):
+                raise InputError(f"<@&{playerinfo['role_discord_id']}> force {base_forcename} does not contain a unit named {unitname}.")
+
+        base_unit = base_force["Units"][base_unitname]
+        additional_units = [base_force["Units"][unitname] for unitname in additional_unitnames]
+
+        if not(military.units_addable(base_unit, *additional_units)):
+            raise InputError("Could not combine units")
+        
+        military.combine_units_inForce(base_force, base_unit, *additional_units)
+
+        await ctx.send(f"Force \"{base_forcename}\" has merged unit {base_unitname} with the following units: {additional_unitnames}")
+
+        save_saveGame(savegame)
+
 
 async def setup(client):
     await client.add_cog(MilitaryCommands(client))
