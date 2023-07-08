@@ -539,6 +539,81 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Successfully changed national tax modifier to {nation.modifiers['Tax']}, type \"_n.nationinfo {roleid}_\" to view changes")
 
 
+    # Manage military
+
+    @commands.command(aliases=['admincombineforces', 'admin-combine-forces', 'AdminCombineForces'])
+    @commands.has_permissions(administrator = True)
+    async def admin_combine_forces(self, ctx, roleid, base_forcename, *additional_forcenames):
+        """ Combine multiple forces of a given nation. """
+        logInfo(f"combine_forces({ctx.guild.id}, {base_forcename}, {additional_forcenames})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        for forcename in additional_forcenames:
+            if not (forcename in nation.military.keys()):
+                raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {forcename}.  If a name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+        additional_forces = [nation.military[forcename] for forcename in additional_forcenames]
+
+        if not(military.forces_addable(base_force, *additional_forces)):
+            raise InputError("Could not combine these forces. Check if they have the same statuses, locations and types.")
+
+        additional_forces = [nation.pop_force(forcename) for forcename in additional_forcenames]
+
+        combined_force = military.combine_forces(base_force, *additional_forces)
+
+        await ctx.send(f"Force \"{base_forcename}\" has merged with the following forces: {additional_forcenames}")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['admincombineunits', 'admin-combine-units', 'AdminCombineUnits'])
+    @commands.has_permissions(administrator = True)
+    async def admin_combine_units(self, ctx, roleid, base_forcename, base_unitname, *additional_unitnames):
+        """ Combine multiple units of a given nation. """
+        logInfo(f"combine_units({ctx.guild.id}, {roleid}, {base_forcename}, {base_unitname}, {additional_unitnames})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+
+        if not (base_unitname in base_force["Units"].keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> force {base_forcename} does not contain a unit named {base_unitname}.")
+
+        for unitname in additional_unitnames:
+            if not (unitname in base_force["Units"].keys()):
+                raise InputError(f"<@&{playerinfo['role_discord_id']}> force {base_forcename} does not contain a unit named {unitname}.")
+
+        base_unit = base_force["Units"][base_unitname]
+        additional_units = [base_force["Units"][unitname] for unitname in additional_unitnames]
+
+        if not(military.units_addable(base_unit, *additional_units)):
+            raise InputError("Could not combine units")
+        
+        military.combine_units_inForce(base_force, base_unit, *additional_units)
+
+        await ctx.send(f"Force \"{base_forcename}\" has merged unit {base_unitname} with the following units: {additional_unitnames}")
+
+        save_saveGame(savegame)
+
 
     # Manage the savegame
 
