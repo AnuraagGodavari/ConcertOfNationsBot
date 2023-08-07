@@ -3,6 +3,7 @@ from logger import *
 
 import pprint
 from random import *
+from copy import deepcopy
 
 from GameUtils import filehandling, mapping
 
@@ -25,6 +26,13 @@ def forces_addable(baseForce, *addedForces):
         and (force["Status"] == baseForce["Status"])
         for force in addedForces
         )
+
+def unit_splittable(baseUnit, *newSizes):
+
+    if (sum(newSizes) > baseUnit.size):
+        return False
+
+    return True
 
 
 # Get Information
@@ -101,6 +109,7 @@ def newturn(force, savegame, gamerule, numMonths, bureaucracy):
 
     return ops.combineDicts(*costs)
 
+
 def combine_units(baseUnit, *addedUnits):
 
     baseUnit.size += sum(unit.size for unit in addedUnits)
@@ -119,6 +128,32 @@ def combine_forces(baseForce, *addedForces):
 
     return baseForce
     
+
+def split_unit(baseForce, baseUnit, newSize, newName):
+
+    baseUnit.size -= newSize
+
+    newUnit = deepcopy(baseUnit)
+    newUnit.size = newSize
+    newUnit.name = newName
+
+    return newUnit
+
+
+def split_unit_inForce(nation, baseForce, baseUnit, *newSizes):
+    
+    for size in newSizes:
+
+        unitname = new_unitName(nation.military, name_template = f"{baseUnit.name} Division")
+
+        baseForce["Units"][unitname] = split_unit(baseForce, baseUnit, size, unitname)
+
+    if (baseUnit.size == 0):
+
+        baseForce["Units"].pop(baseUnit.name)
+
+    return baseForce
+
 
 class Unit:
     """

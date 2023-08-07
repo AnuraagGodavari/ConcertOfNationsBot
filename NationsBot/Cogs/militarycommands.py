@@ -279,6 +279,53 @@ class MilitaryCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases=['splitunits', 'split-units', 'splitUnits'])
+    async def split_unit(self, ctx, base_forcename, base_unitname, *new_unitsizes):
+        """ Split a unit of a given nation into multiple new ones. """
+        logInfo(f"split_unit({ctx.guild.id}, {base_forcename}, {base_unitname}, {new_unitsizes})")
+
+        if (len(new_unitsizes) < 1):
+            raise InputError(f"Must have at least one new unit size")
+
+        for unitsize in new_unitsizes:
+            if not (ops.isPositiveInt(unitsize)):
+                raise InputError(f"Invalid unit size {unitsize}, must be positive integer")
+
+        new_unitsizes = [int(unitsize) for unitsize in new_unitsizes]
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        baseForce = nation.military[base_forcename]
+
+        if not (base_unitname in baseForce["Units"].keys()):
+            raise InputError(f"Unit: {base_unitname} does not exist in Force: {base_forcename}")
+
+        unit = baseForce["Units"][base_unitname]
+
+        if not(military.unit_splittable(unit, *new_unitsizes)):
+            raise InputError("Could not split unit")
+
+        military.split_unit_inForce(nation, baseForce, unit, *new_unitsizes)
+
+        await ctx.send(f"Force \"{base_forcename}\" has split unit {base_unitname} into new units with sizes: {new_unitsizes}. Use n.force \"{base_forcename}\" to see more.")
+
+        save_saveGame(savegame)
+
 
 async def setup(client):
     await client.add_cog(MilitaryCommands(client))
