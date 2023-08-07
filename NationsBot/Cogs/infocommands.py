@@ -172,7 +172,7 @@ class InfoCommands(commands.Cog):
 
         assignMenu(ctx.author.id, menu)
 
-        logInfo(f"Created territories menu and assigned it to player {ctx.author.id}")
+        logInfo(f"Created units menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
