@@ -34,6 +34,14 @@ def unit_splittable(baseUnit, *newSizes):
 
     return True
 
+def force_splittable(baseForce, *unitsToSplit):
+
+    for unitname in unitsToSplit:
+        if unitname not in baseForce["Units"].keys():
+            return False
+    
+    return True
+
 
 # Get Information
 
@@ -139,7 +147,6 @@ def split_unit(baseForce, baseUnit, newSize, newName):
 
     return newUnit
 
-
 def split_unit_inForce(nation, baseForce, baseUnit, *newSizes):
     
     for size in newSizes:
@@ -153,6 +160,17 @@ def split_unit_inForce(nation, baseForce, baseUnit, *newSizes):
         baseForce["Units"].pop(baseUnit.name)
 
     return baseForce
+
+def split_force(nation, baseForce, *unitsToSplit):
+    
+    new_forcename = new_forceName(nation.military.keys(), f"{nation.name} Force")
+
+    newforce = { k: v for k,v in baseForce.items() if k != "Units" }
+    newforce["Units"] = { unitname: baseForce["Units"].pop(unitname) for unitname in unitsToSplit}
+
+    nation.military[new_forcename] = newforce
+
+    return newforce
 
 
 class Unit:
