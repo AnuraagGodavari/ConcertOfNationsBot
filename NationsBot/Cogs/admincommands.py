@@ -556,11 +556,11 @@ class AdminCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (base_forcename in nation.military.keys()):
-            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+            raise InputError(f"{roleid} does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
 
         for forcename in additional_forcenames:
             if not (forcename in nation.military.keys()):
-                raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {forcename}.  If a name has spaces, use quotation marks like this: \"name of force\"")
+                raise InputError(f"{roleid} does not own the force {forcename}.  If a name has spaces, use quotation marks like this: \"name of force\"")
 
         base_force = nation.military[base_forcename]
         additional_forces = [nation.military[forcename] for forcename in additional_forcenames]
@@ -591,16 +591,16 @@ class AdminCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (base_forcename in nation.military.keys()):
-            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+            raise InputError(f"{roleid} does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
 
         base_force = nation.military[base_forcename]
 
         if not (base_unitname in base_force["Units"].keys()):
-            raise InputError(f"<@&{playerinfo['role_discord_id']}> force {base_forcename} does not contain a unit named {base_unitname}.")
+            raise InputError(f"{roleid} force {base_forcename} does not contain a unit named {base_unitname}.")
 
         for unitname in additional_unitnames:
             if not (unitname in base_force["Units"].keys()):
-                raise InputError(f"<@&{playerinfo['role_discord_id']}> force {base_forcename} does not contain a unit named {unitname}.")
+                raise InputError(f"{roleid} force {base_forcename} does not contain a unit named {unitname}.")
 
         base_unit = base_force["Units"][base_unitname]
         additional_units = [base_force["Units"][unitname] for unitname in additional_unitnames]
@@ -614,7 +614,7 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-    @commands.command(aliases=['adminsplitunits', 'admin-split-units', 'adminSplitUnits'])
+    @commands.command(aliases=['adminsplitunit', 'admin-split-unit', 'adminSplitUnit'])
     @commands.has_permissions(administrator = True)
     async def admin_split_unit(self, ctx, roleid, base_forcename, base_unitname, *new_unitsizes):
         """ Split a unit of a given nation into multiple new ones. """
@@ -653,6 +653,35 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Force \"{base_forcename}\" has split unit {base_unitname} into new units with sizes: {new_unitsizes}. Use n.force \"{base_forcename}\" to see more.")
 
         save_saveGame(savegame)
+
+    @commands.command(aliases=['adminsplitforce', 'admin-split-force', 'adminSplitForce'])
+    async def admin_split_force(self, ctx, roleid, base_forcename, *units_toSplit):
+        """ Split a force belonging to any given nation, transferring several units to the new force """
+        logInfo(f"split_force({ctx.guild.id}, {base_forcename}, {units_toSplit})")
+
+        if (len(units_toSplit) < 1):
+            raise InputError(f"Must have at least one unit to transfer")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{roleid}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        baseForce = nation.military[base_forcename]
+
+        if not(military.force_splittable(baseForce, *units_toSplit)):
+            raise InputError("Could not split force")
+
+        new_forcename = military.split_force(nation, baseForce, *units_toSplit)
+
+        await ctx.send(f"Force \"{base_forcename}\" has been split into new force {new_forcename} and transferred the units: {units_toSplit}. Use n.force \"{new_forcename}\" to see more.")
+
+        save_saveGame(savegame)
+
 
     # Manage the savegame
 

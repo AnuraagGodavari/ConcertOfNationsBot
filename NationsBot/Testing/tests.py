@@ -288,7 +288,7 @@ def testCombineUnitsandForces(targetNation, territoryName, numMonths, unitsDict,
 
     return combined_force
 
-def testSplitUnitandForce(targetNation, territoryName, numMonths, unitsDict, savegame): 
+def testSplitUnit(targetNation, territoryName, numMonths, unitsDict, savegame): 
     """
     Args:
         unitsDict (dict): Has the format {unitType: [unitSize, splitUnitSize_0... splitUnitSize_n]}
@@ -311,7 +311,17 @@ def testSplitUnitandForce(targetNation, territoryName, numMonths, unitsDict, sav
 
     logInfo(f"{targetNation.name} Military - After splitting units", details = filehandling.saveObject(targetNation.military))
 
+def testSplitForce(targetNation, territoryName, numMonths, unitsDict, unitsToSplit, savegame):
 
+    baseForce = testCombineUnitsandForces(targetNation, territoryName, numMonths, unitsDict, savegame)
 
+    logInfo(f"{targetNation.name} Military - Initial", details = filehandling.saveObject(targetNation.military))
+
+    if not(military.force_splittable(baseForce, *unitsToSplit)):
+        raise InputError("Could not split force")
+
+    military.split_force(targetNation, baseForce, *unitsToSplit)
+
+    logInfo(f"{targetNation.name} Military - After splitting force", details = filehandling.saveObject(targetNation.military))
 
     
