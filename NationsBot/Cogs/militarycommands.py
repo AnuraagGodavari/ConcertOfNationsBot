@@ -279,7 +279,7 @@ class MilitaryCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-    @commands.command(aliases=['splitunits', 'split-units', 'splitUnits'])
+    @commands.command(aliases=['splitunit', 'split-unit', 'splitUnit'])
     async def split_unit(self, ctx, base_forcename, base_unitname, *new_unitsizes):
         """ Split a unit of a given nation into multiple new ones. """
         logInfo(f"split_unit({ctx.guild.id}, {base_forcename}, {base_unitname}, {new_unitsizes})")
@@ -323,6 +323,42 @@ class MilitaryCommands(commands.Cog):
         military.split_unit_inForce(nation, baseForce, unit, *new_unitsizes)
 
         await ctx.send(f"Force \"{base_forcename}\" has split unit {base_unitname} into new units with sizes: {new_unitsizes}. Use n.force \"{base_forcename}\" to see more.")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['splitforce', 'split-force', 'splitForce'])
+    async def split_force(self, ctx, base_forcename, *units_toSplit):
+        """ Split a force belonging to a nation, transferring several units to the new force """
+        logInfo(f"split_force({ctx.guild.id}, {base_forcename}, {units_toSplit})")
+
+        if (len(units_toSplit) < 1):
+            raise InputError(f"Must have at least one unit to transfer")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        baseForce = nation.military[base_forcename]
+
+        if not(military.force_splittable(baseForce, *units_toSplit)):
+            raise InputError("Could not split force")
+
+        new_forcename = military.split_force(nation, baseForce, *units_toSplit)
+
+        await ctx.send(f"Force \"{base_forcename}\" has been split into new force {new_forcename} and transferred the units: {units_toSplit}. Use n.force \"{new_forcename}\" to see more.")
 
         save_saveGame(savegame)
 
