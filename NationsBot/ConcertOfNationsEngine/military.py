@@ -170,7 +170,7 @@ def split_force(nation, baseForce, *unitsToSplit):
 
     nation.military[new_forcename] = newforce
 
-    return newforce
+    return new_forcename
 
 
 class Unit:
