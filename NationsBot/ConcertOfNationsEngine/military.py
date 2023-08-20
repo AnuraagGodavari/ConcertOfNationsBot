@@ -173,6 +173,23 @@ def split_force(nation, baseForce, *unitsToSplit):
     return new_forcename
 
 
+def disband_unit(nation, unit):
+    
+    hometerr = nation.territories[unit.home]
+    hometerr["Manpower"] += unit.size
+    
+def disband_units_inForce(nation, baseForce, unitsToDisband):
+
+    for unitName in unitsToDisband:
+        disband_unit(nation, baseForce["Units"].pop(unitName))
+
+def disband_force(nation, forcename):
+    
+    force = nation.military.pop(forcename)
+
+    disband_units_inForce(nation, force, tuple(force["Units"].keys()))
+
+
 class Unit:
     """
     Represents a division of a military force with a certain size and type.
