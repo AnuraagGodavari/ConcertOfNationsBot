@@ -286,7 +286,7 @@ def testCombineUnitsandForces(targetNation, territoryName, numMonths, unitsDict,
 
     logInfo(f"{targetNation.name} Military - After combining units", details = filehandling.saveObject(targetNation.military))
 
-    return combined_force
+    return newForcenames[0]
 
 def testSplitUnit(targetNation, territoryName, numMonths, unitsDict, savegame): 
     """
@@ -296,7 +296,7 @@ def testSplitUnit(targetNation, territoryName, numMonths, unitsDict, savegame):
 
     logInfo("Testing building and splitting several created units and forces in a territory")
 
-    baseForce = testCombineUnitsandForces(targetNation, territoryName, numMonths, {k: [unitsDict[k][0]] for k in unitsDict.keys()}, savegame)
+    baseForce = nation.military(testCombineUnitsandForces(targetNation, territoryName, numMonths, {k: [unitsDict[k][0]] for k in unitsDict.keys()}, savegame))
 
     logInfo(f"{targetNation.name} Military - Initial", details = filehandling.saveObject(targetNation.military))
 
@@ -313,7 +313,7 @@ def testSplitUnit(targetNation, territoryName, numMonths, unitsDict, savegame):
 
 def testSplitForce(targetNation, territoryName, numMonths, unitsDict, unitsToSplit, savegame):
 
-    baseForce = testCombineUnitsandForces(targetNation, territoryName, numMonths, unitsDict, savegame)
+    baseForce = nation.military(testCombineUnitsandForces(targetNation, territoryName, numMonths, unitsDict, savegame))
 
     logInfo(f"{targetNation.name} Military - Initial", details = filehandling.saveObject(targetNation.military))
 
@@ -324,4 +324,39 @@ def testSplitForce(targetNation, territoryName, numMonths, unitsDict, unitsToSpl
 
     logInfo(f"{targetNation.name} Military - After splitting force", details = filehandling.saveObject(targetNation.military))
 
+def testDisbandUnits(nation, forcename, unitsToDisband):
+
+    logInfo("Testing disbanding units")
+
+    if not(forcename in nation.military.keys()):
+        raise InputError(f"{forcename} does not exist")
+
+    baseForce = nation.military[forcename]
     
+    if [unitname for unitname in unitsToDisband if unitname not in baseForce["Units"]]:
+        raise InputError("Units do not all exist in this military force")
+
+    logInfo(f"{nation.name} Military - Initial", details = filehandling.saveObject(nation.military))
+    logInfo(f"{nation.name} Territories - Initial", details = filehandling.saveObject(nation.territories))
+
+    military.disband_units_inForce(nation, baseForce, unitsToDisband)
+    
+    if not(baseForce["Units"]):
+        nation.military.pop(forcename)
+
+    logInfo(f"{nation.name} Military - After disbanding", details = filehandling.saveObject(nation.military))
+    logInfo(f"{nation.name} Territories - After disbanding", details = filehandling.saveObject(nation.territories))
+
+def testDisbandForce(nation, forcename):
+    logInfo("Testing disbanding force")
+
+    if not(forcename in nation.military.keys()):
+        raise InputError(f"{forcename} does not exist")
+
+    logInfo(f"{nation.name} Military - Initial", details = filehandling.saveObject(nation.military))
+    logInfo(f"{nation.name} Territories - Initial", details = filehandling.saveObject(nation.territories))
+
+    military.disband_force(nation, forcename)
+
+    logInfo(f"{nation.name} Military - After disbanding", details = filehandling.saveObject(nation.military))
+    logInfo(f"{nation.name} Territories - After disbanding", details = filehandling.saveObject(nation.territories))
