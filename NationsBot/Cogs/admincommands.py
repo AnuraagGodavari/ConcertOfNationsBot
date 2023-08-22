@@ -682,6 +682,38 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases=['admindisbandunits', 'admin-disband-units', 'adminDisbandUnits'])
+    async def admin_disband_units(self, ctx, roleid, base_forcename, *units_toDisband):
+        """ Disband units in a given force belonging to a specific nation, returning their manpower to their home provinces. """
+        logInfo(f"admin_disband_units({ctx.guild.id}, {base_forcename}, {units_toDisband})")
+
+        if (len(units_toDisband) < 1):
+            raise InputError(f"Must have at least one unit to disband")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"{roleid} does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        baseForce = nation.military[base_forcename]
+
+        if [unitname for unitname in units_toDisband if unitname not in baseForce["Units"]]:
+            raise InputError(f"Units do not all exist in force {base_forcename}")
+
+        military.disband_units_inForce(nation, baseForce, units_toDisband)
+        
+        if not(baseForce["Units"]):
+            nation.military.pop(base_forcename)
+
+        await ctx.send(f"Disbanded units: {units_toDisband}. Use n.force \"{base_forcename}\" to see more.")
+
+        save_saveGame(savegame)
+
 
     # Manage the savegame
 
