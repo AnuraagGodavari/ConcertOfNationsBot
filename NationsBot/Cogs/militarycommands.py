@@ -401,6 +401,34 @@ class MilitaryCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases=['disbandforce', 'disband-force', 'disbandForce'])
+    async def disband_force(self, ctx, base_forcename):
+        """ Disband a given force, returning its units' manpowers to their home provinces. """
+        logInfo(f"disband_units({ctx.guild.id}, {base_forcename})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        military.disband_force(nation, base_forcename)
+
+        await ctx.send(f"Disbanded force: {base_forcename}. Use n.force \"{base_forcename}\" to see more.")
+
+        save_saveGame(savegame)
+
 
 async def setup(client):
     await client.add_cog(MilitaryCommands(client))
