@@ -212,7 +212,7 @@ class Unit:
 
     def get_resources(self, blueprint, numMonths = 1):
         
-        return {k: v * numMonths * -1 for k, v in blueprint["Maintenance"].items()} 
+        return {k: round(v * numMonths * -1 * self.size, 4) for k, v in blueprint["Maintenance"].items()} 
 
     def advance_construction(self, savegame, numMonths, bureaucracy, blueprint):
         
@@ -225,7 +225,7 @@ class Unit:
             self.status = "Active"
 
             for category, cost in blueprint["Bureaucratic Cost"].items():
-                bureaucracy[category] = (bureaucracy[category][0] - cost, bureaucracy[category][1])
+                bureaucracy[category] = (round(bureaucracy[category][0] - (cost * self.size), 4), bureaucracy[category][1])
 
         logInfo(f"Unit {self.name} now active from date {oldstatus.split(':')[-1]}")
 
