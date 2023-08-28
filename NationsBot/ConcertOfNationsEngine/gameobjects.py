@@ -477,10 +477,10 @@ class Nation:
 
         #Subtract resource costs
         costs = blueprint["Costs"]
-        for k, v in costs.items(): self.resources[k] = self.resources[k] - v
+        for k, v in costs.items(): self.resources[k] = self.resources[k] - round((v * size), 4)
 
         bureaucratic_costs = blueprint["Bureaucratic Cost"]
-        for k, v in bureaucratic_costs.items(): self.bureaucracy[k] = (self.bureaucracy[k][0] + v, self.bureaucracy[k][1])
+        for k, v in bureaucratic_costs.items(): self.bureaucracy[k] = (round(self.bureaucracy[k][0] + (v * size), 4), self.bureaucracy[k][1])
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
@@ -597,7 +597,7 @@ class Nation:
         for force in self.military.values():
             resourcecosts.append(military.newturn(force, savegame, gamerule, numMonths, self.bureaucracy))
 
-        ops.combineDicts(self.resources, *resourcecosts)
+        self.resources = ops.combineDicts(self.resources, *resourcecosts)
 
     def newTurn(self, savegame, gamerule, numMonths):
         """Perform tasks for the end of a current turn"""
