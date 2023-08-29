@@ -541,6 +541,57 @@ class AdminCommands(commands.Cog):
 
     # Manage military
 
+    @commands.command(aliases=['admincreateforce', 'admin-create-force', 'adminCreateForce'])
+    @commands.has_permissions(administrator = True)
+    async def admin_give_unit(self, ctx, roleid, terrID, unitType, amount):
+        """ Manually give a unit to a given nation with no cost. """
+        logInfo(f"admin_give_unit({ctx.guild.id}, {roleid}, {terrID}, {unitType}, {amount})")
+
+        if not (ops.isPositiveInt(amount)):
+            raise InputError(f"Invalid amount {amount}, must be positive integer")
+
+        amount = int(amount)
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terr = world[terrID]
+
+        if not world_terr:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        territoryName = world_terr.name
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        gamerule = savegame.getGamerule()
+
+        blueprint = military.get_blueprint(unitType, gamerule)
+
+        #Manually create and place the unit
+        unitName = military.new_unitName(nation.military, name_template = f"{nation.name} {territoryName} {unitType}")
+        newunit = military.Unit(unitName, f"Active", unitType, amount, territoryName)
+
+        newforcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{nation.name} Force")
+        nation.military[newforcename] = {
+            "Status": "Active",
+            "Location": territoryName,
+            "Units": {unitName: newunit}
+        }
+        newforce = nation.military[newforcename]
+
+        await ctx.send(f"New force \"{newforcename}\" created in territory {territoryName} with status of {newforce['Status']}")
+
+        save_saveGame(savegame)
+
     @commands.command(aliases=['admincombineforces', 'admin-combine-forces', 'AdminCombineForces'])
     @commands.has_permissions(administrator = True)
     async def admin_combine_forces(self, ctx, roleid, base_forcename, *additional_forcenames):
