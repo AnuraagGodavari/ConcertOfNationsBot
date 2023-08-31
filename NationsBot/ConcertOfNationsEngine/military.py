@@ -4,6 +4,7 @@ from logger import *
 import pprint
 from random import *
 from copy import deepcopy
+import re
 
 from GameUtils import filehandling, mapping
 
@@ -14,6 +15,8 @@ import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.populations as populations
 
+
+valid_statuspatterns = ["Active$", "Constructing:((0?[1-9])|(11)|(12))/-?[\d]*$"]
 
 # Validations
 
@@ -41,6 +44,14 @@ def force_splittable(baseForce, *unitsToSplit):
             return False
     
     return True
+
+def validate_status(newstatus):
+    
+    for statuspattern in valid_statuspatterns:
+        if (re.search(statuspattern, newstatus, flags=re.ASCII)):
+            return True
+
+    return False
 
 
 # Get Information
@@ -188,6 +199,39 @@ def disband_force(nation, forcename):
     force = nation.military.pop(forcename)
 
     disband_units_inForce(nation, force, tuple(force["Units"].keys()))
+
+
+def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
+
+    oldstatus = nation.military[forcename]['Status']
+
+    nation.military[forcename]['Status'] = newstatus
+
+    for unit in nation.military[forcename]["Units"].values(): unit.status =  newstatus
+
+    #Change nation bureaucratic load based on if the force is under construction or not
+
+    if (oldstatus.startswith("Constructing:") and not newstatus.startswith("Constructing:")):
+        
+        for unit in nation.military[forcename]["Units"].values():
+
+            blueprint = get_blueprint(unit.unitType, gamerule)
+            
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] - (val * unit.size), 4), nation.bureaucracy[category][1])
+
+    elif (newstatus.startswith("Constructing:") and not oldstatus.startswith("Constructing:")):
+        
+        for unit in nation.military[forcename]["Units"].values():
+
+            blueprint = get_blueprint(unit.unitType, gamerule)
+        
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] + (val * unit.size), 4), nation.bureaucracy[category][1])
+
+    logInfo(f"New force status: {nation.military[forcename]['Status']}")
+
+    return nation.military[forcename]['Status']
 
 
 class Unit:

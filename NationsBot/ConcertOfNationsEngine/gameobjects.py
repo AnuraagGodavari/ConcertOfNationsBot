@@ -483,13 +483,14 @@ class Nation:
         for k, v in bureaucratic_costs.items(): self.bureaucracy[k] = (round(self.bureaucracy[k][0] + (v * size), 4), self.bureaucracy[k][1])
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
+        constructionstatus = f"Constructing:{constructiondate}"
 
-        newunit = military.Unit(name, f"Constructing:{constructiondate}", unitType, size, territoryName)
+        newunit = military.Unit(name, constructionstatus, unitType, size, territoryName)
 
         territory["Manpower"] -= size
         forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{self.name} Force")
         self.military[forcename] = {
-            "Status": "Constructing",
+            "Status": constructionstatus,
             "Location": territoryName,
             "Units": {name: newunit}
         }
