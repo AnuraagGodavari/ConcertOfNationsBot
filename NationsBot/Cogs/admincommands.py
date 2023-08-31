@@ -592,6 +592,32 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases = ["changeforcestatus", "change-forcestatus"])
+    @commands.has_permissions(administrator = True)
+    async def change_forcestatus(self, ctx, roleid, forceName, newstatus):
+        """ Change the status of any force and all units within it"""
+        logInfo(f"change_forcestatus({ctx.guild.id}, {roleid}, {forceName}, {newstatus})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+            
+        gamerule = savegame.getGamerule()
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not(forceName in nation.military.keys()):
+            raise InputError(f"{nation.name} does not own force \"{forceName}\"")
+
+        if not(military.validate_status(newstatus)):
+            raise InputError(f"Invalid status for force \"{newstatus}\"")
+
+        newstatus = military.newforcestatus(nation, forceName, newstatus, savegame, gamerule)
+
+        await ctx.send(f"New force status: {newstatus}")
+
+        save_saveGame(savegame)
+      
     @commands.command(aliases=['admincombineforces', 'admin-combine-forces', 'AdminCombineForces'])
     @commands.has_permissions(administrator = True)
     async def admin_combine_forces(self, ctx, roleid, base_forcename, *additional_forcenames):
