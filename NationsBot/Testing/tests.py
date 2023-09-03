@@ -367,3 +367,13 @@ def testDisbandForce(nation, forcename):
 
     logInfo(f"{nation.name} Military - After disbanding", details = filehandling.saveObject(nation.military))
     logInfo(f"{nation.name} Territories - After disbanding", details = filehandling.saveObject(nation.territories))
+
+def testMoveForce(savegame, nation, forcename, worldmap, turnadvancements, *targetTerritories):
+    logInfo("Testing moving force")
+
+    military.setmovement_force(nation, forcename, worldmap, *targetTerritories)   
+
+    for numMonths in turnadvancements:
+        savegame.advanceTurn(numMonths)
+
+        logInfo(f"Force {forcename} after {numMonths} months of movement:", details = filehandling.saveObject(nation.military[forcename]))

@@ -246,6 +246,8 @@ class World:
     def path_to(self, start, target):
         """ Use the A* Algorithm to find the shortest path between two territories """
 
+        logInfo(f"Creating a path between territories {start} and {target}")
+
         start = self[start].id
         target = self[target].id
         
@@ -265,7 +267,9 @@ class World:
             current = min(openTerrs.items(), key = operator.itemgetter(1))[0]
 
             if (current == target):
-                return self.constructPath(prevTerrs, current)
+                path = self.constructPath(prevTerrs, current)
+                logInfo(f"Created path from {start} to {target}")
+                return path
                 
             openTerrs.pop(current)
 
@@ -283,6 +287,7 @@ class World:
                     if neighbor not in openTerrs:
                         openTerrs[neighbor] = fScore[neighbor]
 
+        logInfo("Path could not be created")
         return False
 
 
