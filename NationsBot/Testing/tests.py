@@ -15,7 +15,7 @@ import ConcertOfNationsEngine.populations as populations
 import ConcertOfNationsEngine.military as military
 
 
-def generateTestWorld(gamerule, length, height, space):
+def generateTestWorld(gamerule, length, height, space, pos_rand = (0,0)):
     logInfo("Generating 'Test World' Worldmap...")
 
     world = mapping.World("Test World")
@@ -23,7 +23,10 @@ def generateTestWorld(gamerule, length, height, space):
     [
         world.addNewTerritory(
             ''.join([chr(randint(97, 122)) for i in range(5)]), 
-            (x, y), 
+            (
+                x + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2), 
+                y + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2)
+            ), 
             details = {"Terrain": "Plains"},
             resources = {resource: 1 for resource in gamerule["Resources"]}
             ) 
@@ -42,7 +45,7 @@ def generateTestWorld(gamerule, length, height, space):
             {
                 "t0": {"Terrain": "Plains"},
                 "t1": {"Terrain": "Plains"},
-                "maxDist": 20
+                "maxDist": 23
             }
         ]
     )
@@ -55,6 +58,10 @@ def generateTestWorld(gamerule, length, height, space):
 
     logInfo("Generated 'Test World'")
     return world
+
+def testPath(world, start, target):
+
+    logInfo(f"Path from {start} to {target} territories in {world.name}", details = world.path_to(start, target))
 
 def generateGame(gamerule, world):
 
@@ -360,3 +367,13 @@ def testDisbandForce(nation, forcename):
 
     logInfo(f"{nation.name} Military - After disbanding", details = filehandling.saveObject(nation.military))
     logInfo(f"{nation.name} Territories - After disbanding", details = filehandling.saveObject(nation.territories))
+
+def testMoveForce(savegame, nation, forcename, worldmap, turnadvancements, *targetTerritories):
+    logInfo("Testing moving force")
+
+    military.setmovement_force(nation, forcename, worldmap, *targetTerritories)   
+
+    for numMonths in turnadvancements:
+        savegame.advanceTurn(numMonths)
+
+        logInfo(f"Force {forcename} after {numMonths} months of movement:", details = filehandling.saveObject(nation.military[forcename]))

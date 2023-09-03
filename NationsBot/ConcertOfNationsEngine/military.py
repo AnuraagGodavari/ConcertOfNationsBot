@@ -16,7 +16,7 @@ import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.populations as populations
 
 
-valid_statuspatterns = ["Active$", "Constructing:((0?[1-9])|(11)|(12))/-?[\d]*$"]
+valid_statuspatterns = ["Active$", "Moving$", "Constructing:((0?[1-9])|(11)|(12))/-?[\d]*$"]
 
 # Validations
 
@@ -126,7 +126,42 @@ def newturn(force, savegame, gamerule, numMonths, bureaucracy):
             force["Status"] = "Active"
             logInfo("Force is now active")
 
+    elif ("Moving" in force["Status"]):
+        move_force(force, numMonths, gamerule)
+
     return ops.combineDicts(*costs)
+
+def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
+
+    oldstatus = nation.military[forcename]['Status']
+
+    nation.military[forcename]['Status'] = newstatus
+
+    for unit in nation.military[forcename]["Units"].values(): unit.status =  newstatus
+
+    #Change nation bureaucratic load based on if the force is under construction or not
+
+    if (oldstatus.startswith("Constructing:") and not newstatus.startswith("Constructing:")):
+        
+        for unit in nation.military[forcename]["Units"].values():
+
+            blueprint = get_blueprint(unit.unitType, gamerule)
+            
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] - (val * unit.size), 4), nation.bureaucracy[category][1])
+
+    elif (newstatus.startswith("Constructing:") and not oldstatus.startswith("Constructing:")):
+        
+        for unit in nation.military[forcename]["Units"].values():
+
+            blueprint = get_blueprint(unit.unitType, gamerule)
+        
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] + (val * unit.size), 4), nation.bureaucracy[category][1])
+
+    logInfo(f"New force status: {nation.military[forcename]['Status']}")
+
+    return nation.military[forcename]['Status']
 
 
 def combine_units(baseUnit, *addedUnits):
@@ -201,37 +236,47 @@ def disband_force(nation, forcename):
     disband_units_inForce(nation, force, tuple(force["Units"].keys()))
 
 
-def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
+def setmovement_force(nation, forcename, worldmap, *targetTerritories):
+    """ Plot a path for a force based on its location and a target territory. """
+    
+    baseforce = nation.military[forcename]
 
-    oldstatus = nation.military[forcename]['Status']
+    path = list()
+    start = baseforce["Location"]
 
-    nation.military[forcename]['Status'] = newstatus
+    for target in targetTerritories:
+        path += worldmap.path_to(start, target)
+        start = target
 
-    for unit in nation.military[forcename]["Units"].values(): unit.status =  newstatus
+    if (path):
+        baseforce["Path"] = path
+        baseforce["Status"] = "Moving"
 
-    #Change nation bureaucratic load based on if the force is under construction or not
+def move_force(force, numMonths, gamerule):
+    """ Move the force to the furthest extent possible for the end of this turn. """
+    
+    force_speed = min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()]) * numMonths
+    movement_total = 0
 
-    if (oldstatus.startswith("Constructing:") and not newstatus.startswith("Constructing:")):
-        
-        for unit in nation.military[forcename]["Units"].values():
+    while(force_speed - movement_total > force["Path"][0]["Distance"]):
 
-            blueprint = get_blueprint(unit.unitType, gamerule)
-            
-            if ("Bureaucratic Cost" in blueprint.keys()): 
-                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] - (val * unit.size), 4), nation.bureaucracy[category][1])
+        movement_total += force["Path"][0]["Distance"]
+        force["Location"] = force["Path"][0]["Name"]
+        force["Path"] = force["Path"][1:]
 
-    elif (newstatus.startswith("Constructing:") and not oldstatus.startswith("Constructing:")):
-        
-        for unit in nation.military[forcename]["Units"].values():
+        if not(force["Path"]):
+            force.pop("Path")
+            force["Status"] = "Active"
+            break
 
-            blueprint = get_blueprint(unit.unitType, gamerule)
-        
-            if ("Bureaucratic Cost" in blueprint.keys()): 
-                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] + (val * unit.size), 4), nation.bureaucracy[category][1])
+    if (movement_total == 0):
 
-    logInfo(f"New force status: {nation.military[forcename]['Status']}")
+        force["Location"] = force["Path"][0]["Name"]
+        force["Path"] = force["Path"][1:]
 
-    return nation.military[forcename]['Status']
+        if not(force["Path"]):
+            force.pop("Path")
+            force["Status"] = "Active"
 
 
 class Unit:
