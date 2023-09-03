@@ -1,9 +1,10 @@
 import json, pprint, random
 from PIL import Image, ImageDraw, ImageFont
+from math import *
+import operator
 
 from logger import *
 from common import *
-from math import *
 
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
@@ -21,9 +22,16 @@ class Territory:
         self.name = name
         self.id = id
         self.pos = pos
-        self.edges = edges or dict()
+        
+        if (edges):
+            self.edges = {int(k): v for k, v in edges.items()}
+        else: self.edges = dict()
+
         self.details = details or dict()
         self.resources = resources or dict()
+
+    def dist(t0, t1):
+        return (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5
 
 
 class World:
@@ -70,7 +78,7 @@ class World:
                         if (t1.details[key] != value):
                             continue
 
-                    pointDist = (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5
+                    pointDist = t0.dist(t1)
                     if (pointDist <= rule["maxDist"]):
                         t0.edges[t1.id] = round(pointDist, 2)
                         t1.edges[t0.id] = round(pointDist, 2)
@@ -228,8 +236,52 @@ class World:
 
         return filename
 
-    def path_to(self, target):
-        pass
+    def constructPath(self, prevTerrs, current):
+        
+        if (current in prevTerrs.keys()):
+            return self.constructPath(prevTerrs, prevTerrs[current]) + [{"ID": current, "Name": self.territories[current].name, "Distance": self.territories[current].edges[prevTerrs[current]]}]
+
+        return []
+
+    def path_to(self, start, target):
+        """ Use the A* Algorithm to find the shortest path between two territories """
+        
+        openTerrs = dict()
+        prevTerrs = dict()
+
+        pathCosts = { terr.id: float("inf") for terr in self.territories}
+        pathCosts[start] = 0
+
+        fScore = { terr.id: float("inf") for terr in self.territories }
+        fScore[start] = self.territories[start].dist(self.territories[target])
+        openTerrs[start] = fScore[start]
+
+        while (openTerrs):
+
+            #Node with lowest fScore
+            current = min(openTerrs.items(), key = operator.itemgetter(1))[0]
+
+            if (current == target):
+                return self.constructPath(prevTerrs, current)
+                
+            openTerrs.pop(current)
+
+            for neighbor, edge in self.territories[current].edges.items():
+                
+                predicted_cost = pathCosts[current] + edge
+
+                #If predicted cost is less than current minimum known cost
+                if (predicted_cost < pathCosts[neighbor]):
+                    
+                    prevTerrs[neighbor] = current
+                    pathCosts[neighbor] = predicted_cost
+                    fScore[neighbor] = predicted_cost + self.territories[neighbor].dist(self.territories[target])
+
+                    if neighbor not in openTerrs:
+                        openTerrs[neighbor] = fScore[neighbor]
+
+        return False
+
 
     def __getitem__(self, items):
         """
