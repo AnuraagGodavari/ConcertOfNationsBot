@@ -16,7 +16,7 @@ import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.populations as populations
 
 
-valid_statuspatterns = ["Active$", "Constructing:((0?[1-9])|(11)|(12))/-?[\d]*$"]
+valid_statuspatterns = ["Active$", "Moving$", "Constructing:((0?[1-9])|(11)|(12))/-?[\d]*$"]
 
 # Validations
 
@@ -126,6 +126,9 @@ def newturn(force, savegame, gamerule, numMonths, bureaucracy):
             force["Status"] = "Active"
             logInfo("Force is now active")
 
+    elif ("Moving" in force["Status"]):
+        move_force(force, numMonths, gamerule)
+
     return ops.combineDicts(*costs)
 
 def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
@@ -233,13 +236,48 @@ def disband_force(nation, forcename):
     disband_units_inForce(nation, force, tuple(force["Units"].keys()))
 
 
-def setmovement_force(nation, forcename, worldmap, targetTerritory):
+def setmovement_force(nation, forcename, worldmap, *targetTerritories):
     """ Plot a path for a force based on its location and a target territory. """
-    pass
+    
+    baseforce = nation.military[forcename]
 
-def move_force(forcename, numMonths):
+    path = list()
+    start = baseforce["Location"]
+
+    for target in targetTerritories:
+        path += worldmap.path_to(start, target)
+        start = target
+
+    if (path):
+        baseforce["Path"] = path
+        baseforce["Status"] = "Moving"
+
+def move_force(force, numMonths, gamerule):
     """ Move the force to the furthest extent possible for the end of this turn. """
-    pass
+    
+    force_speed = min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()]) * numMonths
+    movement_total = 0
+
+    while(force_speed - movement_total > force["Path"][0]["Distance"]):
+
+        movement_total += force["Path"][0]["Distance"]
+        force["Location"] = force["Path"][0]["Name"]
+        force["Path"] = force["Path"][1:]
+
+        if not(force["Path"]):
+            force.pop("Path")
+            force["Status"] = "Active"
+            break
+
+    if (movement_total == 0):
+
+        force["Location"] = force["Path"][0]["Name"]
+        force["Path"] = force["Path"][1:]
+
+        if not(force["Path"]):
+            force.pop("Path")
+            force["Status"] = "Active"
+
 
 class Unit:
     """
