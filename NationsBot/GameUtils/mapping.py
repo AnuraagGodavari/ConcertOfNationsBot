@@ -239,12 +239,15 @@ class World:
     def constructPath(self, prevTerrs, current):
         
         if (current in prevTerrs.keys()):
-            return self.constructPath(prevTerrs, prevTerrs[current]) + [{"ID": current, "Name": self.territories[current].name, "Distance": self.territories[current].edges[prevTerrs[current]]}]
+            return self.constructPath(prevTerrs, prevTerrs[current]) + [{"ID": current, "Name": self[current].name, "Distance": self[current].edges[prevTerrs[current]]}]
 
         return []
 
     def path_to(self, start, target):
         """ Use the A* Algorithm to find the shortest path between two territories """
+
+        start = self[start].id
+        target = self[target].id
         
         openTerrs = dict()
         prevTerrs = dict()
@@ -253,7 +256,7 @@ class World:
         pathCosts[start] = 0
 
         fScore = { terr.id: float("inf") for terr in self.territories }
-        fScore[start] = self.territories[start].dist(self.territories[target])
+        fScore[start] = self[start].dist(self[target])
         openTerrs[start] = fScore[start]
 
         while (openTerrs):
@@ -266,7 +269,7 @@ class World:
                 
             openTerrs.pop(current)
 
-            for neighbor, edge in self.territories[current].edges.items():
+            for neighbor, edge in self[current].edges.items():
                 
                 predicted_cost = pathCosts[current] + edge
 
@@ -275,7 +278,7 @@ class World:
                     
                     prevTerrs[neighbor] = current
                     pathCosts[neighbor] = predicted_cost
-                    fScore[neighbor] = predicted_cost + self.territories[neighbor].dist(self.territories[target])
+                    fScore[neighbor] = predicted_cost + self[neighbor].dist(self[target])
 
                     if neighbor not in openTerrs:
                         openTerrs[neighbor] = fScore[neighbor]
