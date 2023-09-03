@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from logger import *
 from common import *
+from math import *
 
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
@@ -71,8 +72,8 @@ class World:
 
                     pointDist = (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5
                     if (pointDist <= rule["maxDist"]):
-                        t0.edges[t1.id] = pointDist
-                        t1.edges[t0.id] = pointDist
+                        t0.edges[t1.id] = round(pointDist, 2)
+                        t1.edges[t0.id] = round(pointDist, 2)
 
                     continue
 
@@ -88,13 +89,18 @@ class World:
         coordOffset = (75, 75)
         mapScale = mapScale or (1, 1)
         terrSize = (32, 32)
+        background_color = (200, 200, 200)
 
         #Represents the max render length of an edge.
         #If an edge is more than edgeDrawLimits[1], then shrink the map so it draws it as long as edgeDrawLimits[1] would before.
         #If an edge is less than edgeDrawLimits[0], then inflate the map so it draws it as long as edgeDrawLimits[0] would before.
         edgeDrawLimits = (1, 2)
 
-        courierFont = ImageFont.truetype(f"{fontsDir}/courier.ttf", 24)
+        fontsize = 24
+        courierFont = ImageFont.truetype(f"{fontsDir}/courier.ttf", fontsize)
+
+        edge_fontsize = 18
+        edge_courierFont = ImageFont.truetype(f"{fontsDir}/courier.ttf", edge_fontsize)
 
         #Initialize min and max X and Y values to the X and Y coords of the first territory in the dict of territories
         firstT = next(iter(self.territories))
@@ -126,29 +132,67 @@ class World:
             int((dim[0] * mapScale[0]) + (coordOffset[0]*2)), 
             int((dim[1] * mapScale[1]) + (coordOffset[1]*2))
             ),
-            (200, 200, 200)
+            background_color
         )
         imgDraw = ImageDraw.Draw(out_img)
 
         #Draw territories on the map
         for terr in self.territories:
 
-            #Draw territory edges on the map
+            #Draw territory edges and distances on the map
             for neighborID in terr.edges.keys():
 
                 neighbor = self.territories[int(neighborID)]
 
                 if neighbor.id > terr.id:
 
+                    edge_coords = ( 
+                            ( 
+                                (terr.pos[0] * mapScale[0]) + terrOffset[0],
+                                (terr.pos[1] * mapScale[1]) + terrOffset[1]
+                            ),
+                            (
+                                (neighbor.pos[0] * mapScale[0]) + terrOffset[0],
+                                (neighbor.pos[1] * mapScale[1]) + terrOffset[1]
+                            )
+                        )
+
                     imgDraw.line(
                         [
-                            ((terr.pos[0] * mapScale[0]) + terrOffset[0],
-                            (terr.pos[1] * mapScale[1]) + terrOffset[1]),
-                            ((neighbor.pos[0] * mapScale[0]) + terrOffset[0],
-                            (neighbor.pos[1] * mapScale[1]) + terrOffset[1])
+                            (edge_coords[0][0], edge_coords[0][1]),
+                            (edge_coords[1][0], edge_coords[1][1])
                         ],
-                        fill = "black"
+                        fill = (50, 50, 50)
                     )
+
+                    midpoint = (
+                        min(edge_coords[0][0], edge_coords[1][0]) + (abs(edge_coords[0][0] - edge_coords[1][0])/2),
+                        min(edge_coords[0][1], edge_coords[1][1]) + (abs(edge_coords[0][1] - edge_coords[1][1])/2)
+                    )
+
+                    gapsize = (
+                        edge_fontsize*len(str(terr.edges[neighborID])),
+                        edge_fontsize
+                    )
+
+                    #Display the edge length
+                    imgDraw.rectangle(
+                        (
+                            midpoint[0] - gapsize[0]/2,
+                            midpoint[1] - gapsize[1]/2,
+                            midpoint[0] + gapsize[0]/2,
+                            midpoint[1] + gapsize[1]/2
+                        ), 
+                        fill = background_color,
+                        outline = (50, 50, 50)
+                        )
+
+                    imgDraw.text(
+                        (
+                            midpoint[0] - (gapsize[0]/2) + (edge_fontsize/1.25),
+                            midpoint[1] - (gapsize[1]/2)
+                        ),
+                        str(terr.edges[neighborID]), font=edge_courierFont, fill=(50, 50, 50))
 
             #Check for custom color; if none, use default
             terrColor = (255,255,255)
@@ -183,6 +227,9 @@ class World:
         logInfo(f"Successfully saved world {self.name}!")
 
         return filename
+
+    def path_to(self, target):
+        pass
 
     def __getitem__(self, items):
         """

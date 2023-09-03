@@ -128,6 +128,38 @@ def newturn(force, savegame, gamerule, numMonths, bureaucracy):
 
     return ops.combineDicts(*costs)
 
+def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
+
+    oldstatus = nation.military[forcename]['Status']
+
+    nation.military[forcename]['Status'] = newstatus
+
+    for unit in nation.military[forcename]["Units"].values(): unit.status =  newstatus
+
+    #Change nation bureaucratic load based on if the force is under construction or not
+
+    if (oldstatus.startswith("Constructing:") and not newstatus.startswith("Constructing:")):
+        
+        for unit in nation.military[forcename]["Units"].values():
+
+            blueprint = get_blueprint(unit.unitType, gamerule)
+            
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] - (val * unit.size), 4), nation.bureaucracy[category][1])
+
+    elif (newstatus.startswith("Constructing:") and not oldstatus.startswith("Constructing:")):
+        
+        for unit in nation.military[forcename]["Units"].values():
+
+            blueprint = get_blueprint(unit.unitType, gamerule)
+        
+            if ("Bureaucratic Cost" in blueprint.keys()): 
+                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] + (val * unit.size), 4), nation.bureaucracy[category][1])
+
+    logInfo(f"New force status: {nation.military[forcename]['Status']}")
+
+    return nation.military[forcename]['Status']
+
 
 def combine_units(baseUnit, *addedUnits):
 
@@ -201,38 +233,13 @@ def disband_force(nation, forcename):
     disband_units_inForce(nation, force, tuple(force["Units"].keys()))
 
 
-def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
+def setmovement_force(nation, forcename, worldmap, targetTerritory):
+    """ Plot a path for a force based on its location and a target territory. """
+    pass
 
-    oldstatus = nation.military[forcename]['Status']
-
-    nation.military[forcename]['Status'] = newstatus
-
-    for unit in nation.military[forcename]["Units"].values(): unit.status =  newstatus
-
-    #Change nation bureaucratic load based on if the force is under construction or not
-
-    if (oldstatus.startswith("Constructing:") and not newstatus.startswith("Constructing:")):
-        
-        for unit in nation.military[forcename]["Units"].values():
-
-            blueprint = get_blueprint(unit.unitType, gamerule)
-            
-            if ("Bureaucratic Cost" in blueprint.keys()): 
-                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] - (val * unit.size), 4), nation.bureaucracy[category][1])
-
-    elif (newstatus.startswith("Constructing:") and not oldstatus.startswith("Constructing:")):
-        
-        for unit in nation.military[forcename]["Units"].values():
-
-            blueprint = get_blueprint(unit.unitType, gamerule)
-        
-            if ("Bureaucratic Cost" in blueprint.keys()): 
-                for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (round(nation.bureaucracy[category][0] + (val * unit.size), 4), nation.bureaucracy[category][1])
-
-    logInfo(f"New force status: {nation.military[forcename]['Status']}")
-
-    return nation.military[forcename]['Status']
-
+def move_force(forcename, numMonths):
+    """ Move the force to the furthest extent possible for the end of this turn. """
+    pass
 
 class Unit:
     """

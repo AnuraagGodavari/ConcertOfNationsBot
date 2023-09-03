@@ -15,7 +15,7 @@ import ConcertOfNationsEngine.populations as populations
 import ConcertOfNationsEngine.military as military
 
 
-def generateTestWorld(gamerule, length, height, space):
+def generateTestWorld(gamerule, length, height, space, pos_rand = (0,0)):
     logInfo("Generating 'Test World' Worldmap...")
 
     world = mapping.World("Test World")
@@ -23,7 +23,10 @@ def generateTestWorld(gamerule, length, height, space):
     [
         world.addNewTerritory(
             ''.join([chr(randint(97, 122)) for i in range(5)]), 
-            (x, y), 
+            (
+                x + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2), 
+                y + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2)
+            ), 
             details = {"Terrain": "Plains"},
             resources = {resource: 1 for resource in gamerule["Resources"]}
             ) 
@@ -42,7 +45,7 @@ def generateTestWorld(gamerule, length, height, space):
             {
                 "t0": {"Terrain": "Plains"},
                 "t1": {"Terrain": "Plains"},
-                "maxDist": 20
+                "maxDist": 23
             }
         ]
     )
