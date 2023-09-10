@@ -77,6 +77,10 @@ def get_blueprint(unitType, gamerule):
 
     return allunits[unitType]
 
+def get_forcespeed(force, gamerule):
+
+    return min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()])
+
 
 # Processes
 
@@ -263,7 +267,7 @@ def setmovement_force(nation, forcename, worldmap, *targetTerritories):
 def move_force(force, numMonths, gamerule):
     """ Move the force to the furthest extent possible for the end of this turn. """
     
-    force_speed = min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()]) * numMonths
+    force_speed = get_forcespeed(force, gamerule) * numMonths
     movement_total = 0
 
     while(force_speed - movement_total > force["Path"][0]["Distance"]):
