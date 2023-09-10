@@ -48,6 +48,10 @@ def force_splittable(baseForce, *unitsToSplit):
 def validate_status(newstatus):
     
     for statuspattern in valid_statuspatterns:
+
+        if (statuspattern == "Moving"):
+            return False
+
         if (re.search(statuspattern, newstatus, flags=re.ASCII)):
             return True
 
@@ -251,6 +255,10 @@ def setmovement_force(nation, forcename, worldmap, *targetTerritories):
     if (path):
         baseforce["Path"] = path
         baseforce["Status"] = "Moving"
+
+        return path
+
+    return False
 
 def move_force(force, numMonths, gamerule):
     """ Move the force to the furthest extent possible for the end of this turn. """
