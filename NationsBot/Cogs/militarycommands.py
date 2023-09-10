@@ -429,6 +429,57 @@ class MilitaryCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases=['moveforce', 'move-force', 'moveForce'])
+    async def move_force(self, ctx, base_forcename, *terrIDs):
+        """ Order a given force to start moving to a series of territories """
+        logInfo(f"move_force({ctx.guild.id}, {base_forcename}, {terrIDs})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        territories = list()
+
+        for terrID in terrIDs:
+
+            if terrID.isdigit(): terrID = int(terrID)
+
+            #Territory info from the map
+            world_terr = world[terrID]
+
+            if not world_terr:
+                raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+            territories.append(world_terr.name)
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        path = military.setmovement_force(nation, base_forcename, world, *territories)
+
+        if (path):
+            await ctx.send(f"Force {base_forcename} has begun moving. Path: {[territory['Name'] for territory in path]}")
+
+        else:
+            await ctx.send(f"Could not move {base_forcename}")
+
+        save_saveGame(savegame)
+
+
 
 async def setup(client):
     await client.add_cog(MilitaryCommands(client))
