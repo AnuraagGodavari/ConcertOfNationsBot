@@ -19,6 +19,7 @@ from ConcertOfNationsEngine.dateoperations import *
 from ConcertOfNationsEngine.buildings import *
 import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.populations as populations
+import ConcertOfNationsEngine.diplomacy as diplomacy
 
 #The cog itself
 class AdminCommands(commands.Cog):
@@ -887,6 +888,34 @@ class AdminCommands(commands.Cog):
         base_force["Location"] = territoryName
 
         await ctx.send(f"Force {base_forcename} new location: {base_force['Location']}")
+
+        save_saveGame(savegame)
+
+
+    # Manage diplomacy
+
+    @commands.command(aliases=["adminsetrelationship", "admin-set-relationship", "adminSetRelationship"])
+    @commands.has_permissions(administrator = True)
+    async def admin_set_relationship(self, ctx, relation, *roleids):
+        """Declare the relations of several nations with each other"""
+
+        logInfo(f"set_relationship({ctx.guild.id}, {relation}, {roleids})")
+
+        if (len(set(roleids)) <= 1):
+            raise InputError("Must have multiple unique nations to set relation for")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+        
+        nations = [get_NationFromRole(ctx, roleid, savegame) for roleid in roleids]
+
+        if not(diplomacy.validate_relation(relation)):
+            raise InputError(f"Invalid diplomatic relation {relation}. Valid relations: {', '.join(statuspattern[:-1] for statuspattern in diplomacy.valid_statuspatterns)}")
+
+        diplomacy.set_relation(relation, *nations)
+
+        await ctx.send(f"Made the following nations have the relationship {relation} with each other: {', '.join([nation.name for nation in nations])}")
 
         save_saveGame(savegame)
 
