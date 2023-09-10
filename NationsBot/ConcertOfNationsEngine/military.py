@@ -244,7 +244,75 @@ def disband_force(nation, forcename):
     disband_units_inForce(nation, force, tuple(force["Units"].keys()))
 
 
-def setmovement_force(nation, forcename, worldmap, *targetTerritories):
+def check_intercepting_forces(nation, forcename, gamerule, savegame):
+
+    logInfo(f"Checking if {forcename} movement is intercepted by any enemy forces")
+    
+    baseforce = nation.military[forcename]
+    
+    enemy_militaries = savegame.get_enemyArmies(nation)
+
+    if not (enemy_militaries):
+        return
+
+    for terr in baseforce["Path"]:
+
+        has_intercept = False
+
+        intercept_opportunities = {
+            enemy_forcename: {
+                "Terr": enemyterr,
+                "Total Distance": enemy_militaries[enemy_forcename]["Path"][-1]["This Distance"]
+            } 
+            for enemy_forcename in enemy_militaries.keys() 
+            if enemy_militaries[enemy_forcename]["Status"] == "Moving" 
+            for enemyterr in enemy_militaries[enemy_forcename]["Path"] 
+            if enemyterr["Name"] == terr["Name"]
+        }
+
+        for enemy_forcename, intercept in intercept_opportunities.items():
+
+            #Friendly current distance percentage
+            fc = terr["This Distance"] / baseforce["Path"][-1]["This Distance"]
+            #Friendly next distance percentage
+            fn = terr["Next Distance"] / baseforce["Path"][-1]["This Distance"]
+
+            #Friendly current distance percentage
+            ec = intercept["Terr"]["This Distance"] / intercept["Total Distance"]
+            #Friendly next distance percentage
+            en = intercept["Terr"]["Next Distance"] / intercept["Total Distance"]
+
+            if (
+                (ec <= fc and fc <= en)
+                or (fc <= ec and ec <= fn)
+                or (ec <= fn and fn <= en)
+                or (fc <= en and en <= fn)
+                ):
+
+                logInfo(f"Enemy forces {forcename} and {enemy_forcename} meet at {terr['Name']} [{terr['ID']}]")
+
+                enemy_name = savegame.find_forceOwner(enemy_forcename)
+                enemy_force = savegame.nations[enemy_name].military[enemy_forcename]
+                
+                baseforce["Intercept"] = {
+                    "Nation": enemy_name,
+                    "Force": enemy_forcename,
+                    "Territory": terr["Name"]
+                }
+                
+                enemy_force["Intercept"] = {
+                    "Nation": nation.name,
+                    "Force": forcename,
+                    "Territory": terr["Name"]
+                }
+
+                has_intercept = True
+
+                break
+
+        if (has_intercept): break
+
+def setmovement_force(nation, forcename, worldmap, gamerule, savegame, *targetTerritories):
     """ Plot a path for a force based on its location and a target territory. """
     
     baseforce = nation.military[forcename]
@@ -253,16 +321,18 @@ def setmovement_force(nation, forcename, worldmap, *targetTerritories):
     start = baseforce["Location"]
 
     for target in targetTerritories:
-        path += worldmap.path_to(start, target)
+        path += worldmap.path_to(start, target, min_dist = get_forcespeed(baseforce, gamerule))
         start = target
 
-    if (path):
-        baseforce["Path"] = path
-        baseforce["Status"] = "Moving"
+    if not (path):
+        return False
 
-        return path
+    baseforce["Path"] = path
+    baseforce["Status"] = "Moving"
 
-    return False
+    check_intercepting_forces(nation, forcename, gamerule, savegame)
+
+    return path
 
 def move_force(force, numMonths, gamerule):
     """ Move the force to the furthest extent possible for the end of this turn. """
