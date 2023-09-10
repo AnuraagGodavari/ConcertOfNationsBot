@@ -3,6 +3,7 @@ from logger import *
 
 import pprint
 from random import *
+from math import *
 
 from GameUtils import filehandling, mapping
 
@@ -24,8 +25,8 @@ def generateTestWorld(gamerule, length, height, space, pos_rand = (0,0)):
         world.addNewTerritory(
             ''.join([chr(randint(97, 122)) for i in range(5)]), 
             (
-                x + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2), 
-                y + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2)
+                round(x + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2), 2), 
+                round(y + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2), 2)
             ), 
             details = {"Terrain": "Plains"},
             resources = {resource: 1 for resource in gamerule["Resources"]}

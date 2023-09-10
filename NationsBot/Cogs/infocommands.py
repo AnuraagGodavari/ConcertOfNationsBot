@@ -117,7 +117,7 @@ class InfoCommands(commands.Cog):
             ctx.author.id,
             fields = [
                 (forcename, {
-                    "Status": force["Status"],
+                    "Status": force["Status"] if "Moving" not in force["Status"] else f"{force['Status']} to {force['Path'][-1]['Name']} [ID: {force['Path'][-1]['ID']}] ",
                     "Location": force["Location"],
                     "Units": len(force["Units"]),
                     "Size": sum(unit.size for unit in force["Units"].values())
@@ -136,10 +136,10 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    @commands.command(aliases=['force', 'militaryforce', 'military-force', 'militaryForce', 'military_force'])
-    async def units(self, ctx, forcename):
+    @commands.command(aliases=['units', 'militaryforce', 'military-force', 'militaryForce', 'military_force'])
+    async def force(self, ctx, forcename):
         """ Show a specific force controlled by a nation, either that of the author or one that is specified. """
-        logInfo(f"units({ctx.guild.id}, {forcename})")
+        logInfo(f"force({ctx.guild.id}, {forcename})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -170,9 +170,12 @@ class InfoCommands(commands.Cog):
             isPaged = True
             )
 
+        if ("Moving" in force["Status"]):
+            menu.description += f"\n Path: {' >> '.join([territory['Name'] + ' [' + str(territory['ID']) + '] Distance: ' + str(territory['Distance']) for territory in force['Path']])}"
+
         assignMenu(ctx.author.id, menu)
 
-        logInfo(f"Created units menu and assigned it to player {ctx.author.id}")
+        logInfo(f"Created force menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
