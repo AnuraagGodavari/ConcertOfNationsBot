@@ -264,7 +264,7 @@ class Nation:
         tax_modifier (float): Added onto the base national tax rate and used to calculate the tax revenue from the national population
     """
 
-    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, military = None, modifiers = None):
+    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, military = None, diplomacy = None, modifiers = None):
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
@@ -276,6 +276,8 @@ class Nation:
             self.bureaucracy[key] = tuple(value)
 
         self.role_id = role_id
+
+        self.diplomacy = diplomacy or dict()
         
         self.modifiers = modifiers or copy(nationmodifiers_template)
 

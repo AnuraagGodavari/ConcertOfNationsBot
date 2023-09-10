@@ -49,8 +49,8 @@ def validate_status(newstatus):
     
     for statuspattern in valid_statuspatterns:
 
-        if (statuspattern == "Moving"):
-            return False
+        if (newstatus == "Moving"):
+            return True
 
         if (re.search(statuspattern, newstatus, flags=re.ASCII)):
             return True
