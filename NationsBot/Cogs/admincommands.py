@@ -812,6 +812,84 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases=['adminmoveforce', 'admin-move-force', 'adminMoveForce'])
+    async def admin_move_force(self, ctx, roleid, base_forcename, *terrIDs):
+        """ As an admin, order a given force to start moving to a series of territories """
+        logInfo(f"admin_move_force({ctx.guild.id}, {roleid}, {base_forcename}, {terrIDs})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        territories = list()
+
+        for terrID in terrIDs:
+
+            if terrID.isdigit(): terrID = int(terrID)
+
+            #Territory info from the map
+            world_terr = world[terrID]
+
+            if not world_terr:
+                raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+            territories.append(world_terr.name)
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        path = military.setmovement_force(nation, base_forcename, world, *territories)
+
+        if (path):
+            await ctx.send(f"Force {base_forcename} has begun moving. Path: {[territory['Name'] for territory in path]}")
+
+        else:
+            await ctx.send(f"Could not move {base_forcename}")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['adminchangeforcelocation', 'admin-change-force-location', 'adminMoveForceLocation'])
+    async def admin_change_force_location(self, ctx, roleid, base_forcename, terrID):
+        """ As an admin, order a given force to start moving to a series of territories """
+        logInfo(f"admin_change_force_location({ctx.guild.id}, {roleid}, {base_forcename}, {terrID})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terr = world[terrID]
+
+        if not world_terr:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        territoryName = world_terr.name
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+
+        base_force["Location"] = territoryName
+
+        await ctx.send(f"Force {base_forcename} new location: {base_force['Location']}")
+
+        save_saveGame(savegame)
+
 
     # Manage the savegame
 
