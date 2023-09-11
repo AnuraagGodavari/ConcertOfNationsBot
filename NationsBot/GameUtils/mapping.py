@@ -236,14 +236,32 @@ class World:
 
         return filename
 
-    def constructPath(self, prevTerrs, current):
+    def constructPath(self, prevTerrs, current, min_dist = float('inf')):
         
         if (current in prevTerrs.keys()):
-            return self.constructPath(prevTerrs, prevTerrs[current]) + [{"ID": current, "Name": self[current].name, "Distance": self[current].edges[prevTerrs[current]]}]
+
+            curr_effective_distance = self[current].edges[prevTerrs[current]]
+            curr_distance = min(curr_effective_distance, min_dist)
+
+            prev_path = self.constructPath(prevTerrs, prevTerrs[current])
+            
+            if not(prev_path):
+                prev_distance = 0
+            else:
+                prev_distance = prev_path[-1]["This Distance"]
+                prev_path[-1]["Next Distance"] += curr_distance
+
+            return prev_path + [{
+                "ID": current, 
+                "Name": self[current].name, 
+                "Distance": curr_effective_distance, 
+                "This Distance": prev_distance + curr_distance, 
+                "Next Distance": prev_distance + curr_distance
+                }]
 
         return []
 
-    def path_to(self, start, target):
+    def path_to(self, start, target, min_dist = float('inf')):
         """ Use the A* Algorithm to find the shortest path between two territories """
 
         logInfo(f"Creating a path between territories {start} and {target}")
@@ -254,9 +272,11 @@ class World:
         openTerrs = dict()
         prevTerrs = dict()
 
+        #pathCosts[t] = cost to get to t
         pathCosts = { terr.id: float("inf") for terr in self.territories}
         pathCosts[start] = 0
 
+        #fScore[t] = estimated cost (raw distance) to get to target from t
         fScore = { terr.id: float("inf") for terr in self.territories }
         fScore[start] = self[start].dist(self[target])
         openTerrs[start] = fScore[start]
@@ -267,7 +287,7 @@ class World:
             current = min(openTerrs.items(), key = operator.itemgetter(1))[0]
 
             if (current == target):
-                path = self.constructPath(prevTerrs, current)
+                path = self.constructPath(prevTerrs, current, min_dist)
                 logInfo(f"Created path from {start} to {target}")
                 return path
                 

@@ -442,6 +442,11 @@ class MilitaryCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
+        gamerule = savegame.getGamerule()
+
+        if not (gamerule):
+            raise InputError("Savegame's gamerule could not be retrieved")
+
         territories = list()
 
         for terrID in terrIDs:
@@ -469,7 +474,7 @@ class MilitaryCommands(commands.Cog):
         if not (base_forcename in nation.military.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
 
-        path = military.setmovement_force(nation, base_forcename, world, *territories)
+        path = military.setmovement_force(nation, base_forcename, world, gamerule, savegame, *territories)
 
         if (path):
             await ctx.send(f"Force {base_forcename} has begun moving. Path: {[territory['Name'] for territory in path]}")

@@ -7,6 +7,7 @@ from logger import *
 import imgur
 
 from GameUtils import operations as ops
+import GameUtils.filehandling as filehandling
 
 import ConcertOfNationsEngine.gamehandling as gamehandling
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -17,6 +18,7 @@ import ConcertOfNationsEngine.buildings as buildings
 import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.populations as populations
 import ConcertOfNationsEngine.military as military
+import ConcertOfNationsEngine.diplomacy as diplomacy
 
 
 class Savegame:
@@ -37,7 +39,7 @@ class Savegame:
         ]
     """
 
-    #Setup
+    # Setup
     
     def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
 
@@ -86,7 +88,7 @@ class Savegame:
         return nation
 
 
-    #Get outside files that define the savegame
+    # Get outside files that define the savegame
 
     def getRow(self):
         """
@@ -105,7 +107,21 @@ class Savegame:
         return gamehandling.dbget_gamerule(self.server_id)
 
 
-    #Main operations
+    # Get information from all nations
+
+    def get_enemyArmies(self, nation):
+        """ Given a nation, return a combination of every military belonging to every other nation which is enemies with the current one. """
+        enemy_militaries = ops.combineDicts(*[
+            othernation.military 
+            for othernation in self.nations.values() 
+            if othernation.name in nation.diplomacy.keys() 
+            and nation.diplomacy[othernation.name] == "Enemy"
+            ])
+
+        return enemy_militaries
+
+
+    # Main operations
 
     def advanceTurn(self, numMonths: int):
         """Move the date forward and calculate new turn changes for each nation"""
@@ -125,7 +141,8 @@ class Savegame:
 
         logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
-    #Territory operations
+
+    # Territory operations
 
     def get_territory_fromworld(self, territoryName):
         
@@ -208,7 +225,8 @@ class Savegame:
 
         return False
 
-    #Display
+
+    # Display
 
     def world_toImage(self, mapScale = None):
         """
