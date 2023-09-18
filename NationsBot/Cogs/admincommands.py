@@ -610,12 +610,12 @@ class AdminCommands(commands.Cog):
         if not(forceName in nation.military.keys()):
             raise InputError(f"{nation.name} does not own force \"{forceName}\"")
 
-        if not(military.validate_status(newstatus)):
-            raise InputError(f"Invalid status for force \"{newstatus}\"")
+        if not(military.validate_status(nation.military[forceName], newstatus)):
+            raise InputError(f"Invalid status for force \"{newstatus}\" (Old status: \"{nation.military[forceName]['Status']}\")")
 
         newstatus = military.newforcestatus(nation, forceName, newstatus, savegame, gamerule)
 
-        await ctx.send(f"New force status: {newstatus}")
+        await ctx.send(f"New force status: {newstatus} (Old status: \"{nation.military[forceName]['Status']}\")")
 
         save_saveGame(savegame)
       
@@ -893,6 +893,72 @@ class AdminCommands(commands.Cog):
         base_force["Location"] = territoryName
 
         await ctx.send(f"Force {base_forcename} new location: {base_force['Location']}")
+
+        save_saveGame(savegame)
+
+
+    # Manage battles
+    @commands.command(aliases=['setbattle', 'set-battle', 'setBattle'])
+    @commands.has_permissions(administrator = True)
+    async def set_battle(self, ctx, roleid0, forcename0, roleid1, forcename1):
+        """ As an admin, start a battle between two enemy forces in the same location. """
+        logInfo(f"set_battle({ctx.guild.id}, {roleid0}, {forcename0}, {roleid1}, {forcename1})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        # First force
+        nation0 = get_NationFromRole(ctx, roleid0, savegame)
+
+        if not (forcename0 in nation0.military.keys()):
+            raise InputError(f"<@&{roleid0}> does not own the force {forcename0}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force0 = nation0.military[forcename0]
+
+
+        # Second force
+        nation1 = get_NationFromRole(ctx, roleid1, savegame)
+
+        if not (forcename1 in nation1.military.keys()):
+            raise InputError(f"<@&{roleid1}> does not own the force {forcename1}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force1 = nation1.military[forcename1]
+        
+
+        if not(base_force0["Location"] == base_force1["Location"]):
+            raise InputError(f"Forces {forcename0} and {forcename1} cannot battle, as they are in different locations.")
+
+        military.set_battle(base_force0, nation1.name, forcename1)
+        military.set_battle(base_force1, nation0.name, forcename0)
+
+        await ctx.send(f"Forces {forcename0} and {forcename1} are now engaged in battle")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['exitbattle', 'exit-battle', 'exitBattle'])
+    @commands.has_permissions(administrator = True)
+    async def exit_battle(self, ctx, roleid, base_forcename):
+        """ As an admin, cause a force to exit a battle and if it has an enemy battling it directly, cause the enemy to also exit the battle. """
+        logInfo(f"exit_battle({ctx.guild.id}, {roleid}, {base_forcename})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{roleid}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+
+        if (not base_force["Status"] == "Battling"):
+            raise InputError(f"Force {base_forcename} is not in battle")
+
+        military.exit_battle(base_forcename, base_force, savegame)
+        
+        await ctx.send(f"Force {base_forcename} has exited its current battle")
 
         save_saveGame(savegame)
 

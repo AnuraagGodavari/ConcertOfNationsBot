@@ -45,12 +45,15 @@ def force_splittable(baseForce, *unitsToSplit):
     
     return True
 
-def validate_status(newstatus):
+def validate_status(force, newstatus):
     
     for statuspattern in valid_statuspatterns:
 
         #Define the valid statuses that cannot be manually defined
         if (newstatus in ("Moving", "Battling")):
+            return False
+
+        if (force["Status"] == "Battling"):
             return False
 
         if (re.search(statuspattern, newstatus, flags=re.ASCII)):
@@ -442,6 +445,29 @@ def set_battle(force, enemy_nation_name, enemy_force_name):
     if ("Intercept" in force.keys()):
         force.pop("Intercept")
     force["Status"] = "Battling"
+
+def exit_battle(forcename, force, savegame):
+    """ Cause a force to exit battle, also do so for its enemy if applicable """
+
+    if("Path" in force.keys()):
+        force["Status"] = "Moving"
+
+    else:
+        force["Status"] = "Active"
+
+    battle_info = force.pop("Battle")
+
+    enemy_force = savegame.nations[battle_info["Nation"]].military[battle_info["Force"]]
+
+    if (not "Battle" in enemy_force.keys()):
+        return
+
+    if (enemy_force["Battle"]["Force"] == forcename):
+        exit_battle(
+            battle_info["Force"],
+            savegame.nations[battle_info["Nation"]].military[battle_info["Force"]],
+            savegame
+        )
 
 
 class Unit:
