@@ -49,7 +49,8 @@ def validate_status(newstatus):
     
     for statuspattern in valid_statuspatterns:
 
-        if (newstatus == "Moving"):
+        #Define the valid statuses that cannot be manually defined
+        if (newstatus in ("Moving", "Battling")):
             return False
 
         if (re.search(statuspattern, newstatus, flags=re.ASCII)):
@@ -356,17 +357,6 @@ def move_force(force, numMonths, gamerule):
     
     # If this force intercepts another force, move to the territory where they intercept and stop all movement
 
-    if ("Intercept" in force.keys()):
-
-        force["Location"] = force["Intercept"]["Territory"]
-        force["Battle"] = {
-            "Nation": force["Intercept"]["Nation"],
-            "Force": force["Intercept"]["Force"]
-        }
-        force.pop("Intercept")
-        force["Status"] = "Battling"
-        return
-
     force_speed = get_forcespeed(force, gamerule) * numMonths
     movement_total = 0
 
@@ -381,6 +371,17 @@ def move_force(force, numMonths, gamerule):
             force["Status"] = "Active"
             break
 
+        if ("Intercept" in force.keys() and force["Intercept"]["Territory"] == force["Path"][0]["Name"]):
+
+            force["Location"] = force["Intercept"]["Territory"]
+            force["Battle"] = {
+                "Nation": force["Intercept"]["Nation"],
+                "Force": force["Intercept"]["Force"]
+            }
+            force.pop("Intercept")
+            force["Status"] = "Battling"
+            break
+
     if (movement_total == 0):
 
         force["Location"] = force["Path"][0]["Name"]
@@ -390,8 +391,14 @@ def move_force(force, numMonths, gamerule):
             force.pop("Path")
             force["Status"] = "Active"
 
-def stop_force_movement():
-    pass
+    recalculate_path_distances(force, movement_total)
+
+def recalculate_path_distances(force, subtract_dist):
+    """ Change the absolute distances recorded in each path node for this force. """
+    
+    for terr in force["Path"]:
+        terr["This Distance"] = round(terr["This Distance"] - subtract_dist, 2)
+        terr["Next Distance"] = round(terr["Next Distance"] - subtract_dist, 2)
 
 
 class Unit:
