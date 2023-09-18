@@ -109,7 +109,7 @@ class Savegame:
 
     # Get information from all nations
 
-    def get_enemyArmies(self, nation):
+    def get_enemyForces(self, nation):
         """ Given a nation, return a combination of every military belonging to every other nation which is enemies with the current one. """
         enemy_militaries = ops.combineDicts(*[
             othernation.military 
@@ -123,6 +123,14 @@ class Savegame:
 
     # Main operations
 
+    def check_all_intercepting_forces(self, gamerule, numMonths):
+        """ Check all the forces of each nation for any movements that will be intercepted by enemies """
+
+        for nation in self.nations.values():
+            for forcename in nation.military.keys():
+
+                military.check_intercepting_forces(nation, forcename, gamerule, self, numMonths)
+
     def advanceTurn(self, numMonths: int):
         """Move the date forward and calculate new turn changes for each nation"""
 
@@ -134,6 +142,8 @@ class Savegame:
         self.date = {'m': (newdate_raw % 12) + 1, 'y': floor(newdate_raw / 12)}
 
         self.turn += 1
+
+        self.check_all_intercepting_forces(gamerule, numMonths)
 
         for nation in self.nations.values():
             
