@@ -262,7 +262,7 @@ def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
     if not(baseforce["Status"] == "Moving"):
         return
     
-    enemy_militaries = savegame.get_enemyArmies(nation)
+    enemy_militaries = savegame.get_enemyForces(nation)
 
     if not (enemy_militaries):
         return
@@ -286,16 +286,22 @@ def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
 
             logInfo(f"Enemy forces {forcename} and {enemy_forcename} meet at {terr['Name']} [{terr['ID']}]")
             
-            baseforce["Intercept"] = {
-                "Nation": enemy_name,
-                "Force": enemy_forcename,
-                "Territory": terr["Name"],
-                "Distance": terr["This Distance"]
-            }
+            # If the enemy is under construction, destroy them. This force can move past them.
+            if (enemy_force["Status"].startswith("Constructing:")):
+                savegame.nations[enemy_name].pop_force(enemy_forcename)
+                logInfo(f"Under construction force {enemy_forcename} has been destroyed by {forcename}")
             
-            set_battle(enemy_force, nation.name, forcename)
+            else:
+                baseforce["Intercept"] = {
+                    "Nation": enemy_name,
+                    "Force": enemy_forcename,
+                    "Territory": terr["Name"],
+                    "Distance": terr["This Distance"]
+                }
+                    
+                set_battle(enemy_force, nation.name, forcename)
 
-            return
+                return
 
 
         # If we've reached here, check intercept opportunities against moving enemies
@@ -413,7 +419,8 @@ def move_force(force, numMonths, gamerule):
             force.pop("Path")
             force["Status"] = "Active"
 
-    recalculate_path_distances(force, movement_total)
+    if ("Path" in force.keys()):
+        recalculate_path_distances(force, movement_total)
 
 def recalculate_path_distances(force, subtract_dist):
     """ Change the absolute distances recorded in each path node for this force. """
