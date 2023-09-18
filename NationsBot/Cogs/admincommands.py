@@ -808,7 +808,7 @@ class AdminCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (base_forcename in nation.military.keys()):
-            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+            raise InputError(f"<@&{roleid}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
 
         military.disband_force(nation, base_forcename)
 
@@ -847,7 +847,7 @@ class AdminCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (base_forcename in nation.military.keys()):
-            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+            raise InputError(f"<@&{roleid}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
 
         path = military.setmovement_force(nation, base_forcename, world, *territories)
 
@@ -886,7 +886,7 @@ class AdminCommands(commands.Cog):
         nation = get_NationFromRole(ctx, roleid, savegame)
 
         if not (base_forcename in nation.military.keys()):
-            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+            raise InputError(f"<@&{roleid}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
 
         base_force = nation.military[base_forcename]
 
