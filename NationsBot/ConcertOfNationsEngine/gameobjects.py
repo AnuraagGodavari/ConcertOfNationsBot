@@ -109,7 +109,7 @@ class Savegame:
 
     # Get information from all nations
 
-    def get_enemyArmies(self, nation):
+    def get_enemyForces(self, nation):
         """ Given a nation, return a combination of every military belonging to every other nation which is enemies with the current one. """
         enemy_militaries = ops.combineDicts(*[
             othernation.military 
