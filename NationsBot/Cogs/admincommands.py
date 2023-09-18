@@ -733,6 +733,7 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases=['adminsplitforce', 'admin-split-force', 'adminSplitForce'])
+    @commands.has_permissions(administrator = True)
     async def admin_split_force(self, ctx, roleid, base_forcename, *units_toSplit):
         """ Split a force belonging to any given nation, transferring several units to the new force """
         logInfo(f"split_force({ctx.guild.id}, {base_forcename}, {units_toSplit})")
@@ -761,6 +762,7 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases=['admindisbandunits', 'admin-disband-units', 'adminDisbandUnits'])
+    @commands.has_permissions(administrator = True)
     async def admin_disband_units(self, ctx, roleid, base_forcename, *units_toDisband):
         """ Disband units in a given force belonging to a specific nation, returning their manpower to their home provinces. """
         logInfo(f"admin_disband_units({ctx.guild.id}, {roleid}, {base_forcename}, {units_toDisband})")
@@ -793,6 +795,7 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases=['admindisbandforce', 'admin-disband-force', 'adminDisbandForce'])
+    @commands.has_permissions(administrator = True)
     async def admin_disband_force(self, ctx, roleid, base_forcename):
         """ Disband a given force, returning its units' manpowers to their home provinces. """
         logInfo(f"disband_units({ctx.guild.id}, {roleid}, {base_forcename})")
@@ -814,6 +817,7 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases=['adminmoveforce', 'admin-move-force', 'adminMoveForce'])
+    @commands.has_permissions(administrator = True)
     async def admin_move_force(self, ctx, roleid, base_forcename, *terrIDs):
         """ As an admin, order a given force to start moving to a series of territories """
         logInfo(f"admin_move_force({ctx.guild.id}, {roleid}, {base_forcename}, {terrIDs})")
@@ -856,6 +860,7 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases=['adminchangeforcelocation', 'admin-change-force-location', 'adminMoveForceLocation'])
+    @commands.has_permissions(administrator = True)
     async def admin_change_force_location(self, ctx, roleid, base_forcename, terrID):
         """ As an admin, order a given force to start moving to a series of territories """
         logInfo(f"admin_change_force_location({ctx.guild.id}, {roleid}, {base_forcename}, {terrID})")
