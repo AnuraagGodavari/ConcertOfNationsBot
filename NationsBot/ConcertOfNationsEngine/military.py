@@ -271,6 +271,35 @@ def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
 
     for terr in baseforce["Path"]:
 
+        # If the territory won't be reached this turn, we've moved as far as we can
+        if terr["This Distance"] > turn_moveDist:
+            break
+
+        # Check intercept opportunities against stationary enemies
+
+        for enemy_forcename, enemy_force in enemy_militaries.items():
+
+            if (enemy_force["Location"] != terr["Name"]):
+                continue
+
+            enemy_name = savegame.find_forceOwner(enemy_forcename)
+
+            logInfo(f"Enemy forces {forcename} and {enemy_forcename} meet at {terr['Name']} [{terr['ID']}]")
+            
+            baseforce["Intercept"] = {
+                "Nation": enemy_name,
+                "Force": enemy_forcename,
+                "Territory": terr["Name"],
+                "Distance": terr["This Distance"]
+            }
+            
+            set_battle(enemy_force, nation.name, forcename)
+
+            return
+
+
+        # If we've reached here, check intercept opportunities against moving enemies
+
         intercept_opportunities = {
             enemy_forcename: {
                 "Terr": enemyterr,
@@ -284,14 +313,13 @@ def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
 
         for enemy_forcename, intercept in intercept_opportunities.items():
 
-            # If the territory won't be reached this turn, move to the next army
-            if terr["This Distance"] > turn_moveDist:
-                break
+            enemy_name = savegame.find_forceOwner(enemy_forcename)
+            enemy_force = savegame.nations[enemy_name].military[enemy_forcename]
 
-            # If the force is intercepted by another force at an earlier distance, we've moved too far
+            # If the enemy force is intercepted by another force at an earlier distance, we've moved too far
             if ("Intercept" in baseforce.keys()):
                 if (baseforce["Intercept"]["Distance"] < terr["This Distance"]):
-                    break
+                    continue
 
             #Friendly current distance percentage
             fc = terr["This Distance"] / baseforce["Path"][-1]["This Distance"]
@@ -312,9 +340,6 @@ def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
                 ):
 
                 logInfo(f"Enemy forces {forcename} and {enemy_forcename} meet at {terr['Name']} [{terr['ID']}]")
-
-                enemy_name = savegame.find_forceOwner(enemy_forcename)
-                enemy_force = savegame.nations[enemy_name].military[enemy_forcename]
                 
                 baseforce["Intercept"] = {
                     "Nation": enemy_name,
@@ -330,7 +355,9 @@ def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
                     "Distance": intercept["Total Distance"]
                 }
 
-                break
+                return
+
+            else: continue
 
 def setmovement_force(nation, forcename, worldmap, gamerule, savegame, *targetTerritories):
     """ Plot a path for a force based on its location and a target territory. """
@@ -374,12 +401,7 @@ def move_force(force, numMonths, gamerule):
         if ("Intercept" in force.keys() and force["Intercept"]["Territory"] == force["Path"][0]["Name"]):
 
             force["Location"] = force["Intercept"]["Territory"]
-            force["Battle"] = {
-                "Nation": force["Intercept"]["Nation"],
-                "Force": force["Intercept"]["Force"]
-            }
-            force.pop("Intercept")
-            force["Status"] = "Battling"
+            set_battle(force, force["Intercept"]["Nation"], force["Intercept"]["Force"])
             break
 
     if (movement_total == 0):
@@ -399,6 +421,20 @@ def recalculate_path_distances(force, subtract_dist):
     for terr in force["Path"]:
         terr["This Distance"] = round(terr["This Distance"] - subtract_dist, 2)
         terr["Next Distance"] = round(terr["Next Distance"] - subtract_dist, 2)
+
+
+# Battle management
+
+def set_battle(force, enemy_nation_name, enemy_force_name):
+    """ Designate a force as being in battle """
+
+    force["Battle"] = {
+        "Nation": enemy_nation_name,
+        "Force": enemy_force_name
+    }
+    if ("Intercept" in force.keys()):
+        force.pop("Intercept")
+    force["Status"] = "Battling"
 
 
 class Unit:
