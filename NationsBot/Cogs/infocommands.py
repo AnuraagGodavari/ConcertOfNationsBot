@@ -173,6 +173,9 @@ class InfoCommands(commands.Cog):
         if ("Moving" in force["Status"]):
             menu.description += f"\n Path: {' >> '.join([territory['Name'] + ' [' + str(territory['ID']) + '] Distance: ' + str(territory['Distance']) for territory in force['Path']])}"
 
+        elif ("Battling" in force["Status"]):
+            menu.description += f"\nIn battle with {force['Battle']['Nation']} force: {force['Battle']['Force']}"
+
         assignMenu(ctx.author.id, menu)
 
         logInfo(f"Created force menu and assigned it to player {ctx.author.id}")
