@@ -58,6 +58,8 @@ class InfoCommands(commands.Cog):
         if not (savegame): 
             return #Error will already have been handled
 
+        gamerule = savegame.getGamerule()
+
         if (not roleid):
 
             playerinfo = get_player_byGame(savegame, ctx.author.id)
@@ -70,14 +72,13 @@ class InfoCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
         
-
         menu = MenuEmbed(
             f"{nation.name} Information", 
             None, 
             None,
             fields = [
                 ("Resources", nation.resources),
-                ("Revenue", nation.get_TurnRevenue(savegame, onlyestimate = True)),
+                ("Revenue", ops.combineDicts(nation.get_TurnRevenue(savegame, onlyestimate = True), {"Money": nation.get_taxincome(gamerule)})),
                 ("Bureaucracy", {f"{category}": f"{cap[0]}/{cap[1]}" for category, cap in nation.bureaucracy.items()}),
                 ("Modifiers", nation.modifiers)
             ]

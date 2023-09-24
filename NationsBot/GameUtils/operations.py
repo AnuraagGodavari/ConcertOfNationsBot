@@ -28,7 +28,7 @@ def isWithin(num1, num2 = 1, threshold = 1):
     else:
         return num2
 
-def combineDicts(*args):
+def combineDicts(*args, subtractDicts = False):
     rtnDict = {}
     for arg in args:
         if arg == None:
@@ -39,7 +39,9 @@ def combineDicts(*args):
                 if isinstance(rtnDict[key], dict):
                     rtnDict[key] = combineDicts(rtnDict[key], arg[key])
                 else:
-                    try: rtnDict[key] += arg[key]
+                    try: 
+                        if not(subtractDicts): rtnDict[key] += arg[key]
+                        else: rtnDict[key] -= arg[key]
                     except: pass
             else:
                 rtnDict[key] = arg[key]
