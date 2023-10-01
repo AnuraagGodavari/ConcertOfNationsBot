@@ -70,7 +70,7 @@ class AdminCommands(commands.Cog):
 
         nation.territories[territoryName]["Buildings"][buildingName] = "Active"
 
-        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 
         await ctx.send(f"Successfully added {buildingName} to {territoryName}!")
 
@@ -152,7 +152,7 @@ class AdminCommands(commands.Cog):
 
         newstatus = territories.destroybuilding(nation, territoryName, buildingName)
 
-        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
@@ -205,7 +205,7 @@ class AdminCommands(commands.Cog):
             if size == 0:
                 raise InputError("Cannot delete a population that does not already exist")
             logInfo("Specified population does not exist, adding new population")
-            pop = territories.add_population(nation, territoryName, populations.Population(size, 0, occupation, identifiers))
+            pop = territories.add_population(nation, territoryName, populations.Population(size, gamerule["Base Population Growth"], occupation, identifiers))
 
         #Delete the population if size is 0
         elif size == 0:
