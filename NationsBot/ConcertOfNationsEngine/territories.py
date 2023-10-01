@@ -45,10 +45,10 @@ def newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame):
         #Change whether or not the building's effects are active
 
         if (oldstatus != "Active" and newstatus == "Active"): 
-            nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+            nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), territoryInfo)
 
         elif (oldstatus == "Active" and newstatus != "Active"): 
-            nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+            nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), territoryInfo)
 
         #Change nation bureaucratic load based on if the building is under construction or not
 
@@ -81,11 +81,11 @@ def togglebuilding(nation, territoryName, buildingName, savegame):
 
     if (territoryInfo["Buildings"][buildingName] == "Active"):
         territoryInfo["Buildings"][buildingName] = "Inactive"
-        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), territoryInfo)
 
     elif (territoryInfo["Buildings"][buildingName] == "Inactive"):
         territoryInfo["Buildings"][buildingName] = "Active"
-        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), territoryInfo)
 
     logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
 
@@ -102,6 +102,17 @@ def destroybuilding(nation, territoryName, buildingName):
 
     logInfo(f"Territory {territoryName} destroyed building {buildingName}")
 
+
+# Effects
+
+def add_buildingeffects(territoryInfo, effects, remove_modifiers = False):
+    """
+    Add the local territory-specific effects of a building
+    """
+
+    if ("Population" in effects.keys()):
+        apply_population_modifiers(territoryInfo, effects["Population"], remove_modifiers)
+    
 
 #Manpower management
 
@@ -190,7 +201,7 @@ def remove_population(nation, territoryName, occupation, identifiers):
 
     return pop
 
-def grow_all_populations(gamerule, nation, territoryInfo, compound):
+def grow_all_populations(territoryInfo, compound):
     """
     Grow the territory's population
 
@@ -198,11 +209,18 @@ def grow_all_populations(gamerule, nation, territoryInfo, compound):
         compound (int): Exponent applied to 1 + the population growth rate
     """
 
-    base_growth = gamerule["Base Population Growth"]
+    for pop in territoryInfo["Population"]:
+        pop.grow_population(compound)
+
+def apply_population_modifiers(territoryInfo, all_modifiers, remove_modifiers = False):
+    """
+    Apply relevant modifiers to all populations in this territory
+    """
+
+    logInfo("all_modifiers", details = all_modifiers)
 
     for pop in territoryInfo["Population"]:
-        pop.size = math.floor(pop.size * ((1 + base_growth + pop.growth_modifier) ** compound))
-
+        pop.apply_modifiers(all_modifiers, remove_modifiers)
 
 def change_population(nation, territoryName, newsize, occupation, identifiers):
     """ Changes the size of a population in this territory matching specified occupation and identifiers or False if none exists """
@@ -224,7 +242,7 @@ def change_populationgrowth(nation, territoryName, growthrate, occupation, ident
     if not(pop):
         return False
 
-    pop.growth_modifier = growthrate
+    pop.growthrate = growthrate
 
     return pop
 

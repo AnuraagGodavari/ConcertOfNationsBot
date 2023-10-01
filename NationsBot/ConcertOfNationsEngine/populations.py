@@ -1,5 +1,6 @@
 from copy import copy
 import collections
+from math import *
 
 from database import *
 from logger import *
@@ -63,9 +64,40 @@ class Population:
         manpower (int): The amount of this population's size that has mobilized as manpower
     """
 
-    def __init__(self, size, growth_modifier, occupation, identifiers, manpower = 0):
+    def __init__(self, size, growthrate, occupation, identifiers, manpower = 0):
         self.size = size
-        self.growth_modifier = growth_modifier
+        self.growthrate = round(growthrate, 5)
         self.occupation = occupation
         self.identifiers = identifiers
         self.manpower = manpower
+
+    def grow_population(self, compound):
+        """
+        Change the population size based on the growth rate
+        """
+
+        self.size = floor(self.size * ((1 + self.growthrate) ** compound))
+
+    def apply_modifiers(self, all_modifiers, remove_modifiers = False):
+        """
+        Iterate through a list of modifiers, applying all those that apply.
+        """
+
+        multiplier = 1
+
+        if remove_modifiers:
+            multiplier = -1
+
+        for modifier in all_modifiers:
+
+            #Continue if the modifier's prerequisite occupation or identifiers are different from this population's.
+            if ("Occupation" in modifier.keys()):
+                if (modifier["Occupation"] != self.occupation): continue
+
+            if ("Identifiers" in modifier.keys()):
+                identifiers_set = set(self.identifiers.values())
+                if not(identifiers_set.issuperset(modifier["Identifiers"])): continue
+
+            if ("Growth" in modifier.keys()):
+                self.growthrate += modifier["Growth"] * multiplier
+                self.growthrate = round(self.growthrate, 5)
