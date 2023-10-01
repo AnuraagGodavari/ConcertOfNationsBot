@@ -338,12 +338,9 @@ class Nation:
         self.territories.pop(territoryName)
 
         #Remove the effects on this territory of all buildings across the nation.
-        for owned_territory in self.territories.values():
-            for buildingName in owned_territory["Buildings"].keys():
-                blueprint = buildings.get_alleffects(buildingName, savegame)
-                if not("Nation" in blueprint.keys()):
-                    continue
-                territories.add_buildingeffects(terrInfo, blueprint["Nation"], remove_modifiers = True)
+        blueprint = self.get_all_buildingeffects(savegame)
+        if ("Nation" in blueprint.keys()):
+            territories.add_buildingeffects(terrInfo, blueprint["Nation"], remove_modifiers = True)
 
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
         return terrInfo
@@ -358,13 +355,10 @@ class Nation:
 
         logInfo(f"Nation {self.name} annexing territory {territoryName}")
 
-        #Remove the effects on this territory of all buildings across the nation.
-        for owned_territory in self.territories.values():
-            for buildingName in owned_territory["Buildings"].keys():
-                blueprint = buildings.get_alleffects(buildingName, savegame)
-                if not("Nation" in blueprint.keys()):
-                    continue
-                territories.add_buildingeffects(territoryInfo, blueprint["Nation"])
+        #Add the effects on this territory of all buildings across the nation.
+        blueprint = self.get_all_buildingeffects(savegame)
+        if ("Nation" in blueprint.keys()):
+            territories.add_buildingeffects(territoryInfo, blueprint["Nation"])
 
         self.territories[territoryName] = territoryInfo
 
@@ -475,6 +469,19 @@ class Nation:
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
 
         return self.territories[territoryName]['Buildings'][buildingName]
+
+    def get_all_buildingeffects(self, savegame):
+        """
+        Get the combined effects of all buildings in this nation
+        """
+        all_effects = list()
+
+        #Remove the effects on this territory of all buildings across the nation.
+        for owned_territory in self.territories.values():
+            for buildingName in owned_territory["Buildings"].keys():
+                all_effects.append(buildings.get_alleffects(buildingName, savegame))
+
+        return ops.combineDicts(*all_effects)
 
     def add_populationeffects(self, effects, remove_modifiers = False):
         """
