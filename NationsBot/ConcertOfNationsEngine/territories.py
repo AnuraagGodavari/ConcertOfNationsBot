@@ -217,8 +217,6 @@ def apply_population_modifiers(territoryInfo, all_modifiers, remove_modifiers = 
     Apply relevant modifiers to all populations in this territory
     """
 
-    logInfo("all_modifiers", details = all_modifiers)
-
     for pop in territoryInfo["Population"]:
         pop.apply_modifiers(all_modifiers, remove_modifiers)
 
