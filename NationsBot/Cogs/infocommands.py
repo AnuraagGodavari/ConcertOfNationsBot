@@ -391,7 +391,7 @@ class InfoCommands(commands.Cog):
                 (territoryName + ' ' + ' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
                 {
                     "Population": pop.size,
-                    "Growth": pop.growth_modifier,
+                    "Growth": pop.growthrate,
                     "Mobilization": pop.manpower / pop.size
                 }
                 )
@@ -430,7 +430,7 @@ class InfoCommands(commands.Cog):
                 (' '.join(list(pop.identifiers.values())) + ' ' + pop.occupation, 
                 {
                     "Population": pop.size,
-                    "Growth Rate": pop.growth_modifier,
+                    "Growth Rate": pop.growthrate,
                     "Manpower": pop.manpower,
                     "Percent Raised as Manpower": pop.manpower / pop.size
                 }
