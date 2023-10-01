@@ -163,9 +163,13 @@ class AdminCommands(commands.Cog):
 
     @commands.command(aliases = ["changePopulation", "changepopulation", "add_population", "addPopulation", "addpopulation"])
     @commands.has_permissions(administrator = True)
-    async def change_population(self, ctx, terrID, size: int, occupation, *identifiers):
+    async def change_population(self, ctx, terrID, size, occupation, *identifiers):
         """ Change the size of an existing population or add a new one """
         logInfo(f"change_population({ctx.guild.id}, {terrID}, {size}, {occupation}, {identifiers})")
+
+        if not (ops.isNonnegativeInt(size)):
+            raise InputError(f"Invalid population size {size}, must be positive integer")
+        size = int(size)
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -207,6 +211,11 @@ class AdminCommands(commands.Cog):
             logInfo("Specified population does not exist, adding new population")
             pop = territories.add_population(nation, territoryName, populations.Population(size, gamerule["Base Population Growth"], occupation, identifiers))
 
+            all_building_national_modifiers = nation.get_all_buildingeffects(savegame)
+            if ("Nation" in all_building_national_modifiers.keys()):
+                if ("Population" in all_building_national_modifiers["Nation"].keys()):
+                    pop.apply_modifiers(all_building_national_modifiers["Nation"]["Population"])
+
         #Delete the population if size is 0
         elif size == 0:
             logInfo("Specified population exists and will be deleted")
@@ -214,6 +223,7 @@ class AdminCommands(commands.Cog):
             
         #Else, change the population size
         else:
+            logInfo("Changing population size")
             pop = territories.change_population(nation, territoryName, size, occupation, identifiers)
 
         if not (pop):
