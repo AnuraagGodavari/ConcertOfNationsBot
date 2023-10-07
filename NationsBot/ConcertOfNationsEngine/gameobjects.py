@@ -411,9 +411,38 @@ class Nation:
 
     # Economic management
 
-    def can_buyBlueprint(self, blueprintName, blueprint):
+    def building_exists(self, buildingName, allbuildings):
+        pass
 
-        #Do we have enough resources to build the unit?
+    def validate_prerequisites(self, prerequisites, territoryName):
+        """
+        A blueprint may have prerequisites for being built, for example the existence of another building. If any prerequisite is not met, return False. Else return True
+        """
+        
+        if ("Buildings" in prerequisites):
+
+            if ("Nation" in prerequisites["Buildings"]):
+
+                allbuildings = [building for territory in self.territories.values() for building in territory["Buildings"].keys() ]
+                for prerequisite in prerequisites["Buildings"]["Nation"]:
+                    if prerequisite not in allbuildings:
+                        return False
+
+            if ("Territory" in prerequisites["Buildings"]):
+
+                allbuildings = [building for building in self.territories[territoryName]["Buildings"].keys()]
+                for prerequisite in prerequisites["Buildings"]["Territory"]:
+                    if prerequisite not in allbuildings:
+                        return False
+                
+
+        return True
+
+    def can_buyBlueprint(self, blueprintName, blueprint, territoryName):
+        """
+        Check if a blueprint's resource and bureaucratic costs are affordable by a nation and the prerequisites are met.
+        """
+        #Do we have enough resources to build this?
 
         for resource in blueprint["Costs"].keys():
             if (blueprint["Costs"][resource] > self.resources[resource]):
@@ -423,6 +452,10 @@ class Nation:
         for category, cost in blueprint["Bureaucratic Cost"].items():
             if (cost > self.bureaucracy[category][1] - self.bureaucracy[category][0]):
                 logInfo(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
+                return False
+
+        if ("Prerequisites" in blueprint.keys()):
+            if not (self.validate_prerequisites(blueprint["Prerequisites"], territoryName)):
                 return False
 
         return True
@@ -443,7 +476,7 @@ class Nation:
             logInfo(f"Building {buildingName} already exists in territory {territoryName}")
             return False
 
-        return self.can_buyBlueprint(buildingName, blueprint)
+        return self.can_buyBlueprint(buildingName, blueprint, territoryName)
 
 
     # Building management
@@ -564,7 +597,7 @@ class Nation:
             logInfo(f"{territoryName} has too little manpower to recruit {size} {unitType}")
             return False
 
-        return self.can_buyBlueprint(unitType, blueprint)
+        return self.can_buyBlueprint(unitType, blueprint, territoryName)
 
     def build_unit(self, territoryName, unitType, size, blueprint, savegame):
         """ Build a unit of a specified size in a territory """
