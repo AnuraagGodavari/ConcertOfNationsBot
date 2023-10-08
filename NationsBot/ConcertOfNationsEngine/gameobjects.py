@@ -411,26 +411,34 @@ class Nation:
 
     # Economic management
 
-    def building_exists(self, buildingName, allbuildings):
-        pass
-
-    def validate_prerequisites(self, prerequisites, territoryName):
+    def validate_prerequisites(self, prerequisites, territoryName, only_active = False):
         """
         A blueprint may have prerequisites for being built, for example the existence of another building. If any prerequisite is not met, return False. Else return True
+        Args:
+            only_active (bool): True if we only want to validate with active buildings
         """
         
         if ("Buildings" in prerequisites):
 
             if ("Nation" in prerequisites["Buildings"]):
 
-                allbuildings = [building for territory in self.territories.values() for building in territory["Buildings"].keys() ]
+                allbuildings = [
+                    building for territory in self.territories.values()
+                     for building in territory["Buildings"].keys() 
+                     if (not(only_active) or (territory["Buildings"][building] == "Active"))]
+
                 for prerequisite in prerequisites["Buildings"]["Nation"]:
                     if prerequisite not in allbuildings:
                         return False
 
             if ("Territory" in prerequisites["Buildings"]):
 
-                allbuildings = [building for building in self.territories[territoryName]["Buildings"].keys()]
+                territory = self.territories[territoryName]
+
+                allbuildings = [
+                    building for building in territory["Buildings"].keys()
+                     if (not(only_active) or (territory["Buildings"][building] == "Active"))]
+
                 for prerequisite in prerequisites["Buildings"]["Territory"]:
                     if prerequisite not in allbuildings:
                         return False
@@ -680,6 +688,10 @@ class Nation:
 
                 if (neweffects): 
                     self.add_buildingeffects(neweffects, territoryInfo["Savegame"])
+
+            territories.validate_building_requirements(territoryName, self, savegame)
+
+            logInfo(f"{territoryInfo}")
 
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
 
