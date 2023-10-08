@@ -102,6 +102,25 @@ def destroybuilding(nation, territoryName, buildingName):
 
     logInfo(f"Territory {territoryName} destroyed building {buildingName}")
 
+def validate_building_requirements(territoryName, nation, savegame):
+    """ Check if all buildings in this territory have what they need to remain active """
+
+    territoryInfo = nation.territories[territoryName]
+
+    for buildingName in territoryInfo["Buildings"].keys():
+
+        if (territoryInfo["Buildings"][buildingName] != "Active"):
+            continue
+
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+        
+        if not ("Prerequisites" in blueprint.keys()):
+            continue
+
+        if not(nation.validate_prerequisites(blueprint["Prerequisites"], territoryName, only_active = True)):
+            territoryInfo["Buildings"][buildingName] = "Inactive"
+
+
 
 # Effects
 
