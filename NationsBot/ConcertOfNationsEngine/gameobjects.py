@@ -429,6 +429,7 @@ class Nation:
 
                 for prerequisite in prerequisites["Buildings"]["Nation"]:
                     if prerequisite not in allbuildings:
+                        logInfo(f"Prerequisite {prerequisite} not available in nation")
                         return False
 
             if ("Territory" in prerequisites["Buildings"]):
@@ -441,12 +442,13 @@ class Nation:
 
                 for prerequisite in prerequisites["Buildings"]["Territory"]:
                     if prerequisite not in allbuildings:
+                        logInfo(f"Prerequisite {prerequisite} not available in territory")
                         return False
                 
 
         return True
 
-    def can_buyBlueprint(self, blueprintName, blueprint, territoryName):
+    def can_buyBlueprint(self, blueprintName, blueprint, territoryName, active_prerequisites = False):
         """
         Check if a blueprint's resource and bureaucratic costs are affordable by a nation and the prerequisites are met.
         """
@@ -463,7 +465,7 @@ class Nation:
                 return False
 
         if ("Prerequisites" in blueprint.keys()):
-            if not (self.validate_prerequisites(blueprint["Prerequisites"], territoryName)):
+            if not (self.validate_prerequisites(blueprint["Prerequisites"], territoryName, active_prerequisites)):
                 return False
 
         return True
@@ -605,7 +607,7 @@ class Nation:
             logInfo(f"{territoryName} has too little manpower to recruit {size} {unitType}")
             return False
 
-        return self.can_buyBlueprint(unitType, blueprint, territoryName)
+        return self.can_buyBlueprint(unitType, blueprint, territoryName, active_prerequisites = True)
 
     def build_unit(self, territoryName, unitType, size, blueprint, savegame):
         """ Build a unit of a specified size in a territory """
