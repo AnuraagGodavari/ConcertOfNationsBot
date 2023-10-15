@@ -693,8 +693,6 @@ class Nation:
 
             territories.validate_building_requirements(territoryName, self, savegame)
 
-            logInfo(f"{territoryInfo}")
-
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
 
         if (onlyestimate):

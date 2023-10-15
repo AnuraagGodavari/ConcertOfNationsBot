@@ -31,7 +31,8 @@ def getdb():
             mariadb_connection = connection
 
         except mariadb.Error as e:
-            print(f"Error connecting to MariaDB Platform: {e}")
+            logInfo(f"Error connecting to MariaDB Platform")
+            logError(e)
             return
 
     return mariadb_connection
