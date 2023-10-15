@@ -10,6 +10,8 @@ sudo apt full-upgrade -y
 sudo apt autoremove
 #sudo apt autoremove -y --purge
 
+sudo apt install docker docker.io
+
 #Create .env file if not exists
 if [ ! -f ".env" ] ; then
     env="
@@ -29,6 +31,18 @@ if [ ! -f ".env" ] ; then
 
 fi
 
+#Create folders if they do not exist
+
+declare -a botdirs=("Assets" "Gamerule" "Logs" "Savegames" "Worlds")
+
+for i in "${botdirs[@]}"
+do
+	if [ ! -d "$i" ] ; then
+		mkdir $i
+	fi	
+done
+
+
 #Build the docker image
 sudo docker build -t nationsbot .
 
@@ -42,7 +56,14 @@ After=multi-user.target
 Type=simple
 Restart=always
 
-ExecStart=/usr/bin/docker run --name nationsbot --rm nationsbot
+ExecStart=/usr/bin/docker run \
+        -v $(pwd)/Assets:/NationsBot-App/Assets \
+        -v $(pwd)/Gamerule:/NationsBot-App/Gamerule \
+        -v $(pwd)/Logs:/NationsBot-App/Logs \
+        -v $(pwd)/Savegames:/NationsBot-App/Savegames \
+        -v $(pwd)/Worlds:/NationsBot-App/Worlds \
+        --name nationsbot --rm nationsbot \
+
 ExecStop=-/usr/bin/docker stop nationsbot
 
 [Install]
