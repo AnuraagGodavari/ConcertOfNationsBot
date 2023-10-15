@@ -17,11 +17,19 @@ if [ ! -f ".env" ] ; then
     env="
     TOKEN=
 
+    TESTSUITE_SCRIPT=
+    TESTSUITE_SCRIPT_BOT=
+
+    TEST_CHANNEL_ID=
+
     DB_USER=
     DB_PASS=
     DB_HOST=
     DB_DATABASE=
-    DB_PORT="
+    DB_PORT=
+
+    IMGUR_CLIENT_ID=
+    IMGUR_CLIENT_SECRET="
 
     echo "$env" > .env
 

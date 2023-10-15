@@ -17,10 +17,12 @@ Python Libraries:
 * imgurpython: A python wrapper for the imgur API, used to upload and retrieve images.
 * pillow: A python library for generating images.
 Other:
+* MariaDB: The database solution used by this project.
 * Docker: a containerization solution. On linux, the packages required are docker and docker.io.
 * Server: Currently, deployment is known to work on Ubuntu and Raspbian. The deploy script uses commands for a debian-based system.
 
 ## Setup and Deployment
+For the database, simply run schema.sql.
 Once the dependencies are met, run the bash script deploy.sh. This will create a file called .env. Fill it out with the necessary information, including for connecting to the database, the discord bot token, and the information for using the imgur API.
 
 ## TBD
