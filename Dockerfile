@@ -13,4 +13,4 @@ RUN pip install -r requirements.txt
 COPY ./NationsBot ./NationsBot
 
 #Command to run the bot
-CMD ["python3", "./NationsBot/"]
+CMD ["python3", "./NationsBot/", "-dt"]
