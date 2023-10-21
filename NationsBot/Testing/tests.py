@@ -64,9 +64,7 @@ def testPath(world, start, target):
 
     logInfo(f"Path from {start} to {target} territories in {world.name}", details = world.path_to(start, target))
 
-def generateGame(gamerule, world):
-
-    conf = filehandling.easyLoad("debugConf", pwdir)
+def generateGame(gamerule, world, conf):
 
     logInfo("Beginning game generation!")
 

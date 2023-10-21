@@ -70,6 +70,7 @@ ExecStart=/usr/bin/docker run \
         -v $(pwd)/Logs:/NationsBot-App/Logs \
         -v $(pwd)/Savegames:/NationsBot-App/Savegames \
         -v $(pwd)/Worlds:/NationsBot-App/Worlds \
+        -v $(pwd)/Testsuites:/NationsBot-App/Testsuites \
         --name nationsbot --rm nationsbot \
 
 ExecStop=-/usr/bin/docker stop nationsbot
