@@ -428,11 +428,11 @@ class AdminCommands(commands.Cog):
 
     @commands.command(aliases = ["giveTerritory", "give-territory", "giveterritory"])
     @commands.has_permissions(administrator = True)
-    async def give_territory(self, ctx, roleid, terrID, **args):
+    async def give_territory(self, ctx, roleid, *terrIDs):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
         """
-        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrID}, {args})")
+        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrIDs})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -440,13 +440,14 @@ class AdminCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
         
+        for terrID in terrIDs:
+            transferred_terr =  savegame.transfer_territory(terrID, nation)
+            if not transferred_terr:
+                raise InputError(f"Territory {terrID} transfer to {nation.name} did not work")
 
-        transferred_terr =  savegame.transfer_territory(terrID, nation)
-        if not transferred_terr:
-            raise InputError(f"Territory {terrID} transfer to {nation.name} did not work")
+            logInfo(f"Successfully transferred the territory {terrID} to {nation.name}")
 
-        logInfo(f"Successfully transferred the territory {terrID} to {nation.name}")
-        await ctx.send(f"Successfully transferred the territory {terrID} to {nation.name}")
+        await ctx.send(f"Successfully transferred the territories: {terrIDs} to {nation.name}")
 
         save_saveGame(savegame)
 
@@ -1056,6 +1057,8 @@ class AdminCommands(commands.Cog):
 
         if not (nation):
             logInfo(f"Did not add nation {roleid} to savegame file; already exists")
+
+            savegame.nations[role.name].mapcolor = (role.color.r, role.color.g, role.color.b)
 
         #Try adding the nation to the database - including player, role, and playergame tables
         db_nation = add_Nation(

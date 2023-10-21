@@ -257,6 +257,21 @@ def get_player_byGame(savegame, player_id):
     logInfo(f"Player {player_id} info for game {savegame.server_id} retrieved")
     return result
 
+def remove_player_fromGame(savegame, player_id):
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = """
+    DELETE PlayerGames.* FROM PlayerGames
+        INNER JOIN Players ON PlayerGames.player_id=Players.id
+        INNER JOIN Savegames ON PlayerGames.game_id=Savegames.id
+    WHERE Savegames.server_id=%s AND Players.discord_id=%s;
+    """
+
+    params = [savegame.server_id, player_id]
+    cursor.execute(stmt, params)
+    db.commit()
 
 #Deal with other files
 def load_gamerule(gamerule_name):
@@ -378,10 +393,11 @@ def add_Nation(savegame, nation, playerID):
     #Fail if player is already tracked to a nation
     playerExists = get_player_byGame(savegame, playerID)
     if (playerExists):
-        logInfo(f"Player {playerID} exists in game {savegame.name} already")
-        return False
+        logInfo(f"Player {playerID} exists in game {savegame.name} already, removing player")
+        remove_player_fromGame(savegame, playerID)
+        logInfo(f"Removed player {playerID} from previous role in game {savegame.name}")
     
-    logInfo("Player is not already tracked to a nation")
+    else: logInfo("Player is not already tracked to a nation")
 
     #Insert player if need be
     playerInfo = get_Player(playerID)
@@ -422,7 +438,7 @@ def add_Nation(savegame, nation, playerID):
         cursor.execute(stmt, params)
         db.commit()
     except Exception as e:
-        logError(e, details = {"Message": "Could not insert nation into database"})
+        logError(e, errorInfo = {"Message": "Could not insert nation into database"})
         return False
 
     result = get_player_byGame(savegame, playerID)
