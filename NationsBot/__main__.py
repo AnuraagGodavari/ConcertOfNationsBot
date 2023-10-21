@@ -40,6 +40,7 @@ async def test_bot(ctx):
         logInfo("Loading Test Suite from module specified under 'TESTSUITE_SCRIPT_BOT' in .env")
 
         try: 
+            sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../Testsuites")
             testsuite_module = importlib.import_module(os.getenv('TESTSUITE_SCRIPT_BOT'))
             testsuite = testsuite_module.test_bot
         except Exception as e: 
@@ -97,6 +98,7 @@ async def setup():
         logInfo("Loading Test Suite from module specified under 'TESTSUITE_SCRIPT' in .env")
 
         try: 
+            sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../Testsuites")
             testsuite_module = importlib.import_module(os.getenv('TESTSUITE_SCRIPT'))
             testsuite = testsuite_module.testsuite
         except Exception as e: 

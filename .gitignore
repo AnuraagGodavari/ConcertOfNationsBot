@@ -18,3 +18,4 @@ debugConf.json
 test*
 
 **/Testing/generategame.py
+**/Testsuites/**
