@@ -1029,6 +1029,28 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
+    @commands.command(aliases = ["removePlayer", "remove-player", "removeplayer"])
+    @commands.has_permissions(administrator = True)
+    async def remove_player(self, ctx, playerid):
+        """
+        Decouple a player from the current game in the database.
+        """
+        logInfo(f"remove_player({ctx.guild.id}, {playerid})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        player = ctx.guild.get_member(get_PlayerID(playerid))
+
+        remove_player_fromGame(savegame, player.id)
+
+        logInfo(f"Successfully removed player")
+
+        save_saveGame(savegame)
+
+        await ctx.send(f"Removed {playerid} from this game.")
+
     @commands.command(aliases = ["addNation", "add-nation", "addnation"])
     @commands.has_permissions(administrator = True)
     async def add_nation(self, ctx, roleid, playerid):
@@ -1074,7 +1096,7 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
 
-        await ctx.send(f"Added {roleid} to this game!")
+        await ctx.send(f"Added {roleid} to this game with player {playerid}!")
 
     @commands.command(aliases = ["initgame", "initGame", "init-game"])
     @commands.has_permissions(administrator = True)
