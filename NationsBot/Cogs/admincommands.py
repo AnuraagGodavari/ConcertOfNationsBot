@@ -34,7 +34,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["giveBuilding", "give-buildng", "givebuilding"])
     @commands.has_permissions(administrator = True)
     async def give_building(self, ctx, terrID, buildingName, **args):
-        """ """
+        """ 
+        Spawn a building in a territory.
+        Args:
+            terrID: The name or numeric ID of the territory
+            buildingName: The name of the building you wish to build
+        """
         logInfo(f"n.givebuilding({ctx.guild.id}, {terrID}, {buildingName})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -79,7 +84,14 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changebuildingstatus", "change-buildingstatus"])
     @commands.has_permissions(administrator = True)
     async def change_buildingstatus(self, ctx, terrID, buildingName, newstatus):
-        """ Change the status of any building """
+        """ 
+        Manually change the status of any building 
+        Args:
+            terrID: The name or numeric ID of the territory
+            buildingName: The name of the building you wish to build
+            newstatus: A new status. This can be: Active, Inactive or Constructing:<m>/<y>
+        """
+        
         logInfo(f"change_buildingstatus({ctx.guild.id}, {terrID}, {buildingName}, {newstatus})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -118,7 +130,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["takebuilding", "take-building", "removebuilding", "remove_building", "remove-building"])
     @commands.has_permissions(administrator = True)
     async def take_building(self, ctx, terrID, buildingName):
-        """ Remove a building from any territory """
+        """ 
+        Manually remove a building from any territory 
+        Args:
+            terrID: The name or numeric ID of the territory
+            buildingName: The name of the building you wish to build
+        """
         logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -164,7 +181,14 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changePopulation", "changepopulation", "add_population", "addPopulation", "addpopulation"])
     @commands.has_permissions(administrator = True)
     async def change_population(self, ctx, terrID, size, occupation, *identifiers):
-        """ Change the size of an existing population or add a new one """
+        """ 
+        Change the size of an existing population or add a new one 
+        Args:
+            terrID: The name or numeric ID of the territory
+            size: A non-negative integer value for the new population size
+            occupation: The population's job
+            *identifiers: Must have one for each of the identifier classes in the gamedict.
+        """
         logInfo(f"change_population({ctx.guild.id}, {terrID}, {size}, {occupation}, {identifiers})")
 
         if not (ops.isNonnegativeInt(size)):
@@ -236,7 +260,15 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changePopulationGrowth", "changePopulationgrowth","changepopulationGrowth", "changepopulationgrowth", "changepopulation_growth", "change_populationgrowth", "populationgrowth", "populationGrowth", "population-growth"])
     @commands.has_permissions(administrator = True)
     async def change_population_growth(self, ctx, terrID, growthrate: int | float, occupation, *identifiers):
-        """ Change the growth rate modifier of an existing population """
+        """ 
+        Manually change the growth rate modifier of an existing population. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            growthrate: A new number representing the new growth rate.
+            occupation: The population's job
+            *identifiers: Must have one for each of the identifier classes in the gamedict.
+        """
+        
         logInfo(f"change_population_growth({ctx.guild.id}, {terrID}, {growthrate}, {occupation}, {identifiers})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -288,7 +320,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changeManpower", "change-manpower", "changemanpower"])
     @commands.has_permissions(administrator = True)
     async def change_manpower(self, ctx, terrID, amount):
-        """ Manually raise manpower in a given territory. """
+        """ 
+        Manually raise manpower in a given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            amount: An integer amount of manpower for the territory. This is the amount you want it to change.
+        """
         logInfo(f"change_manpower({ctx.guild.id}, {terrID}, {amount})")
 
         if not (ops.isInt(amount)):
@@ -357,7 +394,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["editManpower", "edit-manpower", "editmanpower"])
     @commands.has_permissions(administrator = True)
     async def edit_manpower(self, ctx, terrID, amount):
-        """ Edit the raw manpower number in any given territory. """
+        """ 
+        Edit the raw manpower number in any given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            amount: An integer amount for the new value of manpower for the territory.
+        """
         logInfo(f"change_manpower({ctx.guild.id}, {terrID}, {amount})")
 
         if not (ops.isInt(amount)):
@@ -431,6 +473,9 @@ class AdminCommands(commands.Cog):
     async def give_territory(self, ctx, roleid, *terrIDs):
         """
         Give a territory to a nation and take it away from its previous owner, if any.
+        Args:
+            roleid: The nation role.
+            *terrIDs: Any number of valid territory names or numerical ids.
         """
         logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrIDs})")
 
@@ -458,6 +503,7 @@ class AdminCommands(commands.Cog):
         Give a specified amount of any resources to a specified nation.
         
         Args:
+            roleid: The nation role.
             *args (tuple): A list of resources and numbers. Example:
             ("Iron", "2", "Money", "3")
         """
@@ -503,7 +549,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changeCapacity", "change-capacity", "changecapacity", "change_bureaucracy", "changeBureaucracy", "change-bureaucracy", "changebureaucracy"])
     @commands.has_permissions(administrator = True)
     async def change_capacity(self, ctx, roleid, category, amount):
-        """ Change the bureaucratic capacity for any category of a specific nation's bureaucracy """
+        """ 
+        Change the bureaucratic capacity for any category of a specific nation's bureaucracy 
+        Args:
+            roleid: The nation role.
+            category: The bureaucratic category.
+            amount: A non-negative integer value for the new bureaucratic capacity.
+        """
 
         logInfo(f"change_capacity({ctx.guild.id}, {roleid}, {category}, {amount})")
 
@@ -530,7 +582,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changeTax", "change-tax", "changetax"])
     @commands.has_permissions(administrator = True)
     async def change_tax(self, ctx, roleid, amount):
-        """ Change a nation's national tax modifier """
+        """ 
+        Change a nation's national tax modifier 
+        Args:
+            roleid: The nation role.
+            amount: A decimal value representing the new tax rate.
+        """
 
         logInfo(f"change_capacity({ctx.guild.id}, {roleid}, {amount})")
 
@@ -556,7 +613,14 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['admincreateforce', 'admin-create-force', 'adminCreateForce'])
     @commands.has_permissions(administrator = True)
     async def admin_give_unit(self, ctx, roleid, terrID, unitType, amount):
-        """ Manually give a unit to a given nation with no cost. """
+        """ 
+        Manually spawn a unit to a given nation with no cost. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            roleid: The nation role.
+            unitType: The type of unit this should be.
+            amount: A positive integer value representing the unit size.
+        """
         logInfo(f"admin_give_unit({ctx.guild.id}, {roleid}, {terrID}, {unitType}, {amount})")
 
         if not (ops.isPositiveInt(amount)):
@@ -607,7 +671,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["changeforcestatus", "change-forcestatus"])
     @commands.has_permissions(administrator = True)
     async def change_forcestatus(self, ctx, roleid, forceName, newstatus):
-        """ Change the status of any force and all units within it"""
+        """ 
+        Manually change the status of any force and all units within it
+         Args:
+            roleid: The nation role.
+            forceName: The name of the force.
+            newstatus: A new status. This can be: Active, Inactive, Battling or Constructing:<m>/<y>
+        """
         logInfo(f"change_forcestatus({ctx.guild.id}, {roleid}, {forceName}, {newstatus})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -633,7 +703,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['admincombineforces', 'admin-combine-forces', 'AdminCombineForces'])
     @commands.has_permissions(administrator = True)
     async def admin_combine_forces(self, ctx, roleid, base_forcename, *additional_forcenames):
-        """ Combine multiple forces of a given nation. """
+        """ 
+        Combine multiple forces of any given nation. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            base_forceName: The name of the force you want the other forces to join.
+            *additional_forcenames: The forces you want to add to base_forceName.
+        """
         logInfo(f"combine_forces({ctx.guild.id}, {base_forcename}, {additional_forcenames})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -668,7 +744,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['admincombineunits', 'admin-combine-units', 'adminCombineUnits'])
     @commands.has_permissions(administrator = True)
     async def admin_combine_units(self, ctx, roleid, base_forcename, base_unitname, *additional_unitnames):
-        """ Combine multiple units of a given nation. """
+        """ 
+        Combine multiple units of any given nation. 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            *additional_unitnames: The units you want to combine within base_forceName.
+        """
         logInfo(f"combine_units({ctx.guild.id}, {roleid}, {base_forcename}, {base_unitname}, {additional_unitnames})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -706,7 +788,14 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['adminsplitunit', 'admin-split-unit', 'adminSplitUnit'])
     @commands.has_permissions(administrator = True)
     async def admin_split_unit(self, ctx, roleid, base_forcename, base_unitname, *new_unitsizes):
-        """ Split a unit of a given nation into multiple new ones. """
+        """ 
+        Split a unit of any given nation into multiple new ones.
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            base_unitname: The unit you want to split.
+            *new_unitsizes: The sizes of each new individual unit.
+        """
         logInfo(f"admin_split_unit({ctx.guild.id}, {base_forcename}, {base_unitname}, {new_unitsizes})")
 
         if (len(new_unitsizes) < 1):
@@ -746,7 +835,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['adminsplitforce', 'admin-split-force', 'adminSplitForce'])
     @commands.has_permissions(administrator = True)
     async def admin_split_force(self, ctx, roleid, base_forcename, *units_toSplit):
-        """ Split a force belonging to any given nation, transferring several units to the new force """
+        """ 
+        Split a force belonging to any given nation, transferring several units to the new force 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            *units_toSplit: The units you want to split off into a new force.
+        """
         logInfo(f"split_force({ctx.guild.id}, {base_forcename}, {units_toSplit})")
 
         if (len(units_toSplit) < 1):
@@ -775,7 +870,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['admindisbandunits', 'admin-disband-units', 'adminDisbandUnits'])
     @commands.has_permissions(administrator = True)
     async def admin_disband_units(self, ctx, roleid, base_forcename, *units_toDisband):
-        """ Disband units in a given force belonging to a specific nation, returning their manpower to their home provinces. """
+        """ 
+        Disband units in a given force belonging to a specific nation, returning their manpower to their home provinces. 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            *units_toDisband: The name of the units you want to delete.
+        """
         logInfo(f"admin_disband_units({ctx.guild.id}, {roleid}, {base_forcename}, {units_toDisband})")
 
         if (len(units_toDisband) < 1):
@@ -808,7 +909,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['admindisbandforce', 'admin-disband-force', 'adminDisbandForce'])
     @commands.has_permissions(administrator = True)
     async def admin_disband_force(self, ctx, roleid, base_forcename):
-        """ Disband a given force, returning its units' manpowers to their home provinces. """
+        """ 
+        Disband a given force, returning its units' manpowers to their home provinces. 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to disband.
+        """
         logInfo(f"disband_units({ctx.guild.id}, {roleid}, {base_forcename})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -830,7 +936,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['adminmoveforce', 'admin-move-force', 'adminMoveForce'])
     @commands.has_permissions(administrator = True)
     async def admin_move_force(self, ctx, roleid, base_forcename, *terrIDs):
-        """ As an admin, order a given force to start moving to a series of territories """
+        """ 
+        As an admin, order a given force to start moving to a series of territories
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to move.
+            *terrIDs: The territories that you want the forcename you want to move to, in order.
+        """
         logInfo(f"admin_move_force({ctx.guild.id}, {roleid}, {base_forcename}, {terrIDs})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -873,7 +985,13 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['adminchangeforcelocation', 'admin-change-force-location', 'adminMoveForceLocation'])
     @commands.has_permissions(administrator = True)
     async def admin_change_force_location(self, ctx, roleid, base_forcename, terrID):
-        """ As an admin, order a given force to start moving to a series of territories """
+        """ 
+        As an admin, teleport a force to a new territory.
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            terrID: The name or numeric ID of the territory.
+        """
         logInfo(f"admin_change_force_location({ctx.guild.id}, {roleid}, {base_forcename}, {terrID})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -912,7 +1030,14 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['setbattle', 'set-battle', 'setBattle'])
     @commands.has_permissions(administrator = True)
     async def set_battle(self, ctx, roleid0, forcename0, roleid1, forcename1):
-        """ As an admin, start a battle between two enemy forces in the same location. """
+        """ 
+        As an admin, start a battle between two enemy forces in the same location. 
+        Args:
+            roleid0: The nation role.
+            forceName0: The name of the force belonging to roleid0.
+            roleid1: The nation role.
+            forceName0: The name of the force belonging to roleid1.
+        """
         logInfo(f"set_battle({ctx.guild.id}, {roleid0}, {forcename0}, {roleid1}, {forcename1})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -950,7 +1075,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=['exitbattle', 'exit-battle', 'exitBattle'])
     @commands.has_permissions(administrator = True)
     async def exit_battle(self, ctx, roleid, base_forcename):
-        """ As an admin, cause a force to exit a battle and if it has an enemy battling it directly, cause the enemy to also exit the battle. """
+        """ 
+        As an admin, cause a force to exit a battle and if it has an enemy battling it directly, cause the enemy to also exit the battle. 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to exit.
+        """
         logInfo(f"exit_battle({ctx.guild.id}, {roleid}, {base_forcename})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -979,7 +1109,12 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases=["adminsetrelationship", "admin-set-relationship", "adminSetRelationship"])
     @commands.has_permissions(administrator = True)
     async def admin_set_relationship(self, ctx, relation, *roleids):
-        """Declare the relations of several nations with each other"""
+        """
+        Declare the relations of several nations with each other
+        Args:
+            relation: The new relation you want between these powers.
+            *roleids: The nation roles.
+        """
 
         logInfo(f"set_relationship({ctx.guild.id}, {relation}, {roleids})")
 
@@ -1007,7 +1142,11 @@ class AdminCommands(commands.Cog):
     @commands.command(aliases = ["advanceTurn", "advanceturn", "advance-turn"])
     @commands.has_permissions(administrator = True)
     async def advance_turn(self, ctx, numMonths = None):
-        """Advance the turn for the current server's savegame, optionally by a number of months"""
+        """
+        Advance the turn for the current server's savegame, optionally by a number of months
+        Args:
+            numMonths: The number of months to move the date forward by. Default value is one.
+        """
         
         if not numMonths: numMonths = 1
 
@@ -1034,6 +1173,8 @@ class AdminCommands(commands.Cog):
     async def remove_player(self, ctx, playerid):
         """
         Decouple a player from the current game in the database.
+        Args:
+            playerid: The @player to remove.
         """
         logInfo(f"remove_player({ctx.guild.id}, {playerid})")
 
@@ -1055,10 +1196,10 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def add_nation(self, ctx, roleid, playerid):
         """
-        Add a nation (by role) and player to a savegame.
-
+        Add a nation (by role) and player to a savegame, allowing the player to play.
         Args:
-            roleid(str): 
+            roleid: The nation role.
+            playerid: The @playerid to add.
         """
 
         logInfo(f"addNation({ctx.guild.id}, {roleid}, {playerid})")
@@ -1103,6 +1244,9 @@ class AdminCommands(commands.Cog):
     async def init_game(self, ctx, name, datestr):
         """
         Called in a server without an attached game to initialize a game
+        Args:
+            name: A unique name for this game.
+            datestr: The start date expressed as <m>/<y>.
         """
 
         logInfo(f"initGame({ctx.guild.id}, {name}, {datestr})")
