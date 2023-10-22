@@ -26,7 +26,12 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['raiseManpower', 'raise-manpower', 'raisemanpower'])
     async def raise_manpower(self, ctx, terrID, amount):
-        """ Raise manpower in a given territory. """
+        """ 
+        Raise manpower in a given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            amount: An integer amount of manpower to raise. This is the amount you want it to change.
+        """
         logInfo(f"raise_manpower({ctx.guild.id}, {terrID}, {amount})")
 
         if not (ops.isPositiveInt(amount)):
@@ -82,7 +87,12 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['disbandManpower', 'disband-manpower', 'disbandmanpower'])
     async def disband_manpower(self, ctx, terrID, amount):
-        """ Disband manpower in a given territory. """
+        """ 
+        Disband manpower in a given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            amount: An integer amount of manpower to disband. This is the amount you want it to change.
+        """
         logInfo(f"disband_manpower({ctx.guild.id}, {terrID}, {amount})")
 
         if not (ops.isPositiveInt(amount)):
@@ -143,7 +153,13 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['buildUnit', 'build-unit', 'buildunit'])
     async def build_unit(self, ctx, terrID, unitType, amount):
-        """ Disband manpower in a given territory. """
+        """ 
+        Disband manpower in a given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            unitType: The type of unit this should be.
+            amount: A positive integer value representing the unit size.
+        """
         logInfo(f"build_unit({ctx.guild.id}, {terrID}, {unitType}, {amount})")
 
         if not (ops.isPositiveInt(amount)):
@@ -198,7 +214,13 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['combineforces', 'combine-forces', 'combineForces'])
     async def combine_forces(self, ctx, base_forcename, *additional_forcenames):
-        """ Combine multiple forces of a given nation. """
+        """ 
+        Combine multiple forces of a given nation. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            base_forceName: The name of the force you want the other forces to join.
+            *additional_forcenames: The forces you want to add to base_forceName.
+        """
         logInfo(f"combine_forces({ctx.guild.id}, {base_forcename}, {additional_forcenames})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -238,7 +260,14 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['combineunits', 'combine-units', 'combineUnits'])
     async def combine_units(self, ctx, base_forcename, base_unitname, *additional_unitnames):
-        """ Combine multiple units of a given nation. """
+        """ 
+        Combine multiple units of a given nation. 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            *additional_unitnames: The units you want to combine within base_forceName.
+        """
+        
         logInfo(f"combine_units({ctx.guild.id}, {base_forcename}, {base_unitname}, {additional_unitnames})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -281,7 +310,14 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['splitunit', 'split-unit', 'splitUnit'])
     async def split_unit(self, ctx, base_forcename, base_unitname, *new_unitsizes):
-        """ Split a unit of a given nation into multiple new ones. """
+        """ 
+        Split a unit of a given nation into multiple new ones. 
+        Args:
+            base_forceName: The name of the force you want to edit.
+            base_unitname: The unit you want to split.
+            *new_unitsizes: The sizes of each new individual unit.
+        """
+        
         logInfo(f"split_unit({ctx.guild.id}, {base_forcename}, {base_unitname}, {new_unitsizes})")
 
         if (len(new_unitsizes) < 1):
@@ -328,7 +364,13 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['splitforce', 'split-force', 'splitForce'])
     async def split_force(self, ctx, base_forcename, *units_toSplit):
-        """ Split a force belonging to a nation, transferring several units to the new force """
+        """ 
+        Split a force belonging to a nation, transferring several units to the new force 
+        Args:
+            base_forceName: The name of the force you want to edit.
+            *units_toSplit: The units you want to split off into a new force.
+        """
+        
         logInfo(f"split_force({ctx.guild.id}, {base_forcename}, {units_toSplit})")
 
         if (len(units_toSplit) < 1):
@@ -364,7 +406,14 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['disbandunits', 'disband-units', 'disbandUnits'])
     async def disband_units(self, ctx, base_forcename, *units_toDisband):
-        """ Disband units in a given force, returning their manpower to their home provinces. """
+        """ 
+        Disband units in a given force, returning their manpower to their home provinces. 
+        Args:
+            roleid: The nation role.
+            base_forceName: The name of the force you want to edit.
+            *units_toDisband: The name of the units you want to delete.
+        """
+
         logInfo(f"disband_units({ctx.guild.id}, {base_forcename}, {units_toDisband})")
 
         if (len(units_toDisband) < 1):
@@ -403,7 +452,12 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['disbandforce', 'disband-force', 'disbandForce'])
     async def disband_force(self, ctx, base_forcename):
-        """ Disband a given force, returning its units' manpowers to their home provinces. """
+        """ 
+        Disband a given force, returning its units' manpowers to their home provinces. 
+        Args:
+            base_forceName: The name of the force you want to disband.
+        """
+
         logInfo(f"disband_units({ctx.guild.id}, {base_forcename})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -431,7 +485,13 @@ class MilitaryCommands(commands.Cog):
 
     @commands.command(aliases=['moveforce', 'move-force', 'moveForce'])
     async def move_force(self, ctx, base_forcename, *terrIDs):
-        """ Order a given force to start moving to a series of territories """
+        """ 
+        Order a given force to start moving to a series of territories 
+        Args:
+            base_forceName: The name of the force you want to move.
+            *terrIDs: The territories that you want the forcename you want to move to, in order.
+        """
+
         logInfo(f"move_force({ctx.guild.id}, {base_forcename}, {terrIDs})")
 
         savegame = get_SavegameFromCtx(ctx)

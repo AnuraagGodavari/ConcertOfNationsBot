@@ -28,7 +28,12 @@ class BuildingCommands(commands.Cog):
         
     @commands.command(aliases = ["buybuilding", "buy-building"])
     async def buy_building(self, ctx, terrID, buildingName):
-        """ As a nation, this is an order to expend resources to purchase a building """
+        """ 
+        As a nation, this is an order to expend resources to purchase a building 
+        Args:
+            terrID: The name or numeric ID of the territory
+            buildingName: The name of the building you wish to build
+        """
         logInfo(f"buy_building(({ctx.guild.id}, {terrID}, {buildingName})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -76,7 +81,12 @@ class BuildingCommands(commands.Cog):
 
     @commands.command(aliases = ["togglebuilding", "toggle-building"])
     async def toggle_building(self, ctx, terrID, buildingName):
-        """ Switch a building's status between Active and Inactive """
+        """ 
+        Switch a building's status between Active and Inactive
+        Args:
+            terrID: The name or numeric ID of the territory
+            buildingName: The name of the building you wish to toggle
+         """
         logInfo(f"toggle_building({ctx.guild.id}, {terrID}, {buildingName})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -117,7 +127,13 @@ class BuildingCommands(commands.Cog):
 
     @commands.command(aliases = ["destroybuilding", "destroy-building", "deletebuilding", "delete_building", "delete-building"])
     async def destroy_building(self, ctx, terrID, buildingName):
-        """ Remove a building from a territory owned by the user """
+        """ 
+        Remove a building from a territory owned by the user 
+        Args:
+            terrID: The name or numeric ID of the territory
+            buildingName: The name of the building you wish to remove
+        """
+        
         logInfo(f"destroy_building({ctx.guild.id}, {terrID}, {buildingName})")
 
         savegame = get_SavegameFromCtx(ctx)

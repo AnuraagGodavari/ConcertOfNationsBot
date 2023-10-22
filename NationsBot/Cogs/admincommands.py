@@ -134,7 +134,7 @@ class AdminCommands(commands.Cog):
         Manually remove a building from any territory 
         Args:
             terrID: The name or numeric ID of the territory
-            buildingName: The name of the building you wish to build
+            buildingName: The name of the building you wish to remove
         """
         logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName})")
 
@@ -706,6 +706,7 @@ class AdminCommands(commands.Cog):
         """ 
         Combine multiple forces of any given nation. 
         Args:
+            roleid: The nation role.
             terrID: The name or numeric ID of the territory
             base_forceName: The name of the force you want the other forces to join.
             *additional_forcenames: The forces you want to add to base_forceName.

@@ -24,9 +24,9 @@ class MappingCommands(commands.Cog):
         self.client = client
         
     @commands.command()
-    async def worldmap(self, ctx, roleid = None):
+    async def worldmap(self, ctx):
         """
-        Look at the world map from the perspective of a country
+        Look at the world map from the perspective of the player country
         """
         logInfo(f"worldmap({ctx.guild.id}, {roleid})")
 
@@ -75,9 +75,11 @@ class MappingCommands(commands.Cog):
         
     @commands.command()
     @commands.has_permissions(administrator = True)
-    async def worldmap_full(self, ctx):
+    async def worldmap_full(self, ctx, roleid = None):
         """
         Look at the full world map associated with this game, without any fog of war unless admin specifies a country.
+        Args:
+            roleid: The nation role. If not specified, the worldmap will show all territories.
         """
         logInfo(f"worldmap_full({ctx.guild.id})")
 
