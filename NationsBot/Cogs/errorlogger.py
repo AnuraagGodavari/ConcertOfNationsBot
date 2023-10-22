@@ -11,12 +11,11 @@ from ConcertOfNationsEngine.concertofnations_exceptions import *
 
 #The cog itself
 class ErrorLogger(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ A cog without any commands - this is what manages error handling """
     
     def __init__(self, client):
         self.client = client
-        
-           
+                   
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
             

@@ -19,14 +19,18 @@ import GameUtils.operations as ops
 
 #The cog itself
 class MenuCommands(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ Commands used to manage menus """
     
     def __init__(self, client):
         self.client = client
     
     @commands.command()
     async def sort(self, ctx, *sortargs):
-        """ Retrieve the previous menu and create an embed where its contents are sorted with sort args. """
+        """ 
+        Retrieve the previous menu if it is sortable and create an embed where its contents are sorted with sort args. 
+        Args:
+            *sortargs: The fields which the menu should sort by.
+        """
         logInfo(f"sort({ctx.author.id}, {sortargs})")
         
         playerID = ctx.author.id
@@ -41,7 +45,9 @@ class MenuCommands(commands.Cog):
 
     @commands.command()
     async def reverse(self, ctx):
-        """ Display the fields in the previous menu in reverse order """
+        """ 
+        Display the fields in the previous menu in reverse order.
+        """
         logInfo(f"reverse({ctx.author.id})")
         
         playerID = ctx.author.id
@@ -56,7 +62,11 @@ class MenuCommands(commands.Cog):
 
     @commands.command()
     async def pagesize(self, ctx, pagesize):
-        """ Change the page size of the current command, then re-display it """
+        """ 
+        Change the page size of the current command, then re-display it.
+        Args:
+            pagesize: An integer between 1 and 25
+        """
         logInfo(f"pagesize({ctx.author.id}, {pagesize})")
         
         playerID = ctx.author.id

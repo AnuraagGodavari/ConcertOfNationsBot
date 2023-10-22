@@ -21,7 +21,7 @@ import ConcertOfNationsEngine.territories as territories
 
 #The cog itself
 class InfoCommands(commands.Cog):
-    """ A cog for commands that deliver information to a player """
+    """ Commands that deliver information to a player about the gamestate or the game rules """
     
     def __init__(self, client):
         self.client = client
@@ -29,7 +29,7 @@ class InfoCommands(commands.Cog):
     @commands.command()
     async def gamestate(self, ctx):
         """
-        Provide info about the current game as it is right now
+        Provide info about the current game as it is right now.
         """
         logInfo(f"giveTerritory({ctx.guild.id})")
 
@@ -51,7 +51,11 @@ class InfoCommands(commands.Cog):
 
     @commands.command()
     async def nationinfo(self, ctx, roleid = None):
-        """ Display basic info about the author's nation or, if another role is specified, the same info about that role's nation. """
+        """ 
+        Display basic info about the author's nation or, if another role is specified, the same info about that role's nation. 
+        Args:
+            roleid: The nation role.
+        """
         logInfo(f"nationinfo({ctx.guild.id}, {roleid})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -93,7 +97,11 @@ class InfoCommands(commands.Cog):
 
     @commands.command(aliases=['military'])
     async def forces(self, ctx, roleid = None):
-        """ Show all of the forces controlled by a nation, either that of the author or one that is specified. """
+        """ 
+        Show all of the forces controlled by a nation, either that of the author or one that is specified. 
+        Args:
+            roleid: The nation role. By default it's the nation belonging to the user.
+        """
         logInfo(f"forces({ctx.guild.id}, {roleid})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -139,7 +147,11 @@ class InfoCommands(commands.Cog):
 
     @commands.command(aliases=['units', 'militaryforce', 'military-force', 'militaryForce', 'military_force'])
     async def force(self, ctx, forcename):
-        """ Show a specific force controlled by a nation, either that of the author or one that is specified. """
+        """ 
+        Show a specific force controlled by any nation in the game. 
+        Args:
+            forcename: A specific force's name belonging to any nation
+        """
         logInfo(f"force({ctx.guild.id}, {forcename})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -188,7 +200,11 @@ class InfoCommands(commands.Cog):
 
     @commands.command()
     async def territories(self, ctx, roleid = None):
-        """ Show all of the territories owned by a nation, either that of the author or one that is specified. """
+        """ 
+        Show all of the territories owned by a nation, either that of the author or one that is specified.
+        Args:
+            roleid: The nation role. By default it's the nation belonging to the user.
+        """
         logInfo(f"territories({ctx.guild.id}, {roleid})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -247,7 +263,9 @@ class InfoCommands(commands.Cog):
     @commands.command()
     async def territory(self, ctx, terrID):
         """
-        Look at the details of a territory
+        Look at the details of a territory.
+        Args:
+            terrID: The name or numeric ID of the territory.
         """
         logInfo(f"territory({ctx.guild.id, terrID})")
 
@@ -301,7 +319,11 @@ class InfoCommands(commands.Cog):
 
     @commands.command(aliases=['territorybuildings', 'territory-buildings'])
     async def territory_buildings(self, ctx, terrID):
-        """ Show all of the available buildings in the given territory. """
+        """ 
+        Show all of the available buildings in a given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+        """
         logInfo(f"territory_buildings({ctx.guild.id}, {terrID})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -348,11 +370,13 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    # Building management
+    # Building Information
 
     @commands.command()
     async def buildings(self, ctx):
-        """ Show all of the available buildings in the given server's game. """
+        """ 
+        Show all of the available buildings in the given server's game. 
+        """
         logInfo(f"buildings({ctx.guild.id})")
 
         savegame = get_SavegameFromCtx(ctx)
@@ -361,7 +385,7 @@ class InfoCommands(commands.Cog):
 
         menu = MenuEmbed(
             f"Buildings", 
-            "_Information about all of the buildings in this game's ruleset_", 
+            f"_Information about all of the buildings in this game's ruleset._\n_Valid status regular expressions: {buildings.valid_statuspatterns}_", 
             ctx.author.id,
             fields = [
                 (buildingName, buildingInfo)
@@ -452,7 +476,11 @@ class InfoCommands(commands.Cog):
 
     @commands.command(aliases=['people', 'populations'])
     async def population(self, ctx, optionalID = None):
-        """ Show all of the populations in a nation or a territory"""
+        """ 
+        Show all of the populations in a nation or a territory
+        Args:
+            optionalID: Either a nation role or a name or numeric ID of a territory.
+        """
         logInfo(f"population({ctx.guild.id}, {optionalID})")
 
         savegame = get_SavegameFromCtx(ctx)
