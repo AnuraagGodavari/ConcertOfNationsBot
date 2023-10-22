@@ -18,7 +18,7 @@ from GameUtils.filehandling import *
 
 #The cog itself
 class MappingCommands(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ Commands for seeing maps of the world """
     
     def __init__(self, client):
         self.client = client

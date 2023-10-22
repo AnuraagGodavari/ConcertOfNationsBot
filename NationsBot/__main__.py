@@ -15,6 +15,7 @@ from database import *
 from logger import *
 
 #For NationsBot
+from DiscordUtils import helputils
 from Testing import tests
 
 
@@ -26,7 +27,7 @@ options = {
 }
 
 #The bot
-nationsbot = commands.Bot(command_prefix = 'n.', intents = discord.Intents().all())
+nationsbot = commands.Bot(command_prefix = 'n.', intents = discord.Intents().all(), help_command = helputils.HelpCommand())
 
 async def test_bot(ctx):
 
@@ -69,15 +70,6 @@ async def on_ready():
     if (options["test bot"]):
         await test_bot(nationsbot.get_channel(int(os.getenv('TEST_CHANNEL_ID'))))
 
-@nationsbot.command()
-async def load(ctx, cog):
-    pass
-
-@nationsbot.command()
-async def unload(ctx, cog):
-    pass
-
-        
 @nationsbot.command()
 async def ping(ctx):
     await ctx.send(f"Pong!\nLatency: **{round(nationsbot.latency * 1000)}ms**")

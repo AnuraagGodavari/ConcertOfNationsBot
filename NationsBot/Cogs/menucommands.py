@@ -19,7 +19,7 @@ import GameUtils.operations as ops
 
 #The cog itself
 class MenuCommands(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ Commands used to manage menus """
     
     def __init__(self, client):
         self.client = client

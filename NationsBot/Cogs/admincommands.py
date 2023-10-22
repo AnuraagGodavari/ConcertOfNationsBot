@@ -23,7 +23,7 @@ import ConcertOfNationsEngine.diplomacy as diplomacy
 
 #The cog itself
 class AdminCommands(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ Commands only usable by people with the "administrator" permission. These are to manage games and manually adjust values """
     
     def __init__(self, client):
         self.client = client

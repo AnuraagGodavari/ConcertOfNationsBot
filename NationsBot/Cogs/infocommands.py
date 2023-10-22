@@ -21,7 +21,7 @@ import ConcertOfNationsEngine.territories as territories
 
 #The cog itself
 class InfoCommands(commands.Cog):
-    """ A cog for commands that deliver information to a player """
+    """ Commands that deliver information to a player about the gamestate or the game rules """
     
     def __init__(self, client):
         self.client = client

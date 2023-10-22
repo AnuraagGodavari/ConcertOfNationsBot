@@ -21,7 +21,7 @@ import ConcertOfNationsEngine.territories as territories
 
 #The cog itself
 class BuildingCommands(commands.Cog):
-    """ A cog that allows its client bot to watch member statuses """
+    """ Commands for players to manage buildings they own """
     
     def __init__(self, client):
         self.client = client

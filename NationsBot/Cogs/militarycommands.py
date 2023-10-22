@@ -20,7 +20,7 @@ import GameUtils.operations as ops
 
 #The cog itself
 class MilitaryCommands(commands.Cog):
-    """ A cog for player commands related to the military """
+    """ Commands for players to manage their military forces """
 
     # Manpower
 
