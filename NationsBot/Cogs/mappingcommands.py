@@ -28,7 +28,7 @@ class MappingCommands(commands.Cog):
         """
         Look at the world map from the perspective of the player country
         """
-        logInfo(f"worldmap({ctx.guild.id}, {roleid})")
+        logInfo(f"worldmap({ctx.guild.id})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
