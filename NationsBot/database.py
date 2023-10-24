@@ -8,17 +8,9 @@ def fetch_assoc(cursor):
     if not row: return False
     return dict(zip(cursor.column_names, row))
 
-def getdb():
-    """
-    Returns a connection to a MySQL/MariaDB database.
-    Returns:
-        mariadb_connection: The result of mariadb.connect(), either saved earlier or newly connected.
-    """
-    
-    global mariadb_connection
-    
-    if not mariadb_connection:
-        
+def create_connection():
+        global mariadb_connection
+
         load_dotenv()
         db_user = os.getenv('DB_USER')
         db_pass = os.getenv('DB_PASS')
@@ -27,13 +19,23 @@ def getdb():
         db_name = os.getenv('DB_DATABASE')
 
         try:
-            connection = mariadb.connect(user=db_user, password=db_pass, host=db_host, port=db_port, database=db_name)
-            mariadb_connection = connection
+                connection = mariadb.connect(user=db_user, password=db_pass, host=db_host, port=db_port, database=db_name)
+                mariadb_connection = connection
+                return connection
 
         except mariadb.Error as e:
-            logInfo(f"Error connecting to MariaDB Platform")
-            logError(e)
-            return
+                print(f"Error connecting to MariaDB Platform: {e}")
 
-    return mariadb_connection
+        return False
+
+def getdb():
+        global mariadb_connection
+
+        if not mariadb_connection:
+                return create_connection()
+
+        if not mariadb_connection.is_connected():
+                return create_connection()
+
+        return mariadb_connection
 
