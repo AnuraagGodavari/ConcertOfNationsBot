@@ -549,6 +549,40 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
+    @commands.command(aliases=['populationInfo', 'population-info', 'populationinfo'])
+    async def population_info(self, ctx):
+        """ 
+        Show all of the population identifiers in the given server's gamerule. 
+        """
+        logInfo(f"population_info({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        gamerule = savegame.getGamerule()
+        if not (gamerule):
+            raise InputError("Savegame's gamerule could not be retrieved")
+
+        menu = MenuEmbed(
+            f"Population Info", 
+            f"_Information about the possible occupations and identifiers for populations in this game.", 
+            ctx.author.id,
+            fields = [
+                (field[0], '\n'.join(field[1]))
+                for field in
+                list(gamerule["Population Identifiers"].items()) + [("Occupations", gamerule["Occupations"])]
+            ],
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created population info menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
         
 
 async def setup(client):
