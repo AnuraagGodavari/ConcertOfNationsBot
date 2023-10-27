@@ -149,6 +149,10 @@ class Savegame:
             
             nation.newTurn(self, gamerule, numMonths)
 
+        #New turn, so new map.
+        self.gamestate["mapNum"] += 1
+        self.gamestate["mapChanged"] = True
+
         logInfo(f"Successfully advanced date to date: {self.date} and turn: {self.turn}!")
 
 
