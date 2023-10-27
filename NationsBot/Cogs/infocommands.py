@@ -16,6 +16,7 @@ from DiscordUtils.getgameinfo import *
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 from ConcertOfNationsEngine.buildings import *
+import ConcertOfNationsEngine.military as military
 import ConcertOfNationsEngine.territories as territories
 
 
@@ -145,7 +146,7 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    @commands.command(aliases=['units', 'militaryforce', 'military-force', 'militaryForce', 'military_force'])
+    @commands.command(aliases=['militaryforce', 'military-force', 'militaryForce', 'military_force'])
     async def force(self, ctx, forcename):
         """ 
         Show a specific force controlled by any nation in the game. 
@@ -192,6 +193,40 @@ class InfoCommands(commands.Cog):
         assignMenu(ctx.author.id, menu)
 
         logInfo(f"Created force menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+    @commands.command()
+    async def units(self, ctx):
+        """ 
+        Show all of the available units in the given server's game. 
+        """
+        logInfo(f"units({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        gamerule = savegame.getGamerule()
+        if not (gamerule):
+            raise InputError("Savegame's gamerule could not be retrieved")
+
+        menu = MenuEmbed(
+            f"Units", 
+            f"_Information about all of the units in this game's ruleset._\n_Valid status regular expressions: {military.valid_statuspatterns}_", 
+            ctx.author.id,
+            fields = [
+                (unitName, unitInfo)
+                for unitName, unitInfo in military.get_allunits(gamerule).items()
+            ],
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created units menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
@@ -514,6 +549,40 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
+    @commands.command(aliases=['populationInfo', 'population-info', 'populationinfo'])
+    async def population_info(self, ctx):
+        """ 
+        Show all of the population identifiers in the given server's gamerule. 
+        """
+        logInfo(f"population_info({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        gamerule = savegame.getGamerule()
+        if not (gamerule):
+            raise InputError("Savegame's gamerule could not be retrieved")
+
+        menu = MenuEmbed(
+            f"Population Info", 
+            f"_Information about the possible occupations and identifiers for populations in this game.", 
+            ctx.author.id,
+            fields = [
+                (field[0], '\n'.join(field[1]))
+                for field in
+                list(gamerule["Population Identifiers"].items()) + [("Occupations", gamerule["Occupations"])]
+            ],
+            pagesize = 20,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created population info menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
         
 
 async def setup(client):
