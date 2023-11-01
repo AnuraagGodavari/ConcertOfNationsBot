@@ -433,8 +433,7 @@ class Nation:
 
                 for prerequisite in prerequisites["Buildings"]["Nation"]:
                     if prerequisite not in allbuildings:
-                        logInfo(f"Prerequisite {prerequisite} not available in nation")
-                        return False
+                        raise InputError(f"Prerequisite {prerequisite} not available in nation")
 
             if ("Territory" in prerequisites["Buildings"]):
 
@@ -446,8 +445,7 @@ class Nation:
 
                 for prerequisite in prerequisites["Buildings"]["Territory"]:
                     if prerequisite not in allbuildings:
-                        logInfo(f"Prerequisite {prerequisite} not available in territory")
-                        return False
+                        raise InputError(f"Prerequisite {prerequisite} not available in territory")
                 
 
         return True
@@ -460,13 +458,11 @@ class Nation:
 
         for resource in blueprint["Costs"].keys():
             if (blueprint["Costs"][resource] > self.resources[resource]):
-                logInfo(f"Not enough resources to build {blueprintName}", details = {"Costs": blueprint["Costs"], "Resources Available": self.resources})
-                return False
+                raise InputError(f"Not enough {resource} to build {blueprintName}")
 
         for category, cost in blueprint["Bureaucratic Cost"].items():
             if (cost > self.bureaucracy[category][1] - self.bureaucracy[category][0]):
-                logInfo(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
-                return False
+                raise InputError(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
 
         if ("Prerequisites" in blueprint.keys()):
             if not (self.validate_prerequisites(blueprint["Prerequisites"], territoryName, active_prerequisites)):
@@ -483,12 +479,10 @@ class Nation:
         territory = self.getTerritoryInfo(territoryName, savegame)
 
         if not(territory):
-            logInfo(f"{self.name} does not own territory \"{territoryName}\"")
-            return False
+            raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
 
         if buildingName in territory["Savegame"]["Buildings"].keys():
-            logInfo(f"Building {buildingName} already exists in territory {territoryName}")
-            return False
+            raise InputError(f"Building {buildingName} already exists in territory {territoryName}")
 
         return self.can_buyBlueprint(buildingName, blueprint, territoryName)
 
@@ -604,12 +598,10 @@ class Nation:
         territory = self.getTerritoryInfo(territoryName, savegame)
 
         if not(territory):
-            logInfo(f"{self.name} does not own territory \"{territoryName}\"")
-            return False
+            raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
 
         if (size > territories.get_manpower(self, territoryName)):
-            logInfo(f"{territoryName} has too little manpower to recruit {size} {unitType}")
-            return False
+            raise InputError(f"{territoryName} has too little manpower to recruit {size} {unitType}")
 
         return self.can_buyBlueprint(unitType, blueprint, territoryName, active_prerequisites = True)
 
