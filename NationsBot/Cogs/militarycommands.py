@@ -149,6 +149,95 @@ class MilitaryCommands(commands.Cog):
         save_saveGame(savegame)
 
 
+    # Renaming
+
+    @commands.command(aliases=['renameForce', 'rename-force', 'renameforce'])
+    async def rename_force(self, ctx, old_forcename, new_forcename):
+        """ 
+        Rename a military force
+        Args:
+            old_forcename: The current name of the force
+            new_forcename: The new name you want the force to have.
+        """
+        logInfo(f"rename_force({ctx.guild.id}, {old_forcename}, {new_forcename})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (old_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {old_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[old_forcename]
+
+        name_available = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = new_forcename, use_num = False)
+        if not(name_available):
+            raise InputError(f"Name \"{new_forcename}\" not available")
+
+        nation.military[new_forcename] = nation.military.pop(old_forcename)
+
+        logInfo(f"Successfully renamed {old_forcename} to {new_forcename}")
+        await ctx.send(f"Successfully renamed {old_forcename} to {new_forcename}!")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['renameUnit', 'rename-unit', 'renameunit'])
+    async def rename_unit(self, ctx, base_forcename, old_unitname, new_unitname):
+        """ 
+        Rename a unit within a military force
+        Args:
+            old_unitname: The current name of the force
+            new_unitname: The new name you want the force to have.
+        """
+        logInfo(f"rename_unit_unit({ctx.guild.id}, {old_unitname}, {new_unitname})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns these forces
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+
+        if not (old_unitname in base_force["Units"].keys()):
+            raise InputError(f"Unit: {old_unitname} does not exist in Force: {base_forcename}")
+
+        unit = base_force["Units"][old_unitname]
+
+        name_available = military.new_unitName(nation.military, new_unitname, num = 0, unitnames = None)
+        if not(name_available):
+            raise InputError(f"Name \"{new_unitname}\" not available")
+
+        unit.name = new_unitname
+        base_force["Units"][new_unitname] = base_force["Units"].pop(old_unitname)
+
+        logInfo(f"Successfully renamed {old_unitname} to {new_unitname}")
+        await ctx.send(f"Successfully renamed {old_unitname} to {new_unitname}!")
+
+        save_saveGame(savegame)
+
+
     # Force management
 
     @commands.command(aliases=['buildUnit', 'build-unit', 'buildunit'])
