@@ -86,7 +86,7 @@ def get_forcespeed(force, gamerule):
     return min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()])
 
 
-# Processes
+# Name managememnt
 
 def new_unitName(military_dict, name_template = "Unit", num = 1, unitnames = None):
     """ 
@@ -99,15 +99,27 @@ def new_unitName(military_dict, name_template = "Unit", num = 1, unitnames = Non
 
     unitnames = unitnames or [unit for force in military_dict.values() for unit in force["Units"].keys()]
 
-    if (f"{name_template} {num}" not in unitnames):
-        return f"{name_template} {num}"
+    if num: name = f"{name_template} {num}"
+    else: name = name_template
+
+    if (name not in unitnames):
+        return name
+
+    elif not (num):
+        return False
 
     return new_unitName(military_dict, name_template, num + 1, unitnames)
 
-def new_forceName(existing_military_names, name_template = "Force"):
+def new_forceName(existing_military_names, name_template = "Force", use_num = True):
     """ 
     Generate a name for a force
+
+    Args:
+        use_num (bool): True if the name has a number at the end and we want to iterate it. By default, False.
     """
+
+    if not(use_num):
+        return not bool(name_template in existing_military_names)
 
     num = 1
 
@@ -115,6 +127,9 @@ def new_forceName(existing_military_names, name_template = "Force"):
         num += 1
 
     return f"{name_template} {num}"
+
+
+# New turn
 
 def newturn(force, savegame, gamerule, numMonths, bureaucracy):
     """ Advance unit construction and return cost of unit maintenance."""
@@ -184,6 +199,8 @@ def newforcestatus(nation, forcename, newstatus, savegame, gamerule):
     return nation.military[forcename]['Status']
 
 
+# Combining
+
 def combine_units(baseUnit, *addedUnits):
 
     baseUnit.size += sum(unit.size for unit in addedUnits)
@@ -202,6 +219,8 @@ def combine_forces(baseForce, *addedForces):
 
     return baseForce
     
+
+# Splitting
 
 def split_unit(baseForce, baseUnit, newSize, newName):
 
@@ -227,17 +246,19 @@ def split_unit_inForce(nation, baseForce, baseUnit, *newSizes):
 
     return baseForce
 
-def split_force(nation, baseForce, *unitsToSplit):
+def split_force(savegame, forcenation, baseForce, *unitsToSplit):
     
-    new_forcename = new_forceName(nation.military.keys(), f"{nation.name} Force")
+    new_forcename = new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], f"{forcenation.name} Force")
 
     newforce = { k: v for k,v in baseForce.items() if k != "Units" }
     newforce["Units"] = { unitname: baseForce["Units"].pop(unitname) for unitname in unitsToSplit}
 
-    nation.military[new_forcename] = newforce
+    forcenation.military[new_forcename] = newforce
 
     return new_forcename
 
+
+# Disbanding
 
 def disband_unit(nation, unit):
     
@@ -255,6 +276,8 @@ def disband_force(nation, forcename):
 
     disband_units_inForce(nation, force, tuple(force["Units"].keys()))
 
+
+# Movement
 
 def check_intercepting_forces(nation, forcename, gamerule, savegame, numMonths):
 

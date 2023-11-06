@@ -700,6 +700,80 @@ class AdminCommands(commands.Cog):
 
         save_saveGame(savegame)
       
+    @commands.command(aliases=['adminRenameForce', 'admin-rename-force', 'adminrenameforce'])
+    @commands.has_permissions(administrator = True)
+    async def admin_rename_force(self, ctx, roleid, old_forcename, new_forcename):
+        """ 
+        Rename a military force
+        Args:
+            old_forcename: The current name of the force
+            new_forcename: The new name you want the force to have.
+        """
+        logInfo(f"rename_force({ctx.guild.id}, {old_forcename}, {new_forcename})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns this force
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (old_forcename in nation.military.keys()):
+            raise InputError(f"{nation.name} does not own the force {old_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[old_forcename]
+
+        name_available = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = new_forcename, use_num = False)
+        if not(name_available):
+            raise InputError(f"Name \"{new_forcename}\" not available")
+
+        nation.military[new_forcename] = nation.military.pop(old_forcename)
+
+        logInfo(f"Successfully renamed {old_forcename} to {new_forcename}")
+        await ctx.send(f"Successfully renamed {old_forcename} to {new_forcename}!")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['adminRenameUnit', 'admin-rename-unit', 'adminrenameunit'])
+    @commands.has_permissions(administrator = True)
+    async def admin_rename_unit(self, ctx, roleid, base_forcename, old_unitname, new_unitname):
+        """ 
+        Rename a unit within a military force
+        Args:
+            old_unitname: The current name of the force
+            new_unitname: The new name you want the force to have.
+        """
+        logInfo(f"rename_unit_unit({ctx.guild.id}, {old_unitname}, {new_unitname})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        #Validate that the player owns this force
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (base_forcename in nation.military.keys()):
+            raise InputError(f"{nation.name} does not own the force {base_forcename}. If the name has spaces, use quotation marks like this: \"name of force\"")
+
+        base_force = nation.military[base_forcename]
+
+        if not (old_unitname in base_force["Units"].keys()):
+            raise InputError(f"Unit: {old_unitname} does not exist in Force: {base_forcename}")
+
+        unit = base_force["Units"][old_unitname]
+
+        name_available = military.new_unitName(nation.military, new_unitname, num = 0, unitnames = None)
+        if not(name_available):
+            raise InputError(f"Name \"{new_unitname}\" not available")
+
+        unit.name = new_unitname
+        base_force["Units"][new_unitname] = base_force["Units"].pop(old_unitname)
+
+        logInfo(f"Successfully renamed {old_unitname} to {new_unitname}")
+        await ctx.send(f"Successfully renamed {old_unitname} to {new_unitname}!")
+
+        save_saveGame(savegame)
+
     @commands.command(aliases=['admincombineforces', 'admin-combine-forces', 'AdminCombineForces'])
     @commands.has_permissions(administrator = True)
     async def admin_combine_forces(self, ctx, roleid, base_forcename, *additional_forcenames):
@@ -862,7 +936,7 @@ class AdminCommands(commands.Cog):
         if not(military.force_splittable(baseForce, *units_toSplit)):
             raise InputError("Could not split force")
 
-        new_forcename = military.split_force(nation, baseForce, *units_toSplit)
+        new_forcename = military.split_force(savegame, nation, baseForce, *units_toSplit)
 
         await ctx.send(f"Force \"{base_forcename}\" has been split into new force {new_forcename} and transferred the units: {units_toSplit}. Use n.force \"{new_forcename}\" to see more.")
 
