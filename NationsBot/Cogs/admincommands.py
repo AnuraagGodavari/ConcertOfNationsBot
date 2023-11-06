@@ -706,10 +706,11 @@ class AdminCommands(commands.Cog):
         """ 
         Rename a military force
         Args:
+            roleid: The nation role.
             old_forcename: The current name of the force
             new_forcename: The new name you want the force to have.
         """
-        logInfo(f"rename_force({ctx.guild.id}, {old_forcename}, {new_forcename})")
+        logInfo(f"rename_force({ctx.guild.id}, {roleid}, {old_forcename}, {new_forcename})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -740,10 +741,11 @@ class AdminCommands(commands.Cog):
         """ 
         Rename a unit within a military force
         Args:
+            roleid: The nation role.
             old_unitname: The current name of the force
             new_unitname: The new name you want the force to have.
         """
-        logInfo(f"rename_unit_unit({ctx.guild.id}, {old_unitname}, {new_unitname})")
+        logInfo(f"rename_unit_unit({ctx.guild.id}, {roleid}, {old_unitname}, {new_unitname})")
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
