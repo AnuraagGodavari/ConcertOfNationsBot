@@ -862,7 +862,7 @@ class AdminCommands(commands.Cog):
         if not(military.force_splittable(baseForce, *units_toSplit)):
             raise InputError("Could not split force")
 
-        new_forcename = military.split_force(nation, baseForce, *units_toSplit)
+        new_forcename = military.split_force(savegame, nation, baseForce, *units_toSplit)
 
         await ctx.send(f"Force \"{base_forcename}\" has been split into new force {new_forcename} and transferred the units: {units_toSplit}. Use n.force \"{new_forcename}\" to see more.")
 
