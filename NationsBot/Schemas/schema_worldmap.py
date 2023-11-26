@@ -21,6 +21,8 @@ import ConcertOfNationsEngine.populations as populations
 import ConcertOfNationsEngine.military as military
 import ConcertOfNationsEngine.diplomacy as diplomacy
 
+from Schemas import schema_gamerule
+
 
 # Territory validations
 
@@ -59,25 +61,6 @@ def validate_territory_edges(edges, path, worldmap = None, **kwargs):
         if not (isinstance(dist, (int, float, complex))):
             raise InputError(f"{path}: Edges must be numbers")
 
-def validate_territory_resources(resources, path, gamerule = None, **kwargs):
-    """
-    Territory resources must be an object where the keys are resources that exist in the gamerule and the values are numbers.
-    """
-
-    if not (gamerule):
-        raise InputError(f"{path}: There must be a gamerule provided in order to validate territory resources.")
-
-    if not (isinstance(resources, dict)):
-        raise InputError(f"{path}: A territory's resources must be in a dictionary/json object.")
-
-    for resource, amount in resources.items():
-
-        if (resource not in gamerule["Resources"]):
-            raise InputError(f"{path}: Key {resource} in resources must be a resource which exists in the gamerule.")
-
-        if not (isinstance(amount, (int, float, complex))):
-            raise InputError(f"{path}: Resource amounts must be numbers")
-
 
 # Territory details validations
 
@@ -97,18 +80,18 @@ def validate_terrain(terrain, path, gamerule = None, **kwargs):
 
 
 schema_worldmap = {
-    "name": schema.SchemaProperties(primitive_type = str.__name__),
+    "name": schema.SchemaProperties(primitive_type = str),
     "territories":
     [
         {
-            "name": schema.SchemaProperties(primitive_type = str.__name__),
-            "id": schema.SchemaProperties(primitive_type = int.__name__),
+            "name": schema.SchemaProperties(primitive_type = str),
+            "id": schema.SchemaProperties(primitive_type = int),
             "pos": schema.SchemaProperties(validator = validate_territory_pos),
             "edges": schema.SchemaProperties(validator = validate_territory_edges),
             "details": {
                 "Terrain": schema.SchemaProperties(validator = validate_terrain)
             },
-            "resources": schema.SchemaProperties(validator = validate_territory_resources)
+            "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources)
         }
     ]
 }

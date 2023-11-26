@@ -11,14 +11,16 @@ class SchemaProperties:
 
     Args:
         validator (function): A function used to validate objects of this schema
-        primitive_type (str): The name of the type that this object should match
+        primitive_type (type or tuple): The type or types that this object should match
         is_required (bool): Describes if this object is expected to exist, wherever it is stored. 
+        schema (dict): A deeper schema used to validate this schema's properties
     """
 
-    def __init__(self, validator = None, primitive_type: str = None, is_required: bool = True):
+    def __init__(self, validator = None, primitive_type = None, is_required: bool = True, schema = None):
         self.validator = validator
         self.primitive_type = primitive_type
         self.is_required = is_required
+        self.schema = schema
 
     def validate(self, input_obj, path, **kwargs):
         """
@@ -33,17 +35,24 @@ class SchemaProperties:
         logInfo(f"Validating Schema Path: {path}")
         
         if self.validator:
-            self.validator(input_obj, path, **kwargs)
+
+            if self.schema: self.validator(self.schema, input_obj, path, **kwargs)
+
+            else: self.validator(input_obj, path, **kwargs)
         
         elif self.primitive_type:
-            
-            if type(input_obj).__name__!= self.primitive_type:
+
+            if (isinstance(self.primitive_type, tuple)):
+                if not (type(input_obj) in self.primitive_type): 
+                    raise InputError(f"{path}: Must be one of the types: {[primitive_type.__name__ for primitive_type in self.primitive_type]}")
+
+            elif not isinstance(input_obj, self.primitive_type):
                 raise InputError(f"{path}: Must be type: {self.primitive_type}")
 
 
 def schema_validate_list(schema, input_obj, path, **kwargs):
     """
-    Validate a schema object of a list type
+    Validate a json object of a list type
 
     Args:
         schema: The structure to compare against
@@ -59,7 +68,7 @@ def schema_validate_list(schema, input_obj, path, **kwargs):
 
 def schema_validate_dict(schema, input_obj, path, **kwargs):
     """
-    Validate a schema dict/js object
+    Validate a json dict/js object
 
     Args:
         schema: The structure to compare against
@@ -82,11 +91,29 @@ def schema_validate_dict(schema, input_obj, path, **kwargs):
             val.validate(input_obj[key], currpath, **kwargs)
 
         else:
-            schema_validate(val, input_obj[key], currpath, **kwargs)
+            if (key in input_obj.keys()):
+                schema_validate(val, input_obj[key], currpath, **kwargs)
+        
+def schema_validate_values(schema, input_obj, path, **kwargs):
+    """
+    Validate many json objects against one schema
+
+    Args:
+        schema: The structure to compare against
+        input_obj: The objects to validate
+        path: Where in the total schema we are looking
+        **kwargs: Optional keyword args that may be used by a dedicated validator function.
+    """
+
+    logInfo(f"Validating Schema Path: {path}")
+
+    for key, val in input_obj.items():
+        schema_validate(schema, val, path + '.' + key, **kwargs)
+
 
 def schema_validate(schema, input_obj, path = 'schema', **kwargs):
     """
-    Validate a schema object of any valid type
+    Validate a json object of any valid type
 
     Args:
         schema: The structure to compare against
@@ -107,6 +134,4 @@ def schema_validate(schema, input_obj, path = 'schema', **kwargs):
         schema_validate_dict(schema, input_obj, path, **kwargs)
 
     else:
-        raise InputError(f"{path}: A schema object's value must either be a dict/json object, a list or a SchemaProperties instance.")
-        
-
+        raise InputError(f"{path}: Invalid type {type(schema).__name__}. A schema object's value must either be a dict/json object, a list or a SchemaProperties instance.")
