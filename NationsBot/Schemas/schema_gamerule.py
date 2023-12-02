@@ -30,7 +30,7 @@ def validate_resources(resources, path, gamerule = None, **kwargs):
     """
 
     if not (gamerule):
-        raise InputError(f"{path}: There must be a gamerule provided in order to validate resources.")
+        return
 
     if not (isinstance(resources, dict)):
         raise InputError(f"{path}: Resources must be in a dictionary/json object.")

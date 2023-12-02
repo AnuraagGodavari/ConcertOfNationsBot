@@ -70,7 +70,7 @@ def validate_terrain(terrain, path, gamerule = None, **kwargs):
     """
 
     if not (gamerule):
-        raise InputError(f"{path}: There must be a gamerule provided in order to validate territory resources.")
+        return
 
     if not (isinstance(terrain, str)):
         raise InputError(f"{path}: A territory's terrain must be a string.")
