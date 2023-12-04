@@ -5,7 +5,9 @@ from logger import *
 
 from database import *
 from common import *
-from GameUtils import filehandling
+from GameUtils import filehandling, schema
+from Schemas.schema_worldmap import schema_worldmap
+from Schemas.schema_gamerule import schema_gamerule
 
 from ConcertOfNationsEngine.gameobjects import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -13,7 +15,7 @@ from ConcertOfNationsEngine.concertofnations_exceptions import *
 #Deal with worlds
 
 def save_world(world):
-    with open(f"{worldsDir}/Test World.json", 'w') as f:
+    with open(f"{worldsDir}/{world.name}.json", 'w') as f:
         json.dump(filehandling.saveObject(world), f, indent = 4)
 
     logInfo(f"Successfully saved world {world.name}")
@@ -273,7 +275,15 @@ def remove_player_fromGame(savegame, player_id):
     cursor.execute(stmt, params)
     db.commit()
 
-#Deal with other files
+
+#Deal with gamerules
+
+def save_gamerule(gamerule_name, gamerule):
+    with open(f"{gameruleDir}/{gamerule_name}.json", 'w') as f:
+        json.dump(filehandling.saveObject(gamerule), f, indent = 4)
+
+    logInfo(f"Successfully saved gamerule {gamerule_name}")
+
 def load_gamerule(gamerule_name):
     """
     Load a dictionary from a .json file representing a game's ruleset
@@ -301,6 +311,108 @@ def dbget_gamerule(server_id):
 
     logInfo("Got gamerule info")
     return gamehandling.load_gamerule(result["gamerulefile"])
+
+
+#Get connected files
+
+def gamerule_connected_files(gamerule_name):
+    """
+    Get all savegames and worldmaps that use this gamerule
+    """
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT Savegames.savefile, Worlds.name as world_name FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE gamerulefile=%s"
+    params = [gamerule_name]
+    cursor.execute(stmt, params)
+    result = cursor.fetchall()
+
+    if not (result): return False
+
+    result = [dict(zip(("savefile", "worldfile"), item)) for item in result]
+
+    logInfo(f"Retrieved savegames and worlds from database which use gamerule {gamerule_name}")
+    return result
+
+def worldmap_connected_files(worldmap_name):
+    """
+    Get all savegames and gamerules that use this worldmap
+    """
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT Savegames.savefile, Savegames.gamerulefile FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE Worlds.name=%s"
+    params = [worldmap_name]
+    cursor.execute(stmt, params)
+    result = cursor.fetchall()
+
+    if not (result): return False
+
+    result = [dict(zip(("savefile", "gamerulefile"), item)) for item in result]
+
+    logInfo(f"Retrieved savegames and worlds from database which use gamerule {worldmap_name}")
+    return result
+
+
+#Validate files
+
+def validate_modified_gamerule(gamerule_name, gamerule_contents):
+    """
+    Validate a gamerule against its schema
+    """
+    
+    schema.schema_validate(schema_gamerule, gamerule_contents, gamerule = gamerule_contents)
+
+    connected_files = gamerule_connected_files(gamerule_name)
+
+    for worldmap_name in [files["worldfile"] for files in connected_files]:
+        
+        with open (worldsDir + f"/{worldmap_name}.json", 'r') as f:
+            worldmap = json.load(f)
+
+        try:
+            schema.schema_validate(schema_worldmap, worldmap, gamerule = gamerule_contents, worldmap = worldmap)
+        except Exception as e:
+            logError(e)
+            raise InputError(f"Worldmap {worldmap_name} is now invalid with the gamerule change.")
+    
+    logInfo(f"Successfully validated modified gamerule {gamerule_name}.")
+
+    save_gamerule(gamerule_name, gamerule_contents)
+
+def validate_modified_worldmap(worldmap_name, worldmap_contents):
+    """
+    Validate a worldmap against its schema
+    """
+    
+    schema.schema_validate(schema_worldmap, worldmap_contents, worldmap = worldmap_contents)
+
+    connected_files = worldmap_connected_files(worldmap_name)
+
+    for gamerule_name in [files["gamerulefile"] for files in connected_files]:
+        
+        with open (gameruleDir + f"/{gamerule_name}.json", 'r') as f:
+            gamerule = json.load(f)
+
+        try:
+            schema.schema_validate(schema_worldmap, worldmap_contents, gamerule = gamerule, worldmap = worldmap_contents)
+        except Exception as e:
+            logError(e)
+            raise InputError(f"Modified worldmap {worldmap_name} is now incompatible with the gamerule {gamerule_name}.")
+
+    try:
+        world = filehandling.loadObject(worldmap_contents)
+    except Exception as e:
+        logError(e)
+        raise InputError(f"World could not be converted to the World class.")
+    
+    logInfo(f"Successfully validated modified worldmap {world.name}.")
+
+    save_world(world)
+
+        
 
 #Player
 def add_Player(playerID):
