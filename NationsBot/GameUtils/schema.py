@@ -10,13 +10,15 @@ class SchemaProperties:
     Describes how a json object should be structured.
 
     Args:
+        exact_value: A value that the object must equal in order to be valid.
         validator (function): A function used to validate objects of this schema
         primitive_type (type or tuple): The type or types that this object should match
         is_required (bool): Describes if this object is expected to exist, wherever it is stored. 
         schema (dict): A deeper schema used to validate this schema's properties
     """
 
-    def __init__(self, validator = None, primitive_type = None, is_required: bool = True, schema = None):
+    def __init__(self, exact_value = None, validator = None, primitive_type = None, is_required: bool = True, schema = None):
+        self.exact_value = exact_value
         self.validator = validator
         self.primitive_type = primitive_type
         self.is_required = is_required
@@ -34,7 +36,11 @@ class SchemaProperties:
 
         logInfo(f"Validating Schema Path: {path}")
         
-        if self.validator:
+        if self.exact_value:
+            if not(input_obj == self.exact_value):
+                raise InputError(f"{path}: Must equal {self.exact_value}")
+
+        elif self.validator:
 
             if self.schema: self.validator(self.schema, input_obj, path, **kwargs)
 

@@ -80,10 +80,15 @@ def validate_terrain(terrain, path, gamerule = None, **kwargs):
 
 
 schema_worldmap = {
+
+    "__class__": schema.SchemaProperties(exact_value = "World"),
+    "__module__": schema.SchemaProperties(exact_value = "GameUtils.mapping"),
     "name": schema.SchemaProperties(primitive_type = str),
     "territories":
     [
         {
+            "__class__": schema.SchemaProperties(exact_value = "Territory"),
+            "__module__": schema.SchemaProperties(exact_value = "GameUtils.mapping"),
             "name": schema.SchemaProperties(primitive_type = str),
             "id": schema.SchemaProperties(primitive_type = int),
             "pos": schema.SchemaProperties(validator = validate_territory_pos),
