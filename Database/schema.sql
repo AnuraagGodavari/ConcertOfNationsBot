@@ -76,6 +76,23 @@ CREATE TABLE IF NOT EXISTS `SavefileDownloads` (
     CONSTRAINT `SavefileDownloads_ibfk_2` FOREIGN KEY (`player_id`) REFERENCES `Players` (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `GameruleEditPermissions` (
+    `player_id` BIGINT UNSIGNED NOT NULL,
+    `game_id` BIGINT UNSIGNED NOT NULL,
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`player_id`, `game_id`),
+    CONSTRAINT `GameruleEditPermissions_ibfk_1` FOREIGN KEY (`player_id`) REFERENCES `Players` (`id`),
+    CONSTRAINT `GameruleEditPermissions_ibfk_2` FOREIGN KEY (`game_id`) REFERENCES `Savegames` (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `WorldEditPermissions` (
+    `player_id` BIGINT UNSIGNED NOT NULL,
+    `world_id` BIGINT UNSIGNED NOT NULL,
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
+    CONSTRAINT `WorldmapEditPermissions_ibfk_1` FOREIGN KEY (`player_id`) REFERENCES `Players` (`id`),
+    CONSTRAINT `WorldmapEditPermissions_ibfk_2` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `NewTurns` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `game_id` BIGINT UNSIGNED NOT NULL,

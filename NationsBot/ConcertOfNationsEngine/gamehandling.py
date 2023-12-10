@@ -12,7 +12,7 @@ from Schemas.schema_gamerule import schema_gamerule
 from ConcertOfNationsEngine.gameobjects import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
-#Deal with worlds
+# Deal with worlds
 
 def save_world(world):
     with open(f"{worldsDir}/{world.name}.json", 'w') as f:
@@ -162,7 +162,7 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     return result
 
 
-#Deal with savegames
+# Deal with savegames
 
 def dbget_saveGame_byServer(server_id):
         """
@@ -276,7 +276,7 @@ def remove_player_fromGame(savegame, player_id):
     db.commit()
 
 
-#Deal with gamerules
+# Deal with gamerules
 
 def save_gamerule(gamerule_name, gamerule):
     with open(f"{gameruleDir}/{gamerule_name}.json", 'w') as f:
@@ -313,11 +313,11 @@ def dbget_gamerule(server_id):
     return gamehandling.load_gamerule(result["gamerulefile"])
 
 
-#Get connected files
+# Get connected files
 
 def gamerule_connected_files(gamerule_name):
     """
-    Get all savegames and worldmaps that use this gamerule
+    Get all savegames and worlds that use this gamerule
     """
 
     db = getdb()
@@ -335,16 +335,16 @@ def gamerule_connected_files(gamerule_name):
     logInfo(f"Retrieved savegames and worlds from database which use gamerule {gamerule_name}")
     return result
 
-def worldmap_connected_files(worldmap_name):
+def world_connected_files(world_name):
     """
-    Get all savegames and gamerules that use this worldmap
+    Get all savegames and gamerules that use this world
     """
 
     db = getdb()
     cursor = db.cursor(buffered=True)
 
     stmt = "SELECT Savegames.savefile, Savegames.gamerulefile FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE Worlds.name=%s"
-    params = [worldmap_name]
+    params = [world_name]
     cursor.execute(stmt, params)
     result = cursor.fetchall()
 
@@ -352,11 +352,11 @@ def worldmap_connected_files(worldmap_name):
 
     result = [dict(zip(("savefile", "gamerulefile"), item)) for item in result]
 
-    logInfo(f"Retrieved savegames and worlds from database which use gamerule {worldmap_name}")
+    logInfo(f"Retrieved savegames and worlds from database which use gamerule {world_name}")
     return result
 
 
-#Validate files
+# Validate files
 
 def validate_modified_gamerule(gamerule_name, gamerule_contents):
     """
@@ -367,29 +367,29 @@ def validate_modified_gamerule(gamerule_name, gamerule_contents):
 
     connected_files = gamerule_connected_files(gamerule_name)
 
-    for worldmap_name in [files["worldfile"] for files in connected_files]:
+    for world_name in [files["worldfile"] for files in connected_files]:
         
-        with open (worldsDir + f"/{worldmap_name}.json", 'r') as f:
-            worldmap = json.load(f)
+        with open (worldsDir + f"/{world_name}.json", 'r') as f:
+            world = json.load(f)
 
         try:
-            schema.schema_validate(schema_worldmap, worldmap, gamerule = gamerule_contents, worldmap = worldmap)
+            schema.schema_validate(schema_world, world, gamerule = gamerule_contents, world = world)
         except Exception as e:
             logError(e)
-            raise InputError(f"Worldmap {worldmap_name} is now invalid with the gamerule change.")
+            raise InputError(f"Worldmap {world_name} is now invalid with the gamerule change.")
     
     logInfo(f"Successfully validated modified gamerule {gamerule_name}.")
 
     save_gamerule(gamerule_name, gamerule_contents)
 
-def validate_modified_worldmap(worldmap_name, worldmap_contents):
+def validate_modified_world(world_name, world_contents):
     """
-    Validate a worldmap against its schema
+    Validate a world against its schema
     """
     
-    schema.schema_validate(schema_worldmap, worldmap_contents, worldmap = worldmap_contents)
+    schema.schema_validate(schema_world, world_contents, world = world_contents)
 
-    connected_files = worldmap_connected_files(worldmap_name)
+    connected_files = world_connected_files(world_name)
 
     for gamerule_name in [files["gamerulefile"] for files in connected_files]:
         
@@ -397,24 +397,62 @@ def validate_modified_worldmap(worldmap_name, worldmap_contents):
             gamerule = json.load(f)
 
         try:
-            schema.schema_validate(schema_worldmap, worldmap_contents, gamerule = gamerule, worldmap = worldmap_contents)
+            schema.schema_validate(schema_world, world_contents, gamerule = gamerule, world = world_contents)
         except Exception as e:
             logError(e)
-            raise InputError(f"Modified worldmap {worldmap_name} is now incompatible with the gamerule {gamerule_name}.")
+            raise InputError(f"Modified world {world_name} is now incompatible with the gamerule {gamerule_name}.")
 
     try:
-        world = filehandling.loadObject(worldmap_contents)
+        world = filehandling.loadObject(world_contents)
     except Exception as e:
         logError(e)
         raise InputError(f"World could not be converted to the World class.")
     
-    logInfo(f"Successfully validated modified worldmap {world.name}.")
+    logInfo(f"Successfully validated modified world {world.name}.")
 
     save_world(world)
 
-        
 
-#Player
+# Edit game files
+
+def validate_gamefile_edit_permissions(player_id, gamerule_name):
+    """
+    Validate that a player is able to edit a gamerule file
+    """
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT player_id, game_id FROM GameruleEditPermissions AS Perms JOIN Players ON Perms.player_id = Players.id JOIN Savegames ON Perms.game_id = Savegames.id WHERE Players.discord_id = %s AND Savegames.gamerulefile=%s LIMIT 1"
+    params = [player_id, gamerule_name]
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result): return False
+
+    logInfo(f"Retrieved gamerule {gamerule_name} edit permissions for player {player_id}")
+    return result
+
+def validate_world_edit_permissions(player_id, world_name):
+    """
+    Validate that a player is able to edit a gamerule file
+    """
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT player_id, world_id FROM WorldEditPermissions AS Perms JOIN Players ON Perms.player_id = Players.id JOIN Worlds ON Perms.world_id = Worlds.id WHERE Players.discord_id = %s AND Worlds.name=%s LIMIT 1"
+    params = [player_id, world_name]
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result): return False
+
+    logInfo(f"Retrieved world {world_name} edit permissions for player {player_id}")
+    return result
+
+
+# Player
 def add_Player(playerID):
     """
     Add a player by discord ID to the database
@@ -451,7 +489,7 @@ def get_Player(playerID):
         return result
 
 
-#Role
+# Role
 def add_Role(roleID, roleName):
     """
     Add a role by discord ID to the database
@@ -488,7 +526,7 @@ def get_Role(roleID):
         return result
 
 
-#Nation
+# Nation
 def add_Nation(savegame, nation, playerID):
     """
     Add a nation as a role to the database
