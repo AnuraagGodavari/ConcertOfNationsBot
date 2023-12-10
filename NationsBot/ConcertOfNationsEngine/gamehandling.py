@@ -6,7 +6,7 @@ from logger import *
 from database import *
 from common import *
 from GameUtils import filehandling, schema
-from Schemas.schema_worldmap import schema_worldmap
+from Schemas.schema_world import schema_world
 from Schemas.schema_gamerule import schema_gamerule
 
 from ConcertOfNationsEngine.gameobjects import *
@@ -415,7 +415,7 @@ def validate_modified_world(world_name, world_contents):
 
 # Edit game files
 
-def validate_gamefile_edit_permissions(player_id, gamerule_name):
+def validate_gamerule_edit_permissions(player_id, gamerule_name):
     """
     Validate that a player is able to edit a gamerule file
     """

@@ -25,25 +25,25 @@ class DeveloperCommands(commands.Cog):
         self.client = client
     
     @commands.command()
-    async def worldmaps(self, ctx):
+    async def worlds(self, ctx):
         """ 
-        Get a menu of all the available worldmap json files
+        Get a menu of all the available world json files
         """
-        logInfo(f"worldmaps({ctx.guild.id})")
+        logInfo(f"worlds({ctx.guild.id})")
 
-        #Get every worldmap file
+        #Get every world file
     
-        worldmaps = [worldmap.split('.json')[0] for worldmap in os.listdir(worldsDir) if worldmap.endswith('.json')]
+        worlds = [world.split('.json')[0] for world in os.listdir(worldsDir) if world.endswith('.json')]
 
         menu = MenuEmbed(
             f"World Maps", 
-            "_Use the command get_worldmap to examine a worldmap file!_", 
+            "_Use the command get_world to examine a world file!_", 
             ctx.author.id,
             fields = [
                 (
-                    worldmap, ''
+                    world, ''
                 ) 
-                for worldmap in worldmaps
+                for world in worlds
             ],
             pagesize = 9,
             isPaged = True
@@ -51,7 +51,7 @@ class DeveloperCommands(commands.Cog):
 
         assignMenu(ctx.author.id, menu)
 
-        logInfo(f"Created worldmaps menu and assigned it to player {ctx.author.id}")
+        logInfo(f"Created worlds menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
@@ -62,7 +62,7 @@ class DeveloperCommands(commands.Cog):
         """
         logInfo(f"gamerules({ctx.guild.id})")
 
-        #Get every worldmap file
+        #Get every world file
     
         gamerules = [gamerule.split('.json')[0] for gamerule in os.listdir(gameruleDir) if gamerule.endswith('.json')]
 
@@ -86,23 +86,23 @@ class DeveloperCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    @commands.command(aliases = ["getworldmap", "get-worldmap", "getWorldmap"])
-    async def get_worldmap(self, ctx, worldmap_name):
+    @commands.command(aliases = ["getworld", "get-world", "getWorldmap"])
+    async def get_world(self, ctx, world_name):
         """ 
-        Retrieve a worldmap json file 
+        Retrieve a world json file 
         Args:
-            worldmap_name: The name of the worldmap
+            world_name: The name of the world
         """
-        logInfo(f"get_worldmap({ctx.guild.id}, {worldmap_name})")
+        logInfo(f"get_world({ctx.guild.id}, {world_name})")
 
-        filepath = worldsDir + "/" + worldmap_name + ".json"
+        filepath = worldsDir + "/" + world_name + ".json"
 
         if not(os.path.isfile(filepath)):
-            raise InputError(f"\"{worldmap_name}\" is not a valid worldmap")
+            raise InputError(f"\"{world_name}\" is not a valid world")
         
-        await ctx.send(f"Attaching file {worldmap_name}.json", file=discord.File(filepath))
+        await ctx.send(f"Attaching file {world_name}.json", file=discord.File(filepath))
 
-        logInfo(f"Successfully sent the file {worldmap_name}.json")
+        logInfo(f"Successfully sent the file {world_name}.json")
 
     @commands.command(aliases = ["getgamerule", "get-gamerule", "getGamerule"])
     async def get_gamerule(self, ctx, gamerule_name):
@@ -121,6 +121,75 @@ class DeveloperCommands(commands.Cog):
         await ctx.send(f"Attaching file {gamerule_name}.json", file=discord.File(filepath))
 
         logInfo(f"Successfully sent the file {gamerule_name}.json")
+
+    @commands.command(aliases = ["modifyworld", "modify-world", "modifyWorld"])
+    async def modify_world(self, ctx, world_name): 
+        """
+        Upload a modified world json file to change the file being used by the bot
+        Args:
+            world_name: The name of the world (without the .json file extension)
+        """
+        logInfo(f"modify_world({ctx.guild.id}, {world_name})")
+
+        filepath = worldsDir + "/" + world_name + ".json"
+
+        if not(os.path.isfile(filepath)):
+            raise InputError(f"\"{world_name}\" is not a valid world")
+
+        if (len(ctx.message.attachments) != 1):
+            raise InputError("Can only attach exactly one json file when invoking this command")
+
+        new_world_json = None
+
+        if not(validate_world_edit_permissions(get_PlayerID(ctx.author.id), world_name)):
+            raise InputError(f"User <@{ctx.author.id}> does not have permission to edit this world file.")
+
+        try:
+            new_world_file = await ctx.message.attachments[0].to_file()
+            new_world_json = json.load(new_world_file.fp)
+        except:
+            logError(e)
+            raise InputError("Input file is not valid JSON.")
+
+        validate_modified_world(world_name, new_world_json)
+
+        logInfo(f"Validated and saved world {world_name}!")
+        await ctx.send(f"Validated and saved world {world_name}!")
+        
+    @commands.command(aliases = ["modifygamerule", "modify-gamerule", "modifyGamerule"])
+    async def modify_gamerule(self, ctx, gamerule_name): 
+        """
+        Upload a modified gamerule json file to change the file being used by the bot
+        Args:
+            gamerule_name: The name of the gamerule (without the .json file extension)
+        """
+        logInfo(f"modify_gamerule({ctx.guild.id}, {gamerule_name})")
+
+        filepath = gameruleDir + "/" + gamerule_name + ".json"
+
+        if not(os.path.isfile(filepath)):
+            raise InputError(f"\"{gamerule_name}\" is not a valid gamerule")
+
+        if (len(ctx.message.attachments) != 1):
+            raise InputError("Can only attach exactly one json file when invoking this command")
+
+        new_gamerule_json = None
+
+        if not(validate_gamerule_edit_permissions(get_PlayerID(ctx.author.id), gamerule_name)):
+            raise InputError(f"User <@{ctx.author.id}> does not have permission to edit this gamerule file.")
+
+        try:
+            new_gamerule_file = await ctx.message.attachments[0].to_file()
+            new_gamerule_json = json.load(new_gamerule_file.fp)
+        except:
+            logError(e)
+            raise InputError("Input file is not valid JSON.")
+
+        validate_modified_gamerule(gamerule_name, new_gamerule_json)
+
+        logInfo(f"Validated and saved gamerule {gamerule_name}!")
+        await ctx.send(f"Validated and saved gamerule {gamerule_name}!")
+        
 
 async def setup(client):
     await client.add_cog(DeveloperCommands(client))

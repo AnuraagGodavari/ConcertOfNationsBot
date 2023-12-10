@@ -43,7 +43,7 @@ def validate_territory_pos(pos, path, **kwargs):
         if not(isinstance(coord, (int, float, complex))):
             raise InputError(f"{path}: Coordinates must be numbers")
 
-def validate_territory_edges(edges, path, worldmap = None, **kwargs):
+def validate_territory_edges(edges, path, world = None, **kwargs):
     """
     Territory edges must be an object where the keys are territory ids and the values are distances to those territories.
     """
@@ -51,7 +51,7 @@ def validate_territory_edges(edges, path, worldmap = None, **kwargs):
     if not (isinstance(edges, dict)):
         raise InputError(f"{path}: A territory's edges must be in a dictionary/json object.")
 
-    all_territories = [territory["id"] for territory in worldmap["territories"]]
+    all_territories = [territory["id"] for territory in world["territories"]]
 
     for neighbor, dist in edges.items():
 
@@ -79,7 +79,7 @@ def validate_terrain(terrain, path, gamerule = None, **kwargs):
         raise InputError(f"{path}: Key {terrain} in terrain must be a terrain type which exists in the gamerule.")
 
 
-schema_worldmap = {
+schema_world = {
 
     "__class__": schema.SchemaProperties(exact_value = "World"),
     "__module__": schema.SchemaProperties(exact_value = "GameUtils.mapping"),
