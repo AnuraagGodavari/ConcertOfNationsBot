@@ -147,7 +147,7 @@ class DeveloperCommands(commands.Cog):
         try:
             new_world_file = await ctx.message.attachments[0].to_file()
             new_world_json = json.load(new_world_file.fp)
-        except:
+        except Exception as e:
             logError(e)
             raise InputError("Input file is not valid JSON.")
 
@@ -181,7 +181,7 @@ class DeveloperCommands(commands.Cog):
         try:
             new_gamerule_file = await ctx.message.attachments[0].to_file()
             new_gamerule_json = json.load(new_gamerule_file.fp)
-        except:
+        except Exception as e:
             logError(e)
             raise InputError("Input file is not valid JSON.")
 
