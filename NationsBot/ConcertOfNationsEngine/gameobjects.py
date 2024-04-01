@@ -605,6 +605,11 @@ class Nation:
 
         return self.can_buyBlueprint(unitType, blueprint, territoryName, active_prerequisites = True)
 
+    def can_build_vehicle(self, savegame, territoryName, unitType, blueprint, size):
+        """ Validate whether a territory can build a vehicle; wrapper for can_build_unit. """
+
+        return self.can_build_unit(savegame, territoryName, unitType, ops.combineDicts(*[blueprint]*size), blueprint["Crew"] * size)
+
     def build_unit(self, territoryName, unitType, size, blueprint, savegame):
         """ Build a unit of a specified size in a territory """
 
@@ -634,6 +639,25 @@ class Nation:
         }
 
         return forcename
+
+    def build_vehicle(self, territoryName, unitType, size, blueprint, savegame):
+        """ Build a vehicle in a specified amount in a territory; wrapper for build_unit. """
+
+        forcenames = [
+            self.build_unit(territoryName, unitType, blueprint["Crew"], blueprint, savegame)
+            for num in range(size)
+        ]
+
+        baseForcename = forcenames[1]
+
+        forces = [self.military[forcename] for forcename in forcenames]
+
+        self.combine_forces(
+            forces[1],
+            *forces[1:]
+        )
+
+        return baseForcename
     
     def combine_forces(self, base_force, added_forces):
 
