@@ -243,7 +243,7 @@ class MilitaryCommands(commands.Cog):
     @commands.command(aliases=['buildUnit', 'build-unit', 'buildunit'])
     async def build_unit(self, ctx, terrID, unitType, amount):
         """ 
-        Disband manpower in a given territory. 
+        Build a unit in a given territory. 
         Args:
             terrID: The name or numeric ID of the territory
             unitType: The type of unit this should be.
