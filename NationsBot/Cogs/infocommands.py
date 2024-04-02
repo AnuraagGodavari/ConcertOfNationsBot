@@ -196,7 +196,7 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    @commands.command()
+    @commands.command(aliases = ["vehicles", "vessels"])
     async def units(self, ctx):
         """ 
         Show all of the available units in the given server's game. 
