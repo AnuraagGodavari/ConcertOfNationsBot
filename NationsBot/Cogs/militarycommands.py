@@ -453,6 +453,9 @@ class MilitaryCommands(commands.Cog):
         if not(military.units_addable(base_unit, *additional_units)):
             raise InputError("Could not combine units")
         
+        if (military.is_vehicle(base_unit)):
+            raise InputError("Cannot combine vehicles")
+
         military.combine_units_inForce(base_force, base_unit, *additional_units)
 
         await ctx.send(f"Force \"{base_forcename}\" has merged unit {base_unitname} with the following units: {additional_unitnames}")
@@ -503,6 +506,9 @@ class MilitaryCommands(commands.Cog):
             raise InputError(f"Unit: {base_unitname} does not exist in Force: {base_forcename}")
 
         unit = baseForce["Units"][base_unitname]
+        
+        if (military.is_vehicle(unit)):
+            raise InputError("Cannot split a vehicle")
 
         if not(military.unit_splittable(unit, *new_unitsizes)):
             raise InputError("Could not split unit")

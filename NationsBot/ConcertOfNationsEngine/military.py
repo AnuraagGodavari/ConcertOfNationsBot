@@ -61,6 +61,9 @@ def validate_status(force, newstatus):
 
     return False
 
+def is_vehicle(unit):
+    return unit.__class__ == military.Vehicle
+
 
 # Get Information
 
