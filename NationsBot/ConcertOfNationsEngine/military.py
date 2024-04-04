@@ -79,11 +79,31 @@ def get_blueprint(unitType, gamerule):
     if not (unitType in allunits):
         raise InputError("Could not find unit in gamerule")
 
-    return allunits[unitType]
+    blueprint = copy(allunits[unitType])
+
+    if unitType in gamerule["Units"]:
+        blueprint["Class"] = "Unit"
+
+    if unitType in gamerule["Vehicles"]:
+        blueprint["Class"] = "Vehicle"
+
+    return blueprint
 
 def get_forcespeed(force, gamerule):
 
     return min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()])
+
+
+# New Units
+def load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, territoryName):
+
+    if (blueprint["Class"] == "Unit"):
+        return Unit(name, constructionstatus, unitType, size, territoryName)
+
+    if (blueprint["Class"] == "Vehicle"):
+        return Vehicle(name, constructionstatus, unitType, dict(), territoryName, 
+            Unit(f"{name} Crew", constructionstatus, f"{unitType} Crew", blueprint["Crew"], territoryName)
+        )
 
 
 # Name managememnt
@@ -518,11 +538,20 @@ def advance_construction(status, name, size, savegame, numMonths, bureaucracy, b
 class MilitaryPiece:
     """
     Represents any object within a military force.
+
+    Args:
+        name (str): The unique name of this object
+        status (str): Describes the state of this unit
+        unitType(str): The type of unit this is; the name of this unit's blueprint in the gamerule
+        size (int): The number of soldiers in this unit
+        home (str): The name of the territory from which this unit was recruited
     """
 
     def get_resources(self, blueprint, numMonths = 1): pass
 
     def advance_construction(self, savegame, numMonths, bureaucracy, blueprint): pass
+
+    def get_fields(self): pass
 
 
 class Unit (MilitaryPiece):
@@ -531,10 +560,6 @@ class Unit (MilitaryPiece):
 
     Args:
         name (str): The unique name of this unit
-        status (str): Describes the state of this unit
-        unitType(str): The type of unit this is; the name of this unit's blueprint in the gamerule
-        size (int): The number of soldiers in this unit
-        home (str): The name of the territory from which this unit was recruited
     """
 
     def __init__(self, name: str, status: str, unitType: str, size: int, home: str):
@@ -553,6 +578,14 @@ class Unit (MilitaryPiece):
         
         advance_construction(self.status, self.name, self.size, savegame, numMonths, bureaucracy, blueprint)
 
+    def get_fields(self):
+        return {
+            "Status": self.status,
+            "Type": self.unitType,
+            "Size": self.size,
+            "Home Territory": self.home
+        }
+
         
 class Vehicle (MilitaryPiece):
     """
@@ -562,10 +595,16 @@ class Vehicle (MilitaryPiece):
         name (str): The unique name of this vehicle
         carrying (dict): Lists all the units and vehicle being carried by this vehicle
         crew (Unit): The current crew complement
+        home (str): The name of the territory from which this unit was recruited
     """
-    def __init__(self, name: str, status: str, vehicle_type: str, carry_capacity: int, carrying: dict, crew):
+    def __init__(self, name: str, status: str, unitType: str, carrying: dict, home: str, crew):
         
         self.name = name
+        self.status = status
+        self.unitType = unitType
+        self.size = 1
+        self.home = home
+
         self.carrying = carrying
         self.crew = crew
 
@@ -576,3 +615,12 @@ class Vehicle (MilitaryPiece):
     def advance_construction(self, savegame, numMonths, bureaucracy, blueprint):
         
         advance_construction(self.status, self.name, self.size, savegame, numMonths, bureaucracy, blueprint)
+
+    def get_fields(self):
+        return {
+            "Status": self.status,
+            "Type": self.unitType,
+            "Crew": self.crew.size,
+            "Carrying": self.carrying,
+            "Home Territory": self.home
+        }

@@ -628,7 +628,7 @@ class Nation:
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
         constructionstatus = f"Constructing:{constructiondate}"
 
-        newunit = military.Unit(name, constructionstatus, unitType, size, territoryName)
+        newunit = military.load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, territoryName)
 
         territory["Manpower"] -= size
         forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{self.name} Force")
@@ -640,21 +640,23 @@ class Nation:
 
         return forcename
 
-    def build_vehicle(self, territoryName, unitType, size, blueprint, savegame):
+    def build_vehicle(self, territoryName, vehicleType, size, blueprint, savegame):
         """ Build a vehicle in a specified amount in a territory; wrapper for build_unit. """
 
         forcenames = [
-            self.build_unit(territoryName, unitType, blueprint["Crew"], blueprint, savegame)
+            self.build_unit(territoryName, vehicleType, blueprint["Crew"], blueprint, savegame)
             for num in range(size)
         ]
 
-        baseForcename = forcenames[1]
+        baseForcename = forcenames[0]
 
-        forces = [self.military[forcename] for forcename in forcenames]
+        baseForce = self.military[baseForcename]
+
+        forces  = [self.pop_force(forcename) for forcename in forcenames[1:]]
 
         self.combine_forces(
-            forces[1],
-            *forces[1:]
+            baseForce,
+            *forces
         )
 
         return baseForcename
