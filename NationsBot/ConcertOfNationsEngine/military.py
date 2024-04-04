@@ -61,13 +61,16 @@ def validate_status(force, newstatus):
 
     return False
 
+def is_vehicle(unit):
+    return unit.__class__ == military.Vehicle
+
 
 # Get Information
 
 def get_allunits(gamerule):
     """ Return the information relating to all units in a savegame's gamerule """
 
-    return gamerule["Units"]
+    return ops.combineDicts(gamerule["Units"], gamerule["Vehicles"])
 
 def get_blueprint(unitType, gamerule):
     """ Get the blueprint of a unit from the gamerule """
@@ -79,11 +82,31 @@ def get_blueprint(unitType, gamerule):
     if not (unitType in allunits):
         raise InputError("Could not find unit in gamerule")
 
-    return allunits[unitType]
+    blueprint = copy(allunits[unitType])
+
+    if unitType in gamerule["Units"]:
+        blueprint["Class"] = "Unit"
+
+    if unitType in gamerule["Vehicles"]:
+        blueprint["Class"] = "Vehicle"
+
+    return blueprint
 
 def get_forcespeed(force, gamerule):
 
     return min([get_blueprint(unit.unitType, gamerule)["Speed"] for unit in force["Units"].values()])
+
+
+# New Units
+def load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, territoryName):
+
+    if (blueprint["Class"] == "Unit"):
+        return Unit(name, constructionstatus, unitType, size, territoryName)
+
+    if (blueprint["Class"] == "Vehicle"):
+        return Vehicle(name, constructionstatus, unitType, dict(), territoryName, 
+            Unit(f"{name} Crew", constructionstatus, f"{unitType} Crew", blueprint["Crew"], territoryName)
+        )
 
 
 # Name managememnt
@@ -493,19 +516,56 @@ def exit_battle(forcename, force, savegame):
         )
 
 
-class Unit:
+# Utils
+
+def get_resources(size, blueprint, numMonths = 1):
+    
+    return {k: round(v * numMonths * -1 * size, 4) for k, v in blueprint["Maintenance"].items()} 
+
+def advance_construction(status, name, size, savegame, numMonths, bureaucracy, blueprint):
+    
+    if ("Constructing" not in status):
+        return
+
+    oldstatus = status
+
+    if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(status.split(':')[-1]))):
+        status = "Active"
+
+        for category, cost in blueprint["Bureaucratic Cost"].items():
+            bureaucracy[category] = (round(bureaucracy[category][0] - (cost * size), 4), bureaucracy[category][1])
+
+    logInfo(f"Unit {name} now active from date {oldstatus.split(':')[-1]}")
+
+
+class MilitaryPiece:
     """
-    Represents a division of a military force with a certain size and type.
+    Represents any object within a military force.
 
     Args:
-        name (str): The unique name of this unit
+        name (str): The unique name of this object
         status (str): Describes the state of this unit
         unitType(str): The type of unit this is; the name of this unit's blueprint in the gamerule
         size (int): The number of soldiers in this unit
         home (str): The name of the territory from which this unit was recruited
     """
 
-    def __init__(self, name: str, status:str, unitType: str, size: int, home: str):
+    def get_resources(self, blueprint, numMonths = 1): pass
+
+    def advance_construction(self, savegame, numMonths, bureaucracy, blueprint): pass
+
+    def get_fields(self): pass
+
+
+class Unit (MilitaryPiece):
+    """
+    Represents a division of a military force with a certain size and type.
+
+    Args:
+        name (str): The unique name of this unit
+    """
+
+    def __init__(self, name: str, status: str, unitType: str, size: int, home: str):
         
         self.name = name
         self.status = status
@@ -515,21 +575,55 @@ class Unit:
 
     def get_resources(self, blueprint, numMonths = 1):
         
+        return get_resources(self.size, blueprint, numMonths)
+
+    def advance_construction(self, savegame, numMonths, bureaucracy, blueprint):
+        
+        advance_construction(self.status, self.name, self.size, savegame, numMonths, bureaucracy, blueprint)
+
+    def get_fields(self):
+        return {
+            "Status": self.status,
+            "Type": self.unitType,
+            "Size": self.size,
+            "Home Territory": self.home
+        }
+
+        
+class Vehicle (MilitaryPiece):
+    """
+    Represents a space which can be used to hold other units.
+
+    Args:
+        name (str): The unique name of this vehicle
+        carrying (dict): Lists all the units and vehicle being carried by this vehicle
+        crew (Unit): The current crew complement
+        home (str): The name of the territory from which this unit was recruited
+    """
+    def __init__(self, name: str, status: str, unitType: str, carrying: dict, home: str, crew):
+        
+        self.name = name
+        self.status = status
+        self.unitType = unitType
+        self.size = 1
+        self.home = home
+
+        self.carrying = carrying
+        self.crew = crew
+
+    def get_resources(self, blueprint, numMonths = 1):
+        
         return {k: round(v * numMonths * -1 * self.size, 4) for k, v in blueprint["Maintenance"].items()} 
 
     def advance_construction(self, savegame, numMonths, bureaucracy, blueprint):
         
-        if ("Constructing" not in self.status):
-            return
+        advance_construction(self.status, self.name, self.size, savegame, numMonths, bureaucracy, blueprint)
 
-        oldstatus = self.status
-
-        if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(self.status.split(':')[-1]))):
-            self.status = "Active"
-
-            for category, cost in blueprint["Bureaucratic Cost"].items():
-                bureaucracy[category] = (round(bureaucracy[category][0] - (cost * self.size), 4), bureaucracy[category][1])
-
-        logInfo(f"Unit {self.name} now active from date {oldstatus.split(':')[-1]}")
-
-        
+    def get_fields(self):
+        return {
+            "Status": self.status,
+            "Type": self.unitType,
+            "Crew": self.crew.size,
+            "Carrying": self.carrying,
+            "Home Territory": self.home
+        }

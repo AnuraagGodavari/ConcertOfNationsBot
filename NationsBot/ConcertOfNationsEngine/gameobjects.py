@@ -605,6 +605,11 @@ class Nation:
 
         return self.can_buyBlueprint(unitType, blueprint, territoryName, active_prerequisites = True)
 
+    def can_build_vehicle(self, savegame, territoryName, unitType, blueprint, size):
+        """ Validate whether a territory can build a vehicle; wrapper for can_build_unit. """
+
+        return self.can_build_unit(savegame, territoryName, unitType, ops.combineDicts(*[blueprint]*size), blueprint["Crew"] * size)
+
     def build_unit(self, territoryName, unitType, size, blueprint, savegame):
         """ Build a unit of a specified size in a territory """
 
@@ -623,7 +628,7 @@ class Nation:
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
         constructionstatus = f"Constructing:{constructiondate}"
 
-        newunit = military.Unit(name, constructionstatus, unitType, size, territoryName)
+        newunit = military.load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, territoryName)
 
         territory["Manpower"] -= size
         forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{self.name} Force")
@@ -634,6 +639,27 @@ class Nation:
         }
 
         return forcename
+
+    def build_vehicle(self, territoryName, vehicleType, size, blueprint, savegame):
+        """ Build a vehicle in a specified amount in a territory; wrapper for build_unit. """
+
+        forcenames = [
+            self.build_unit(territoryName, vehicleType, blueprint["Crew"], blueprint, savegame)
+            for num in range(size)
+        ]
+
+        baseForcename = forcenames[0]
+
+        baseForce = self.military[baseForcename]
+
+        forces  = [self.pop_force(forcename) for forcename in forcenames[1:]]
+
+        self.combine_forces(
+            baseForce,
+            *forces
+        )
+
+        return baseForcename
     
     def combine_forces(self, base_force, added_forces):
 

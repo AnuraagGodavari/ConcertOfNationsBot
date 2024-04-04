@@ -171,12 +171,7 @@ class InfoCommands(commands.Cog):
             f"Owner: {nation.name}\nStatus: {force['Status']}\nLocation: {force['Location']}", 
             ctx.author.id,
             fields = [
-                (unit.name, {
-                    "Status": unit.status,
-                    "Type": unit.unitType,
-                    "Size": unit.size,
-                    "Home Territory": unit.home
-                })
+                (unit.name, unit.get_fields())
                 for unit in force["Units"].values()
             ],
             pagesize = 9,
@@ -196,7 +191,7 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-    @commands.command()
+    @commands.command(aliases = ["vehicles", "vessels"])
     async def units(self, ctx):
         """ 
         Show all of the available units in the given server's game. 

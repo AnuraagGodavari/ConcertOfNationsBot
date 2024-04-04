@@ -243,7 +243,7 @@ class MilitaryCommands(commands.Cog):
     @commands.command(aliases=['buildUnit', 'build-unit', 'buildunit'])
     async def build_unit(self, ctx, terrID, unitType, amount):
         """ 
-        Disband manpower in a given territory. 
+        Build a unit in a given territory. 
         Args:
             terrID: The name or numeric ID of the territory
             unitType: The type of unit this should be.
@@ -295,6 +295,68 @@ class MilitaryCommands(commands.Cog):
             raise InputError(f"Could not build {unitType} for {nation.name} in {territoryName}")
 
         newforcename = nation.build_unit(territoryName, unitType, amount, blueprint, savegame)
+        newforce = nation.military[newforcename]
+
+        await ctx.send(f"New force \"{newforcename}\" created in territory {territoryName} with status of {newforce['Status']}")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases=['buildVehicle', 'build-vehicle', 'buildvehicle', 'build_vessel', 'buildVessel', 'build-vessel', 'buildvessel'])
+    async def build_vehicle(self, ctx, terrID, vehicleType, amount = 1):
+        """ 
+        Build a vehicle in a given territory. 
+        Args:
+            terrID: The name or numeric ID of the territory
+            vehicleType: The type of vehicle this should be.
+            amount: A positive integer value representing the number of this vehicle to create.
+        """
+        
+        logInfo(f"build_vehicle({ctx.guild.id}, {terrID}, {vehicleType}, {amount})")
+
+        if not (ops.isPositiveInt(amount)):
+            raise InputError(f"Invalid amount {amount}, must be positive integer")
+
+        amount = int(amount)
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        if terrID.isdigit(): terrID = int(terrID)
+
+        #Territory info from the map
+        world_terr = world[terrID]
+
+        if not world_terr:
+            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+        territoryName = world_terr.name
+
+        #Validate that the player owns this territory
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        if not (territoryName in nation.territories.keys()):
+            raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
+
+        gamerule = savegame.getGamerule()
+
+        blueprint = military.get_blueprint(vehicleType, gamerule)
+
+        if not (nation.can_build_vehicle(savegame, territoryName, vehicleType, blueprint, amount)):
+            raise InputError(f"Could not build {vehicleType} for {nation.name} in {territoryName}")
+
+        newforcename = nation.build_vehicle(territoryName, vehicleType, amount, blueprint, savegame)
         newforce = nation.military[newforcename]
 
         await ctx.send(f"New force \"{newforcename}\" created in territory {territoryName} with status of {newforce['Status']}")
@@ -391,6 +453,9 @@ class MilitaryCommands(commands.Cog):
         if not(military.units_addable(base_unit, *additional_units)):
             raise InputError("Could not combine units")
         
+        if (military.is_vehicle(base_unit)):
+            raise InputError("Cannot combine vehicles")
+
         military.combine_units_inForce(base_force, base_unit, *additional_units)
 
         await ctx.send(f"Force \"{base_forcename}\" has merged unit {base_unitname} with the following units: {additional_unitnames}")
@@ -441,6 +506,9 @@ class MilitaryCommands(commands.Cog):
             raise InputError(f"Unit: {base_unitname} does not exist in Force: {base_forcename}")
 
         unit = baseForce["Units"][base_unitname]
+        
+        if (military.is_vehicle(unit)):
+            raise InputError("Cannot split a vehicle")
 
         if not(military.unit_splittable(unit, *new_unitsizes)):
             raise InputError("Could not split unit")
