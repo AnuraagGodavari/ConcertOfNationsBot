@@ -237,6 +237,18 @@ def load_saveGame(savegame_name):
     logInfo(f"Savegame {savegame.name} successfully loaded and added to cache")
     return savegame
 
+def load_saveGame_from_server(server_id):
+    """
+    Load a savegame object from its savefile by server id
+    """
+    
+    savegameInfo = dbget_saveGame_byServer(server_id)
+
+    savegame = load_saveGame(savegameInfo["savefile"])
+
+    logInfo(f"Savegame {savegame.name} successfully loaded and added to cache")
+    return savegame
+
 def get_player_byGame(savegame, player_id):
 
     db = getdb()

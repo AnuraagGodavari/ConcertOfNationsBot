@@ -1269,6 +1269,69 @@ class AdminCommands(commands.Cog):
 
         await ctx.send(f"Removed {playerid} from this game.")
 
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        """
+        Remove players from games on leaving game servers
+        """
+
+        server_id = member.guild.id
+        player_id = member.terrID
+
+        logInfo(f"on_member_remove(server: {server_id}, player: {player_id})")
+
+        savegame = load_saveGame_from_server(server_id)
+
+        if not (savegame): 
+            logInfo(f"Player {player_id} left non-game server {server_id}") #Error will already have been handled
+            return
+
+        remove_player_fromGame(savegame, player_id)
+
+        logInfo(f"Successfully removed player info!")
+
+        save_saveGame(savegame)
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        """
+        Remove players from games on leaving game servers
+        """
+        
+        roles_removed = [
+            role for role in before.roles if role not in after.roles
+        ]
+
+        if not (roles_removed):
+            return
+
+        server_id = before.guild.id
+        player_id = before.id
+
+        logInfo(f"on_member_update(server: {server_id}, player: {player_id}, roles removed: {[role.name for role in roles_removed]})")
+
+        savegame = load_saveGame_from_server(server_id)
+
+        if not (savegame): 
+            return
+        
+        playerinfo = get_player_byGame(savegame, player_id)
+
+        if not (playerinfo):
+            return
+
+        roleid = playerinfo['role_discord_id']
+
+        if roleid not in [role.id for role in roles_removed]:
+            return
+
+        remove_player_fromGame(savegame, player_id)
+
+        logInfo(f"Successfully removed player from role!")
+
+        save_saveGame(savegame)
+
+
     @commands.command(aliases = ["addNation", "add-nation", "addnation"])
     @commands.has_permissions(administrator = True)
     async def add_nation(self, ctx, roleid, playerid):
