@@ -122,6 +122,9 @@ class BuildingCommands(commands.Cog):
 
         newstatus = territories.togglebuilding(nation, territoryName, buildingName, savegame)
 
+        if not (newstatus):
+            raise InputError(f"Could not toggle building {buildingName} {buildingIndex} in territory {terrID}.")
+
         await ctx.send(f"New building status: {newstatus}")
 
         save_saveGame(savegame)
