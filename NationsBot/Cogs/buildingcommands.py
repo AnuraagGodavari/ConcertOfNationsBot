@@ -80,12 +80,13 @@ class BuildingCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases = ["togglebuilding", "toggle-building"])
-    async def toggle_building(self, ctx, terrID, buildingName):
+    async def toggle_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Switch a building's status between Active and Inactive
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to toggle
+            buildingIndex: Which building you want to access, starting with 0
          """
         logInfo(f"toggle_building({ctx.guild.id}, {terrID}, {buildingName})")
 
@@ -126,12 +127,13 @@ class BuildingCommands(commands.Cog):
         save_saveGame(savegame)
 
     @commands.command(aliases = ["destroybuilding", "destroy-building", "deletebuilding", "delete_building", "delete-building"])
-    async def destroy_building(self, ctx, terrID, buildingName):
+    async def destroy_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Remove a building from a territory owned by the user 
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to remove
+            buildingIndex: Which building you want to access, starting with 0
         """
         
         logInfo(f"destroy_building({ctx.guild.id}, {terrID}, {buildingName})")

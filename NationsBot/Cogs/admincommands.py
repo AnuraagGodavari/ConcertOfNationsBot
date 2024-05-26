@@ -83,12 +83,13 @@ class AdminCommands(commands.Cog):
     
     @commands.command(aliases = ["changebuildingstatus", "change-buildingstatus"])
     @commands.has_permissions(administrator = True)
-    async def change_buildingstatus(self, ctx, terrID, buildingName, newstatus):
+    async def change_buildingstatus(self, ctx, terrID, buildingName, buildingIndex, newstatus):
         """ 
         Manually change the status of any building 
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to build
+            buildingIndex: Which building you want to access, starting with 0
             newstatus: A new status. This can be: Active, Inactive or Constructing:<m>/<y>
         """
         
@@ -129,12 +130,13 @@ class AdminCommands(commands.Cog):
         
     @commands.command(aliases = ["takebuilding", "take-building", "removebuilding", "remove_building", "remove-building"])
     @commands.has_permissions(administrator = True)
-    async def take_building(self, ctx, terrID, buildingName):
+    async def take_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Manually remove a building from any territory 
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to remove
+            buildingIndex: Which building you want to access, starting with 0
         """
         logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName})")
 
