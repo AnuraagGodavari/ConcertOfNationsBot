@@ -24,7 +24,14 @@ def hasbuilding(nation, territoryName, buildingName):
 
     return bool(buildingName in territoryInfo["Buildings"])
 
-def newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame):
+def add_building(nation, territoryName, buildingName, status):
+
+    if (not hasbuilding(nation, territoryName, buildingName)):
+        nation.territories[territoryName]["Buildings"][buildingName] = list()
+
+    nation.territories[territoryName]["Buildings"][buildingName].append(status) 
+
+def newbuildingstatus(nation, territoryName, buildingName, buildingIndex, newstatus, savegame):
 
     if (not hasbuilding(nation, territoryName, buildingName)):
         return False
@@ -34,13 +41,13 @@ def newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame):
     if (buildingName not in territoryInfo["Buildings"]):
         return False
 
-    logInfo(f"Territory {territoryName} changing building {buildingName} status from {territoryInfo['Buildings'][buildingName]}")
+    logInfo(f"Territory {territoryName} changing building {buildingName} {buildingIndex} status from {territoryInfo['Buildings'][buildingName]}")
 
     if buildings.validate_status(newstatus):
 
-        oldstatus = territoryInfo["Buildings"][buildingName]
+        oldstatus = territoryInfo["Buildings"][buildingName][buildingIndex]
 
-        territoryInfo["Buildings"][buildingName] = newstatus
+        territoryInfo["Buildings"][buildingName][buildingIndex] = newstatus
 
         #Change whether or not the building's effects are active
 
@@ -64,9 +71,9 @@ def newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame):
             if ("Bureaucratic Cost" in blueprint.keys()): 
                 for category, val in blueprint["Bureaucratic Cost"].items(): nation.bureaucracy[category] = (nation.bureaucracy[category][0] + val, nation.bureaucracy[category][1])
 
-    logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
+    logInfo(f"New building status: {territoryInfo['Buildings'][buildingName][buildingIndex]}")
 
-    return territoryInfo['Buildings'][buildingName]
+    return territoryInfo['Buildings'][buildingName][buildingIndex]
 
 def togglebuilding(nation, territoryName, buildingName, savegame):
 
@@ -91,16 +98,19 @@ def togglebuilding(nation, territoryName, buildingName, savegame):
 
     return territoryInfo['Buildings'][buildingName]
 
-def destroybuilding(nation, territoryName, buildingName):
+def destroybuilding(nation, territoryName, buildingName, buildingIndex):
 
     if (not hasbuilding(nation, territoryName, buildingName)):
         return False
 
     territoryInfo = nation.get_territory(territoryName)
 
-    territoryInfo["Buildings"].pop(buildingName)
+    territoryInfo["Buildings"][buildingName].pop(buildingIndex)
 
-    logInfo(f"Territory {territoryName} destroyed building {buildingName}")
+    if (len(territoryInfo["Buildings"][buildingName]) < 1):
+         territoryInfo["Buildings"].pop(buildingName)
+
+    logInfo(f"Territory {territoryName} destroyed building {buildingName} {buildingIndex}")
 
 def validate_building_requirements(territoryName, nation, savegame):
     """ Check if all buildings in this territory have what they need to remain active """
@@ -119,7 +129,6 @@ def validate_building_requirements(territoryName, nation, savegame):
 
         if not(nation.validate_prerequisites(blueprint["Prerequisites"], territoryName, only_active = True)):
             territoryInfo["Buildings"][buildingName] = "Inactive"
-
 
 
 # Effects
