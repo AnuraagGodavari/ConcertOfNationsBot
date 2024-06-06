@@ -381,11 +381,11 @@ class InfoCommands(commands.Cog):
 
         menu = MenuEmbed(
             f"Buildings in {world_terr.name}", 
-            "_Information about all of the buildings in this territory_", 
+            "_Information about all of the buildings in this territory, including all statuses and the blueprint for one of each building._", 
             ctx.author.id,
             fields = [
                 (buildingName, 
-                ops.combineDicts({"Status": buildingStatus}, get_blueprint(buildingName, savegame))
+                ops.combineDicts({"All Statuses": buildingStatus}, get_blueprint(buildingName, savegame))
                 )
                 for buildingName, buildingStatus in nation_terrInfo["Savegame"]["Buildings"].items()
             ],
