@@ -75,28 +75,28 @@ def newbuildingstatus(nation, territoryName, buildingName, buildingIndex, newsta
 
     return territoryInfo['Buildings'][buildingName][buildingIndex]
 
-def togglebuilding(nation, territoryName, buildingName, savegame):
+def togglebuilding(nation, territoryName, buildingName, buildingIndex, savegame):
 
     if (not hasbuilding(nation, territoryName, buildingName)):
         return False
 
     territoryInfo = nation.get_territory(territoryName)
 
-    logInfo(f"Territory {territoryName} toggling building {buildingName} with current status {territoryInfo['Buildings'][buildingName]}")
+    logInfo(f"Territory {territoryName} toggling building {buildingName} {buildingIndex} with current status {territoryInfo['Buildings'][buildingName]}")
 
     # Switch between Active and Inactive if the building is one or the other
 
-    if (territoryInfo["Buildings"][buildingName] == "Active"):
-        territoryInfo["Buildings"][buildingName] = "Inactive"
+    if (territoryInfo["Buildings"][buildingName][buildingIndex] == "Active"):
+        territoryInfo["Buildings"][buildingName][buildingIndex] = "Inactive"
         nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), territoryInfo)
 
-    elif (territoryInfo["Buildings"][buildingName] == "Inactive"):
-        territoryInfo["Buildings"][buildingName] = "Active"
+    elif (territoryInfo["Buildings"][buildingName][buildingIndex] == "Inactive"):
+        territoryInfo["Buildings"][buildingName][buildingIndex] = "Active"
         nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), territoryInfo)
 
-    logInfo(f"New building status: {territoryInfo['Buildings'][buildingName]}")
+    logInfo(f"New building status: {territoryInfo['Buildings'][buildingName][buildingIndex]}")
 
-    return territoryInfo['Buildings'][buildingName]
+    return territoryInfo['Buildings'][buildingName][buildingIndex]
 
 def destroybuilding(nation, territoryName, buildingName, buildingIndex):
 

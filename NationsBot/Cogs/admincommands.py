@@ -182,7 +182,7 @@ class AdminCommands(commands.Cog):
         if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
-        newstatus = territories.destroybuilding(nation, territoryName, buildingName, buildingIndex)
+        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex)
 
         nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 

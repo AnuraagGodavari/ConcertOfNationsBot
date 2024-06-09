@@ -505,7 +505,7 @@ class Nation:
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
-        self.territories[territoryName]["Buildings"][buildingName] = f"Constructing:{constructiondate}"
+        territories.add_building(self, territoryName, buildingName, f"Constructing:{constructiondate}")
 
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
 

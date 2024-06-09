@@ -88,7 +88,12 @@ class BuildingCommands(commands.Cog):
             buildingName: The name of the building you wish to toggle
             buildingIndex: Which building you want to access, starting with 0
          """
-        logInfo(f"toggle_building({ctx.guild.id}, {terrID}, {buildingName})")
+        logInfo(f"toggle_building({ctx.guild.id}, {terrID}, {buildingName}, {buildingIndex})")
+
+        if not (ops.isInt(buildingIndex)):
+            raise InputError(f"Invalid amount {buildingIndex}, must be integer")
+
+        buildingIndex = int(buildingIndex)
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -120,7 +125,7 @@ class BuildingCommands(commands.Cog):
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
-        newstatus = territories.togglebuilding(nation, territoryName, buildingName, savegame)
+        newstatus = territories.togglebuilding(nation, territoryName, buildingName, buildingIndex, savegame)
 
         if not (newstatus):
             raise InputError(f"Could not toggle building {buildingName} {buildingIndex} in territory {terrID}.")
@@ -139,7 +144,12 @@ class BuildingCommands(commands.Cog):
             buildingIndex: Which building you want to access, starting with 0
         """
         
-        logInfo(f"destroy_building({ctx.guild.id}, {terrID}, {buildingName})")
+        logInfo(f"destroy_building({ctx.guild.id}, {terrID}, {buildingName}, {buildingIndex})")
+
+        if not (ops.isInt(buildingIndex)):
+            raise InputError(f"Invalid amount {buildingIndex}, must be integer")
+
+        buildingIndex = int(buildingIndex)
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -177,7 +187,7 @@ class BuildingCommands(commands.Cog):
         if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
-        newstatus = territories.destroybuilding(nation, territoryName, buildingName)
+        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex)
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
