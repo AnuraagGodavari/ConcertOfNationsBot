@@ -66,9 +66,18 @@ class AdminCommands(commands.Cog):
             raise InputError("Territory is unowned and cannot have a building placed in it.")
         nation = savegame.nations[nationName]
 
-        #Put building in territory
-        if (buildingName in nation.territories[territoryName]["Buildings"]):
-            raise InputError(f"{buildingName} already exists in {territoryName}")
+        #Validate that building can be built
+
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+
+        territory = nation.getTerritoryInfo(territoryName, savegame)
+
+        if not (nation.canHoldBuilding(savegame, buildingName, blueprint, territory)):
+
+            max_num = 1
+            if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
+
+            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
 
         if not (buildingName in get_allbuildings(savegame)):
             raise InputError(f"Building {buildingName} does not exist")

@@ -474,6 +474,25 @@ class Nation:
 
         return True
 
+    def canHoldBuilding(self, savegame, buildingName, blueprint, territory):
+        """ 
+        Validate that a territory has enough space for a building.
+        """
+
+        if not (buildingName in territory["Savegame"]["Buildings"].keys()):
+            return True
+
+        if ("Territory Maximum" in blueprint):
+            num_buildings = len(territory["Savegame"]["Buildings"][buildingName])
+            
+            if (num_buildings >= blueprint["Territory Maximum"]):
+                return False
+
+        elif (buildingName in territory["Savegame"]["Buildings"].keys()):
+                return False
+
+        return True
+
     def canBuyBuilding(self, savegame, buildingName, blueprint, territoryName):
         """
         Validate that an building with a given blueprint can be bought by this country
@@ -485,8 +504,12 @@ class Nation:
         if not(territory):
             raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
 
-        if buildingName in territory["Savegame"]["Buildings"].keys():
-            raise InputError(f"Building {buildingName} already exists in territory {territoryName}")
+        if not (self.canHoldBuilding(savegame, buildingName, blueprint, territory)):
+
+            max_num = 1
+            if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
+
+            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
 
         return self.can_buyBlueprint(buildingName, blueprint, territoryName)
 
@@ -572,7 +595,7 @@ class Nation:
         Given a building, add its effects to the nation
         """
 
-        logInfo("Removing national building effects", details = effects)
+        logInfo("Removing national building effects")
 
         #Remove bureaucracy values
         if ("Bureaucracy" in effects.keys()):
