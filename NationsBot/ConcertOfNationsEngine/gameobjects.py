@@ -332,12 +332,14 @@ class Nation:
             logInfo(f"Nation {self.name} could not cede territory {territoryName}!")
             return False
 
-        for buildingName, status in terrInfo["Buildings"].items():
+        for buildingName, statuses in terrInfo["Buildings"].items():
 
-            if status != "Active":
-                continue
+            for status in statuses:
 
-            self.remove_national_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+                logInfo("statuses", details = statuses)
+
+                if status == "Active":
+                    self.remove_national_buildingeffects(buildings.get_alleffects(buildingName, savegame)["Nation"])
 
         self.territories.pop(territoryName)
 
@@ -375,12 +377,14 @@ class Nation:
         if ("Manpower" not in self.territories[territoryName].keys()):
             self.territories[territoryName]["Manpower"] = 0
 
-        for buildingName, status in territoryInfo["Buildings"].items():
+        for buildingName, statuses in territoryInfo["Buildings"].items():
 
-            if status != "Active":
-                continue
+            for status in statuses:
 
-            self.add_national_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+                if status != "Active":
+                    continue
+
+                self.add_national_buildingeffects(buildings.get_alleffects(buildingName, savegame)["Nation"])
 
         logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
 
@@ -519,8 +523,9 @@ class Nation:
 
         #Remove the effects on this territory of all buildings across the nation.
         for owned_territory in self.territories.values():
-            for buildingName in owned_territory["Buildings"].keys():
-                all_effects.append(buildings.get_alleffects(buildingName, savegame))
+            for buildingName, statuses in owned_territory["Buildings"].items():
+                for status in statuses:
+                    if status == "Active": all_effects.append(buildings.get_alleffects(buildingName, savegame))
 
         return ops.combineDicts(*all_effects)
 
@@ -567,7 +572,7 @@ class Nation:
         Given a building, add its effects to the nation
         """
 
-        logInfo("Removing national building effects")
+        logInfo("Removing national building effects", details = effects)
 
         #Remove bureaucracy values
         if ("Bureaucracy" in effects.keys()):
@@ -577,16 +582,18 @@ class Nation:
             self.modifiers = ops.combineDicts(self.modifiers, effects["National Modifiers"], subtractDicts = True)
 
         if ("Population" in effects.keys()):
-            self.add_populationeffects(effects["Population"]["Nation"], remove_modifiers = True)
+            self.add_populationeffects(effects["Population"], remove_modifiers = True)
                 
     def remove_buildingeffects(self, effects, territoryInfo):
         """
-        Given a building, add its effects both to the nation and territory
+        Given a building, remove its effects both from the nation and territory
         """
 
-        self.remove_national_buildingeffects(effects)
-        
-        territories.add_buildingeffects(territoryInfo, effects, remove_modifiers = True)
+        if ("Nation" in effects.keys()):
+            self.remove_national_buildingeffects(effects["Nation"])
+
+        if ("Territory" in effects.keys()):
+            territories.add_buildingeffects(territoryInfo, effects["Territory"], remove_modifiers = True)
 
 
     # Military management
