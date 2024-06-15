@@ -66,14 +66,23 @@ class AdminCommands(commands.Cog):
             raise InputError("Territory is unowned and cannot have a building placed in it.")
         nation = savegame.nations[nationName]
 
-        #Put building in territory
-        if (buildingName in nation.territories[territoryName]["Buildings"]):
-            raise InputError(f"{buildingName} already exists in {territoryName}")
+        #Validate that building can be built
+
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+
+        territory = nation.getTerritoryInfo(territoryName, savegame)
+
+        if not (nation.canHoldBuilding(savegame, buildingName, blueprint, territory)):
+
+            max_num = 1
+            if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
+
+            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
 
         if not (buildingName in get_allbuildings(savegame)):
             raise InputError(f"Building {buildingName} does not exist")
 
-        nation.territories[territoryName]["Buildings"][buildingName] = "Active"
+        territories.add_building(nation, territoryName, buildingName, "Active")
 
         nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 
@@ -83,16 +92,22 @@ class AdminCommands(commands.Cog):
     
     @commands.command(aliases = ["changebuildingstatus", "change-buildingstatus"])
     @commands.has_permissions(administrator = True)
-    async def change_buildingstatus(self, ctx, terrID, buildingName, newstatus):
+    async def change_buildingstatus(self, ctx, terrID, buildingName, buildingIndex, newstatus):
         """ 
         Manually change the status of any building 
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to build
+            buildingIndex: Which building you want to access, starting with 0
             newstatus: A new status. This can be: Active, Inactive or Constructing:<m>/<y>
         """
         
-        logInfo(f"change_buildingstatus({ctx.guild.id}, {terrID}, {buildingName}, {newstatus})")
+        logInfo(f"change_buildingstatus({ctx.guild.id}, {terrID}, {buildingName}, {buildingIndex}, {newstatus})")
+
+        if not (ops.isInt(buildingIndex)):
+            raise InputError(f"Invalid amount {buildingIndex}, must be integer")
+
+        buildingIndex = int(buildingIndex)
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -121,7 +136,10 @@ class AdminCommands(commands.Cog):
         if (territoryName not in nation.territories.keys()):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
 
-        newstatus = territories.newbuildingstatus(nation, territoryName, buildingName, newstatus, savegame)
+        newstatus = territories.newbuildingstatus(nation, territoryName, buildingName, buildingIndex, newstatus, savegame)
+
+        if not (newstatus):
+            raise InputError(f"Could not toggle building {buildingName} {buildingIndex} in territory {terrID}.")
 
         await ctx.send(f"New building status: {newstatus}")
 
@@ -129,14 +147,20 @@ class AdminCommands(commands.Cog):
         
     @commands.command(aliases = ["takebuilding", "take-building", "removebuilding", "remove_building", "remove-building"])
     @commands.has_permissions(administrator = True)
-    async def take_building(self, ctx, terrID, buildingName):
+    async def take_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Manually remove a building from any territory 
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to remove
+            buildingIndex: Which building you want to access, starting with 0
         """
-        logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName})")
+        logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName}, {buildingIndex})")
+
+        if not (ops.isInt(buildingIndex)):
+            raise InputError(f"Invalid amount {buildingIndex}, must be integer")
+
+        buildingIndex = int(buildingIndex)
 
         savegame = get_SavegameFromCtx(ctx)
         if not (savegame): 
@@ -167,7 +191,7 @@ class AdminCommands(commands.Cog):
         if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
-        newstatus = territories.destroybuilding(nation, territoryName, buildingName)
+        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex)
 
         nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 

@@ -332,12 +332,14 @@ class Nation:
             logInfo(f"Nation {self.name} could not cede territory {territoryName}!")
             return False
 
-        for buildingName, status in terrInfo["Buildings"].items():
+        for buildingName, statuses in terrInfo["Buildings"].items():
 
-            if status != "Active":
-                continue
+            for status in statuses:
 
-            self.remove_national_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+                logInfo("statuses", details = statuses)
+
+                if status == "Active":
+                    self.remove_national_buildingeffects(buildings.get_alleffects(buildingName, savegame)["Nation"])
 
         self.territories.pop(territoryName)
 
@@ -375,12 +377,14 @@ class Nation:
         if ("Manpower" not in self.territories[territoryName].keys()):
             self.territories[territoryName]["Manpower"] = 0
 
-        for buildingName, status in territoryInfo["Buildings"].items():
+        for buildingName, statuses in territoryInfo["Buildings"].items():
 
-            if status != "Active":
-                continue
+            for status in statuses:
 
-            self.add_national_buildingeffects(buildings.get_alleffects(buildingName, savegame))
+                if status != "Active":
+                    continue
+
+                self.add_national_buildingeffects(buildings.get_alleffects(buildingName, savegame)["Nation"])
 
         logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
 
@@ -470,6 +474,25 @@ class Nation:
 
         return True
 
+    def canHoldBuilding(self, savegame, buildingName, blueprint, territory):
+        """ 
+        Validate that a territory has enough space for a building.
+        """
+
+        if not (buildingName in territory["Savegame"]["Buildings"].keys()):
+            return True
+
+        if ("Territory Maximum" in blueprint):
+            num_buildings = len(territory["Savegame"]["Buildings"][buildingName])
+            
+            if (num_buildings >= blueprint["Territory Maximum"]):
+                return False
+
+        elif (buildingName in territory["Savegame"]["Buildings"].keys()):
+                return False
+
+        return True
+
     def canBuyBuilding(self, savegame, buildingName, blueprint, territoryName):
         """
         Validate that an building with a given blueprint can be bought by this country
@@ -481,8 +504,12 @@ class Nation:
         if not(territory):
             raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
 
-        if buildingName in territory["Savegame"]["Buildings"].keys():
-            raise InputError(f"Building {buildingName} already exists in territory {territoryName}")
+        if not (self.canHoldBuilding(savegame, buildingName, blueprint, territory)):
+
+            max_num = 1
+            if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
+
+            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
 
         return self.can_buyBlueprint(buildingName, blueprint, territoryName)
 
@@ -505,7 +532,7 @@ class Nation:
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
-        self.territories[territoryName]["Buildings"][buildingName] = f"Constructing:{constructiondate}"
+        territories.add_building(self, territoryName, buildingName, f"Constructing:{constructiondate}")
 
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
 
@@ -519,8 +546,9 @@ class Nation:
 
         #Remove the effects on this territory of all buildings across the nation.
         for owned_territory in self.territories.values():
-            for buildingName in owned_territory["Buildings"].keys():
-                all_effects.append(buildings.get_alleffects(buildingName, savegame))
+            for buildingName, statuses in owned_territory["Buildings"].items():
+                for status in statuses:
+                    if status == "Active": all_effects.append(buildings.get_alleffects(buildingName, savegame))
 
         return ops.combineDicts(*all_effects)
 
@@ -577,16 +605,18 @@ class Nation:
             self.modifiers = ops.combineDicts(self.modifiers, effects["National Modifiers"], subtractDicts = True)
 
         if ("Population" in effects.keys()):
-            self.add_populationeffects(effects["Population"]["Nation"], remove_modifiers = True)
+            self.add_populationeffects(effects["Population"], remove_modifiers = True)
                 
     def remove_buildingeffects(self, effects, territoryInfo):
         """
-        Given a building, add its effects both to the nation and territory
+        Given a building, remove its effects both from the nation and territory
         """
 
-        self.remove_national_buildingeffects(effects)
-        
-        territories.add_buildingeffects(territoryInfo, effects, remove_modifiers = True)
+        if ("Nation" in effects.keys()):
+            self.remove_national_buildingeffects(effects["Nation"])
+
+        if ("Territory" in effects.keys()):
+            territories.add_buildingeffects(territoryInfo, effects["Territory"], remove_modifiers = True)
 
 
     # Military management

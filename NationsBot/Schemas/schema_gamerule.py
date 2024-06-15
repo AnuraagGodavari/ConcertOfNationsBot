@@ -23,6 +23,17 @@ import ConcertOfNationsEngine.diplomacy as diplomacy
 
 gamerule_numbertypes = (int, float, complex)
 
+def validate_positive_int(num, path, gamerule = None, **kwargs):
+    """
+    Some fields must be an int above 0.
+    """
+
+    if not (isinstance(num, int)):
+        raise InputError(f"{path}: This number must be a positive integer.")
+
+    if not (num > 0):
+        raise InputError(f"{path}: This number must be a positive integer.")
+
 
 def validate_resources(resources, path, gamerule = None, **kwargs):
     """
@@ -97,7 +108,9 @@ schema_gamerule_building = {
 
     "Produces": schema.SchemaProperties(validator = validate_resources),
 
-    "Construction Time": schema.SchemaProperties(primitive_type = int)
+    "Construction Time": schema.SchemaProperties(primitive_type = int),
+
+    "Territory Maximum": schema.SchemaProperties(validator = validate_positive_int, is_required = False)
 }
 
 schema_gamerule_unit = {
