@@ -385,7 +385,7 @@ class InfoCommands(commands.Cog):
             ctx.author.id,
             fields = [
                 (buildingName, 
-                ops.combineDicts({"All Statuses": buildingStatus}, get_blueprint(buildingName, savegame))
+                ops.combineDicts({"Number": len(buildingStatus), "All Statuses": buildingStatus}, get_blueprint(buildingName, savegame))
                 )
                 for buildingName, buildingStatus in nation_terrInfo["Savegame"]["Buildings"].items()
             ],
