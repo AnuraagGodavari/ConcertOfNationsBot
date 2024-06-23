@@ -62,12 +62,13 @@ class Savegame:
             return False
 
         gamerule = self.getGamerule()
+        world = self.getWorld()
 
         #Generate an empty list of resources based on the gamerule, and make sure money is one of those included
         nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
 
         #Add information to territories
-        for territory in nation.territories.values():
+        for territoryName, territory in nation.territories.items():
 
             if ("Buildings" not in territory.keys()):
                 territory["Buildings"] = dict()
@@ -77,7 +78,9 @@ class Savegame:
         
             if ("Manpower" not in territory.keys()):
                 territory["Manpower"] = 0
-
+ 
+            if ("Nodes" not in territory.keys()):
+                territory["Nodes"] = {resource: [0, capacity] for resource, capacity in world[territoryName].nodes.items()}
         #Add base bureaucratic capacity
 
         base_bureaucracy = gamerule["Base Bureaucracy"]
