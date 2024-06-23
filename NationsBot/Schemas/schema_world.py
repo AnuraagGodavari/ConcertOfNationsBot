@@ -96,7 +96,8 @@ schema_world = {
             "details": {
                 "Terrain": schema.SchemaProperties(validator = validate_terrain)
             },
-            "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources)
+            "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
+            "nodes": schema.SchemaProperties(validator = schema_gamerule.validate_resources)
         }
     ]
 }

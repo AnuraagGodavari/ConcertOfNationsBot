@@ -213,7 +213,7 @@ class Savegame:
             return False
 
         #Add this territory to the nation
-        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo, self)
+        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo, worldTerr, self)
 
         #Does a new map need to be generated?
         if not (self.gamestate["mapChanged"]):
@@ -351,7 +351,7 @@ class Nation:
         logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
         return terrInfo
 
-    def annexTerritory(self, territoryName, territoryInfo, savegame):
+    def annexTerritory(self, territoryName, territoryInfo, worldTerritory, savegame):
         """
         Add a territory and related objects to this nation.
         
@@ -376,6 +376,9 @@ class Nation:
 
         if ("Manpower" not in self.territories[territoryName].keys()):
             self.territories[territoryName]["Manpower"] = 0
+
+        if ("Nodes" not in self.territories[territoryName].keys()):
+            self.territories[territoryName]["Nodes"] = {resource: [0, capacity] for resource, capacity in worldTerritory.nodes.items()}
 
         for buildingName, statuses in territoryInfo["Buildings"].items():
 
@@ -482,6 +485,7 @@ class Nation:
         if not (buildingName in territory["Savegame"]["Buildings"].keys()):
             return True
 
+        # Check if this territory can hold one more of this building 
         if ("Territory Maximum" in blueprint):
             num_buildings = len(territory["Savegame"]["Buildings"][buildingName])
             
@@ -490,6 +494,8 @@ class Nation:
 
         elif (buildingName in territory["Savegame"]["Buildings"].keys()):
                 return False
+
+        # Check if this territory has enough available resource nodes
 
         return True
 
