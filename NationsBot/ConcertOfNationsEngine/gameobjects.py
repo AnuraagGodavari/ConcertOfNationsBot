@@ -480,7 +480,7 @@ class Nation:
 
         return True
 
-    def canHoldBuilding(self, savegame, buildingName, blueprint, territory):
+    def canHoldBuilding(self, buildingName, blueprint, territory):
         """ 
         Validate that a territory has enough space for a building.
         """
@@ -498,7 +498,24 @@ class Nation:
         elif (buildingName in territory["Savegame"]["Buildings"].keys()):
                 return False
 
+        return True
+
+    def enoughNodesForBuilding(self, blueprint, territory):
+        """ 
+        Validate that a territory has enough nodes for a building.
+        """
+
         # Check if this territory has enough available resource nodes
+        if ("Node Costs" in blueprint):
+            for nodeType in blueprint["Node Costs"].keys():
+
+                available_nodes = territory["Savegame"]["Nodes"]
+
+                if not(nodeType in available_nodes):
+                    return False
+
+                if (blueprint["Node Costs"][nodeType] + available_nodes[nodeType][0] > available_nodes[nodeType][1]):
+                    return False
 
         return True
 
@@ -513,12 +530,16 @@ class Nation:
         if not(territory):
             raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
 
-        if not (self.canHoldBuilding(savegame, buildingName, blueprint, territory)):
+        if not (self.canHoldBuilding(buildingName, blueprint, territory)):
 
             max_num = 1
             if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
 
             raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
+
+        if not (self.enoughNodesForBuilding(blueprint, territory)):
+
+            raise InputError(f"{buildingName} requires nodes: {blueprint['Node Costs']} and territory {territoryName} only has nodes: {territory['Savegame']['Nodes']}")
 
         return self.can_buyBlueprint(buildingName, blueprint, territoryName)
 
@@ -532,16 +553,19 @@ class Nation:
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
+        territory = self.get_territory(territoryName)
+
         #Subtract resource costs
         costs = blueprint["Costs"]
         for k, v in costs.items(): self.resources[k] = self.resources[k] - v
 
+        #Add Bureaucratic Costs
         bureaucratic_costs = blueprint["Bureaucratic Cost"]
         for k, v in bureaucratic_costs.items(): self.bureaucracy[k] = (self.bureaucracy[k][0] + v, self.bureaucracy[k][1])
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
-        territories.add_building(self, territoryName, buildingName, f"Constructing:{constructiondate}")
+        territories.add_building(self, territoryName, buildingName, f"Constructing:{constructiondate}", blueprint)
 
         logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
 

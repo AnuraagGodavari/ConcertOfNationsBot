@@ -187,7 +187,9 @@ class BuildingCommands(commands.Cog):
         if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
-        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex)
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+
+        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprint)
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
