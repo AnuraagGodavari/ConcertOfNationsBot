@@ -82,7 +82,7 @@ class AdminCommands(commands.Cog):
         if not (buildingName in get_allbuildings(savegame)):
             raise InputError(f"Building {buildingName} does not exist")
 
-        territories.add_building(nation, territoryName, buildingName, "Active")
+        territories.add_building(nation, territoryName, buildingName, "Active", blueprint)
 
         nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 
@@ -191,7 +191,9 @@ class AdminCommands(commands.Cog):
         if (not territories.hasbuilding(nation, territoryName, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
-        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex)
+        blueprint = buildings.get_blueprint(buildingName, savegame)
+
+        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprint)
 
         nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
 

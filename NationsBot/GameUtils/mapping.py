@@ -18,7 +18,7 @@ class Territory:
         details (dict): Information used in other files. For example, resources.
     """
 
-    def __init__(self, name, id, pos, edges = None, details = None, resources = None):
+    def __init__(self, name, id, pos, edges = None, details = None, resources = None, nodes = None):
         self.name = name
         self.id = id
         self.pos = pos
@@ -29,6 +29,7 @@ class Territory:
 
         self.details = details or dict()
         self.resources = resources or dict()
+        self.nodes = nodes or dict()
 
     def dist(t0, t1):
         return (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5
@@ -46,9 +47,9 @@ class World:
         self.name = name
         self.territories = territories or list()
 
-    def addNewTerritory(self, name, pos, edges = None, details = None, resources = None):
+    def addNewTerritory(self, name, pos, edges = None, details = None, resources = None, nodes = None):
         
-        self.territories.append(Territory(name, len(self.territories), pos, edges, details, resources))
+        self.territories.append(Territory(name, len(self.territories), pos, edges, details, resources, nodes))
 
     def calculateAllNeighbors(self, neighborRules):
         """

@@ -24,10 +24,17 @@ def hasbuilding(nation, territoryName, buildingName):
 
     return bool(buildingName in territoryInfo["Buildings"])
 
-def add_building(nation, territoryName, buildingName, status):
+def add_building(nation, territoryName, buildingName, status, blueprint):
+
+    territory = nation.get_territory(territoryName)
 
     if (not hasbuilding(nation, territoryName, buildingName)):
-        nation.territories[territoryName]["Buildings"][buildingName] = list()
+        territory["Buildings"][buildingName] = list()
+
+    #Add Node Costs
+    if ("Node Costs" in blueprint):
+        node_costs = blueprint["Node Costs"]
+        for k, v in node_costs.items(): territory["Nodes"][k] = (territory["Nodes"][k][0] + v, territory["Nodes"][k][1])
 
     nation.territories[territoryName]["Buildings"][buildingName].append(status) 
 
@@ -98,7 +105,7 @@ def togglebuilding(nation, territoryName, buildingName, buildingIndex, savegame)
 
     return territoryInfo['Buildings'][buildingName][buildingIndex]
 
-def destroybuilding(nation, territoryName, buildingName, buildingIndex):
+def destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprint):
 
     if (not hasbuilding(nation, territoryName, buildingName)):
         return False
@@ -109,6 +116,11 @@ def destroybuilding(nation, territoryName, buildingName, buildingIndex):
 
     if (len(territoryInfo["Buildings"][buildingName]) < 1):
          territoryInfo["Buildings"].pop(buildingName)
+
+    #Remove Node Costs
+    if ("Node Costs" in blueprint):
+        node_costs = blueprint["Node Costs"]
+        for k, v in node_costs.items(): territoryInfo["Nodes"][k] = (territoryInfo["Nodes"][k][0] - v, territoryInfo["Nodes"][k][1])
 
     logInfo(f"Territory {territoryName} destroyed building {buildingName} {buildingIndex}")
 

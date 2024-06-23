@@ -330,7 +330,8 @@ class InfoCommands(commands.Cog):
                 ("Buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
                 ("Revenue", territories.newturnresources(nation_terrInfo, savegame) or None),
                 ("Population", territories.get_totalpopulation(savegame.nations[terr_owner], world_terrInfo.name)),
-                ("Manpower", nation_terrInfo["Savegame"]["Manpower"])
+                ("Manpower", nation_terrInfo["Savegame"]["Manpower"]),
+                ("Nodes", {resource: f"{val[0]}/{val[1]}" for resource, val in nation_terrInfo["Savegame"]["Nodes"].items()})
             ]
 
         

@@ -85,6 +85,8 @@ schema_gamerule_building = {
     "Costs": schema.SchemaProperties(validator = validate_resources),
     
     "Bureaucratic Cost": schema.SchemaProperties(validator = validator_bureaucracy),
+    
+    "Node Costs": schema.SchemaProperties(validator = validate_resources, is_required = False),
 
     "Effects":
     {

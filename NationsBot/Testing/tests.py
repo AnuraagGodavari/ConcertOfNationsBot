@@ -29,7 +29,8 @@ def generateTestWorld(gamerule, length, height, space, pos_rand = (0,0)):
                 round(y + random() * (pos_rand[1] - pos_rand[0]) - ((pos_rand[1] - pos_rand[0])/2), 2)
             ), 
             details = {"Terrain": "Plains"},
-            resources = {resource: 1 for resource in gamerule["Resources"]}
+            resources = {resource: 1 for resource in gamerule["Resources"]},
+            nodes = {resource: 10 for resource in gamerule["Resources"]}
             ) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
