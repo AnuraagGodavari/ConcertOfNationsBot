@@ -55,7 +55,8 @@ class MappingCommands(commands.Cog):
                 (f"Territory {i}", {
                     "Name": terr.name, 
                     "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]},
-                    "Resources": terr.resources
+                    "Resources": terr.resources,
+                    "Base Nodes": terr.nodes
                     }
                 ) 
                 for i, terr in enumerate(world.territories)
@@ -108,7 +109,8 @@ class MappingCommands(commands.Cog):
                 (f"Territory {i}", {
                     "Name": terr.name, 
                     "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]},
-                    "Resources": terr.resources
+                    "Resources": terr.resources,
+                    "Base Nodes": terr.nodes
                     }
                 ) 
                 for i, terr in enumerate(world.territories)
