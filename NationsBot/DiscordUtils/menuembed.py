@@ -1,4 +1,5 @@
 from math import *
+import re
 
 import discord
 
@@ -138,14 +139,23 @@ class MenuEmbed:
                             continue
                     '''
 
-                    content += f"{key}: {contentDict[key]}\n"
+                    contentstr = json.dumps(contentDict[key], indent=2)
+
+                    #Regex: Get rid of JSON object brackets, whitespace or comma-only lines, and quotes.
+                    contentstr = re.sub(r'[{}\[\]]', '', contentstr)
+                    contentstr = re.sub(r'\s+,?\n', '\n', contentstr)
+                    contentstr = re.sub(r'"', '', contentstr)
+
+                    if (contentstr):
+                        content += f"{key}: {contentstr}\n"
+                    
 
             else:
                 content = str(field[1])
 
             embed.add_field(
                 name = title,
-                value = str(content)
+                value = f"`{str(content)}`"
             )
 
         return embed
