@@ -8,6 +8,11 @@ def fetch_assoc(cursor):
     if not row: return False
     return dict(zip(cursor.column_names, row))
 
+def fetch_assoc_all(cursor):
+    rows = cursor.fetchall()
+    if not rows: return False
+    return [dict(zip(cursor.column_names, row)) for row in rows]
+
 def create_connection():
         global mariadb_connection
 

@@ -146,7 +146,7 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     cursor = db.cursor(buffered=True)
 
     if (nation):
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s AND Roles.discord_id=%s"
+        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s AND Roles.role_discord_id=%s"
         params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"]), nation.role_id]
 
     else:
@@ -255,12 +255,12 @@ def get_player_byGame(savegame, player_id):
     cursor = db.cursor(buffered=True)
 
     stmt = """
-    SELECT *, Players.discord_id as player_discord_id, Roles.discord_id as role_discord_id FROM 
+    SELECT *, Players.player_discord_id, Roles.role_discord_id FROM 
         PlayerGames 
             INNER JOIN Players ON PlayerGames.player_id=Players.id
             INNER JOIN Savegames ON PlayerGames.game_id=Savegames.id
             INNER JOIN Roles ON PlayerGames.role_id=Roles.id
-    WHERE Savegames.server_id=%s AND Players.discord_id=%s LIMIT 1;
+    WHERE Savegames.server_id=%s AND Players.player_discord_id=%s LIMIT 1;
     """
 
     params = [savegame.server_id, player_id]
@@ -280,7 +280,7 @@ def remove_player_fromGame(savegame, player_id):
     DELETE PlayerGames.* FROM PlayerGames
         INNER JOIN Players ON PlayerGames.player_id=Players.id
         INNER JOIN Savegames ON PlayerGames.game_id=Savegames.id
-    WHERE Savegames.server_id=%s AND Players.discord_id=%s;
+    WHERE Savegames.server_id=%s AND Players.player_discord_id=%s;
     """
 
     params = [savegame.server_id, player_id]
@@ -435,7 +435,7 @@ def validate_gamerule_edit_permissions(player_id, gamerule_name):
     db = getdb()
     cursor = db.cursor(buffered=True)
 
-    stmt = "SELECT player_id, game_id FROM GameruleEditPermissions AS Perms JOIN Players ON Perms.player_id = Players.id JOIN Savegames ON Perms.game_id = Savegames.id WHERE Players.discord_id = %s AND Savegames.gamerulefile=%s LIMIT 1"
+    stmt = "SELECT player_id, game_id FROM GameruleEditPermissions AS Perms JOIN Players ON Perms.player_id = Players.id JOIN Savegames ON Perms.game_id = Savegames.id WHERE Players.player_discord_id = %s AND Savegames.gamerulefile=%s LIMIT 1"
     params = [player_id, gamerule_name]
     cursor.execute(stmt, params)
     result = fetch_assoc(cursor)
@@ -453,7 +453,7 @@ def validate_world_edit_permissions(player_id, world_name):
     db = getdb()
     cursor = db.cursor(buffered=True)
 
-    stmt = "SELECT player_id, world_id FROM WorldEditPermissions AS Perms JOIN Players ON Perms.player_id = Players.id JOIN Worlds ON Perms.world_id = Worlds.id WHERE Players.discord_id = %s AND Worlds.name=%s LIMIT 1"
+    stmt = "SELECT player_id, world_id FROM WorldEditPermissions AS Perms JOIN Players ON Perms.player_id = Players.id JOIN Worlds ON Perms.world_id = Worlds.id WHERE Players.player_discord_id = %s AND Worlds.name=%s LIMIT 1"
     params = [player_id, world_name]
     cursor.execute(stmt, params)
     result = fetch_assoc(cursor)
@@ -473,7 +473,7 @@ def add_Player(playerID):
     cursor = db.cursor(buffered=True)
 
     try:
-        stmt = "INSERT INTO Players (discord_id) VALUES (%s)"
+        stmt = "INSERT INTO Players (player_discord_id) VALUES (%s)"
         params = [playerID]
         cursor.execute(stmt, params)
         db.commit()
@@ -490,7 +490,7 @@ def get_Player(playerID):
         db = getdb()
         cursor = db.cursor(buffered=True)
 
-        stmt = "SELECT * FROM Players WHERE discord_id=%s LIMIT 1;"
+        stmt = "SELECT * FROM Players WHERE player_discord_id=%s LIMIT 1;"
         params = [playerID]
         cursor.execute(stmt, params)
         result = fetch_assoc(cursor)
@@ -510,7 +510,7 @@ def add_Role(roleID, roleName):
     cursor = db.cursor(buffered=True)
 
     try:
-        stmt = "INSERT INTO Roles (discord_id, name) VALUES (%s, %s)"
+        stmt = "INSERT INTO Roles (role_discord_id, name) VALUES (%s, %s)"
         params = [roleID, roleName]
         cursor.execute(stmt, params)
         db.commit()
@@ -527,7 +527,7 @@ def get_Role(roleID):
         db = getdb()
         cursor = db.cursor(buffered=True)
 
-        stmt = "SELECT * FROM Roles WHERE discord_id=%s LIMIT 1;"
+        stmt = "SELECT * FROM Roles WHERE role_discord_id=%s LIMIT 1;"
         params = [roleID]
         cursor.execute(stmt, params)
         result = fetch_assoc(cursor)
@@ -537,6 +537,30 @@ def get_Role(roleID):
         logInfo(f"Retrieved role from database with id {result['id']}")
         return result
 
+
+# Players and associated roles
+def get_PlayerGames(server_id):
+    """
+    Get the row in the database table Roles pertaining to this role
+    """
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT Savegames.*, Players.*, Roles.* FROM Savegames \
+        JOIN PlayerGames ON Savegames.id = PlayerGames.game_id \
+        JOIN Players ON PlayerGames.player_id = Players.id \
+        JOIN Roles ON PlayerGames.role_id = Roles.id \
+        WHERE Savegames.server_id=%s"
+    
+    params = [server_id]
+    cursor.execute(stmt, params)
+    result = fetch_assoc_all(cursor)
+
+    if not (result): return False
+
+    #logInfo(f"Retrieved player game from database with id {result['id']}")
+    return result
 
 # Nation
 def add_Nation(savegame, nation, playerID):

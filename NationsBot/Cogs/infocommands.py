@@ -93,6 +93,38 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed())
 
+    @commands.command()
+    async def nations(self, ctx):
+        """ 
+        Display basic info about all nations in the game.
+        Args:
+            roleid: The nation role.
+        """
+        logInfo(f"nationinfo({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        gamerule = savegame.getGamerule()
+
+        nations = get_PlayerGames(savegame.server_id)
+        
+        menu = MenuEmbed(
+            f"Nations ingame", 
+            None, 
+            None,
+            fields = [
+                (f"{nation['name']}", f"<@{nation['player_discord_id']}>")
+                for nation in nations
+            ],
+            format_text = False
+            )
+
+        logInfo(f"Created Nation info display")
+
+        await ctx.send(embed = menu.toEmbed(), allowed_mentions = discord.AllowedMentions(users = False))
+
 
     # Military Information
 
