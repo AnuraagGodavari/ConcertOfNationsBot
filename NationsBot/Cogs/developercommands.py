@@ -19,7 +19,7 @@ import GameUtils.operations as ops
 
 #The cog itself
 class DeveloperCommands(commands.Cog):
-    """ Commands used to manage menus """
+    """ Commands used to manage game files """
     
     def __init__(self, client):
         self.client = client
