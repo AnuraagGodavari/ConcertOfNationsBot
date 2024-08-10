@@ -94,6 +94,9 @@ def schema_validate_dict(schema, input_obj, path, **kwargs):
             if (val.is_required and key not in input_obj.keys()):
                 raise InputError(f"{path}: Required key {key} not present in object")
 
+            if not(val.is_required and key in input_obj.keys()):
+                continue
+
             val.validate(input_obj[key], currpath, **kwargs)
 
         else:
