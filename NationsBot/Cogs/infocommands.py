@@ -110,9 +110,13 @@ class InfoCommands(commands.Cog):
         gamerule = savegame.getGamerule()
 
         nations = get_PlayerGames(savegame.server_id)
+
+        if not(nations):
+            await ctx.send("No nations in this game yet! An admin can use the command add_nation.")
+            return
         
         menu = MenuEmbed(
-            f"Nations ingame", 
+            f"All Nations", 
             None, 
             None,
             fields = [

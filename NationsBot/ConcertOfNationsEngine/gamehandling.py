@@ -559,7 +559,7 @@ def get_PlayerGames(server_id):
 
     if not (result): return False
 
-    #logInfo(f"Retrieved player game from database with id {result['id']}")
+    logInfo(f"Retrieved player game from database from server {server_id}")
     return result
 
 # Nation
