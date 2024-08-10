@@ -26,14 +26,14 @@ CREATE TABLE IF NOT EXISTS `Savegames` (
 
 CREATE TABLE IF NOT EXISTS `Players` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
+    `player_discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
     `created` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `Roles` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
+    `role_discord_id` BIGINT UNSIGNED NOT NULL UNIQUE,
     `name` VARCHAR(32) NOT NULL,
     PRIMARY KEY (`id`)
 );

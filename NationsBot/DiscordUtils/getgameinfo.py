@@ -55,7 +55,7 @@ def get_NationFromRole(ctx, roleid, savegame, isOptionalArg = False):
 
     nation = savegame.nations[role['name']]
 
-    if not(role['discord_id'] == nation.role_id):
+    if not(role['role_discord_id'] == nation.role_id):
         if isOptionalArg: return False
         raise InputError(f"The role for {role['name']} does not match with an existing nation {nation.name}")
 

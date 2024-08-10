@@ -63,7 +63,7 @@ class MenuEmbed:
             ]
     """
 
-    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25):
+    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25, format_text = True):
         self.title = title
         self.description = description
         self.userid = userid
@@ -73,6 +73,7 @@ class MenuEmbed:
         self.fields = fields or list()
         self.isPaged = isPaged
         self.pagesize = max(1, min(pagesize, 25))
+        self.format_text = format_text
 
     def adjust_pagenumber(self, pagenumber):
         """ Adjust page number so it is between 0 and the last possible page number before overflow """
@@ -153,9 +154,12 @@ class MenuEmbed:
             else:
                 content = str(field[1])
 
+            content = str(content)
+            if self.format_text: content = f"`{content}`"
+
             embed.add_field(
                 name = title,
-                value = f"`{str(content)}`"
+                value = content
             )
 
         return embed
