@@ -377,3 +377,15 @@ def testMoveForce(savegame, nation, forcename, worldmap, gamerule, turnadvanceme
         savegame.advanceTurn(numMonths)
 
         logInfo(f"Force {forcename} after {numMonths} months of movement:", details = filehandling.saveObject(nation.military[forcename]))
+
+def testWorldSavegameSync(world, world_name, resource):
+    
+    world[0].nodes.pop(resource)
+    validate_modified_world(world_name, filehandling.saveObject(world))
+
+    world[0].nodes[resource] = 100
+    validate_modified_world(world_name, filehandling.saveObject(world))
+
+    world[0].nodes[resource] = 10
+    validate_modified_world(world_name, filehandling.saveObject(world))
+

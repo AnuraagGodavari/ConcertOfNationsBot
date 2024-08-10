@@ -355,14 +355,14 @@ def world_connected_files(world_name):
     db = getdb()
     cursor = db.cursor(buffered=True)
 
-    stmt = "SELECT Savegames.savefile, Savegames.gamerulefile FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE Worlds.name=%s"
+    stmt = "SELECT Savegames.server_id, Savegames.gamerulefile FROM Savegames JOIN Worlds ON Savegames.world_id = Worlds.id WHERE Worlds.name=%s"
     params = [world_name]
     cursor.execute(stmt, params)
     result = cursor.fetchall()
 
     if not (result): return False
 
-    result = [dict(zip(("savefile", "gamerulefile"), item)) for item in result]
+    result = [dict(zip(("savefile_server_id", "gamerulefile"), item)) for item in result]
 
     logInfo(f"Retrieved savegames and worlds from database which use gamerule {world_name}")
     return result
@@ -420,7 +420,11 @@ def validate_modified_world(world_name, world_contents):
         logError(e)
         raise InputError(f"World could not be converted to the World class.")
     
-    logInfo(f"Successfully validated modified world {world.name}.")
+    for savegame_server_id in [files["savefile_server_id"] for files in connected_files]:
+        savegame = load_saveGame_from_server(savegame_server_id)
+        savegame.sync_withWorld()
+
+    logInfo(f"Successfully validated modified world {world.name} and synced related savegames.")
 
     save_world(world)
 

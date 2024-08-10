@@ -91,7 +91,7 @@ class Savegame:
         return nation
 
 
-    # Get outside files that define the savegame
+    # Work with outside files that define the savegame
 
     def getRow(self):
         """
@@ -109,6 +109,40 @@ class Savegame:
 
         return gamehandling.dbget_gamerule(self.server_id)
 
+    def sync_withWorld(self):
+        """ Refresh any outdated information that no longer works with the world. """
+
+        world = self.getWorld()
+
+        all_territories = {terr_id: territory for nation in self.nations.values() for terr_id, territory in nation.territories.items()}
+
+        for terr_id, game_terr in all_territories.items():
+            
+            world_terr = world[terr_id]
+
+            synced_nodes = copy(game_terr["Nodes"])
+
+            # Remove unfilled and nonexistant nodes from the game, and change existing node capacities
+            
+            for node, node_vals in game_terr["Nodes"].items():
+                
+                if ((node not in world_terr.nodes.keys()) and (node_vals[0] < 1)): 
+                    synced_nodes.pop(node)
+
+                elif ((node not in world_terr.nodes.keys())):
+                    synced_nodes[node][1] = 0
+                    
+                else:
+                    synced_nodes[node][1] = world_terr.nodes[node]
+
+            # Add new nodes to the game
+            for node, node_vals in world_terr.nodes.items():
+                
+                if (node in synced_nodes.keys()): continue
+
+                synced_nodes[node] = [0, world_terr.nodes]
+
+            game_terr["Nodes"] = synced_nodes
 
     # Get information from all nations
 
