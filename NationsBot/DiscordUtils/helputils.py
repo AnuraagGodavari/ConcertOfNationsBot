@@ -33,7 +33,8 @@ class HelpCommand(commands.HelpCommand):
                 ("Other", '\n'.join([command.name for command in mapping[None]]))
             ],
             pagesize = 9,
-            isPaged = True
+            isPaged = True,
+            format_text = False
             )
 
         assignMenu(ctx.author.id, menu)
@@ -57,7 +58,8 @@ class HelpCommand(commands.HelpCommand):
                 for command in cog.get_commands()
             ],
             pagesize = 9,
-            isPaged = True
+            isPaged = True,
+            format_text = False
             )
 
         assignMenu(ctx.author.id, menu)

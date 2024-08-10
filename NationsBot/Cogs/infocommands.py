@@ -43,7 +43,8 @@ class InfoCommands(commands.Cog):
             fields = [
                 ("Turn", savegame.turn),
                 ("Date", f"Month {savegame.date['m']}, Year {savegame.date['y']}")
-            ]
+            ],
+            format_text = False
             )
 
         logInfo(f"Created Game State display")
