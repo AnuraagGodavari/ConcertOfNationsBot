@@ -1,4 +1,4 @@
-import json, datetime, pprint, traceback, re
+import json, datetime, pprint, traceback, re, io
 
 import discord
 from discord.ext import commands
@@ -519,6 +519,71 @@ class AdminCommands(commands.Cog):
             logInfo(f"Successfully transferred the territory {terrID} to {nation.name}")
 
         await ctx.send(f"Successfully transferred the territories: {terrIDs} to {nation.name}")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases = ["removeTerritory", "remove-territory", "removeterritory"])
+    @commands.has_permissions(administrator = True)
+    async def remove_territory(self, ctx, roleid, *terrIDs):
+        """
+        Remove a territory from a nation.
+        Args:
+            roleid: The nation role.
+            *terrIDs: Any number of valid territory names or numerical ids.
+        """
+        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrIDs})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        removed_terrs = {}
+        
+        #Check that all territories are valid before removing
+        for terrID in terrIDs:
+
+            if terrID.isdigit(): terrID = int(terrID)
+
+            #Territory info from the map
+            world_terr = world[terrID]
+
+            if not world_terr:
+                raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
+
+            territoryName = world_terr.name
+
+            if not(nation.get_territory(territoryName)):
+                raise InputError(f"Territory {terrID} does not belong to {nation.name}")
+        
+        #Actually remove the territories
+        for terrID in terrIDs:
+
+            if terrID.isdigit(): terrID = int(terrID)
+
+            #Territory info from the map
+            world_terr = world[terrID]
+
+            territoryName = world_terr.name
+
+            removed_terr = savegame.remove_territory(territoryName, nation)
+
+            removed_terr_json = filehandling.saveObject(removed_terr)
+
+            logInfo(f"Successfully removed the territory {terrID} from {nation.name}", details = removed_terr_json)
+
+            removed_terrs[terrID] = removed_terr_json
+
+
+        removed_terrs_file = io.StringIO(json.dumps(removed_terrs, indent = 2))
+
+        await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
 
         save_saveGame(savegame)
 

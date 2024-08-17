@@ -262,6 +262,21 @@ class Savegame:
 
         return self.nations[targetNation.name].territories[territoryName]
 
+    def remove_territory(self, territoryName, targetNation):
+        """
+        Remove a territory from a nation
+
+        Returns: The info of the removed territory
+        """
+
+        removed_territory = targetNation.cedeTerritory(territoryName, self)
+
+        self.gamestate["mapChanged"] = True
+
+        logInfo(f"Removed the territory {territoryName} from {targetNation.name}")
+
+        return removed_territory
+
 
     # Military operations
 
