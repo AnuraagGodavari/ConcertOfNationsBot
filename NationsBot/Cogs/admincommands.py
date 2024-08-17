@@ -585,6 +585,8 @@ class AdminCommands(commands.Cog):
 
         await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
 
+        removed_terrs_file.close()
+
         save_saveGame(savegame)
 
     @commands.command(aliases = ["giveResources", "give-resources", "giveresources"])
