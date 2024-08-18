@@ -131,7 +131,7 @@ def building_newturn(buildingName, allbuildings, resourcesLeft = None):
 def get_territories_buildingincome(territoryInfo, savegame):
     """ Get the net income of a territory from all of the buildings in it """
 
-    logInfo(f"Getting net income from all buildings for {territoryInfo['Name']}")
+    logInfo(f"Getting net income from all buildings for territory {territoryInfo['ID']}")
 
     allbuildings = get_allbuildings(savegame)
     

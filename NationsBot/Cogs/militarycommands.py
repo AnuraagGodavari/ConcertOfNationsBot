@@ -67,18 +67,18 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (territoryName in nation.territories.keys()):
+        if not (terrID in nation.territories.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
-        total_pop = territories.get_totalpopulation(nation, territoryName)
+        total_pop = territories.get_totalpopulation(nation, terrID)
 
         if (total_pop <= 0):
             raise InputError("Manpower cannot be raised from this territory because it has no population")
 
-        if (territories.get_manpower(nation, territoryName) + amount > total_pop):
+        if (territories.get_manpower(nation, terrID) + amount > total_pop):
             raise InputError(f"Cannot raise {amount} manpower because it exceeds total ummobilized population of {total_pop}")
 
-        territories.recruit_manpower(nation, territoryName, amount)
+        territories.recruit_manpower(nation, terrID, amount)
 
         logInfo(f"Successfully raised {amount} manpower in territory {territoryName}")
         await ctx.send(f"Successfully raised {amount} manpower in territory {territoryName}")
@@ -128,20 +128,20 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (territoryName in nation.territories.keys()):
+        if not (terrID in nation.territories.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
-        total_pop = territories.get_totalpopulation(nation, territoryName)
+        total_pop = territories.get_totalpopulation(nation, terrID)
 
         if (total_pop <= 0):
             raise InputError("Manpower cannot be disbanded from this territory because it has no population")
 
-        manpower = territories.get_manpower(nation, territoryName)
+        manpower = territories.get_manpower(nation, terrID)
 
         if (manpower < amount):
             raise InputError(f"Cannot disband {amount} manpower because it exceeds total manpower {manpower}")
 
-        territories.disband_manpower(nation, territoryName, amount)
+        territories.disband_manpower(nation, terrID, amount)
 
         logInfo(f"Successfully disbanded {amount} manpower in territory {territoryName}")
         await ctx.send(f"Successfully disbanded {amount} manpower in territory {territoryName}")
@@ -284,17 +284,17 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (territoryName in nation.territories.keys()):
+        if not (terrID in nation.territories.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         gamerule = savegame.getGamerule()
 
         blueprint = military.get_blueprint(unitType, gamerule)
 
-        if not (nation.can_build_unit(savegame, territoryName, unitType, blueprint, amount)):
+        if not (nation.can_build_unit(savegame, terrID, unitType, blueprint, amount)):
             raise InputError(f"Could not build {unitType} for {nation.name} in {territoryName}")
 
-        newforcename = nation.build_unit(territoryName, unitType, amount, blueprint, savegame)
+        newforcename = nation.build_unit(terrID, unitType, amount, blueprint, savegame)
         newforce = nation.military[newforcename]
 
         await ctx.send(f"New force \"{newforcename}\" created in territory {territoryName} with status of {newforce['Status']}")
@@ -346,17 +346,17 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (territoryName in nation.territories.keys()):
+        if not (terrID in nation.territories.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         gamerule = savegame.getGamerule()
 
         blueprint = military.get_blueprint(vehicleType, gamerule)
 
-        if not (nation.can_build_vehicle(savegame, territoryName, vehicleType, blueprint, amount)):
+        if not (nation.can_build_vehicle(savegame, terrID, vehicleType, blueprint, amount)):
             raise InputError(f"Could not build {vehicleType} for {nation.name} in {territoryName}")
 
-        newforcename = nation.build_vehicle(territoryName, vehicleType, amount, blueprint, savegame)
+        newforcename = nation.build_vehicle(terrID, vehicleType, amount, blueprint, savegame)
         newforce = nation.military[newforcename]
 
         await ctx.send(f"New force \"{newforcename}\" created in territory {territoryName} with status of {newforce['Status']}")

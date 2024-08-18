@@ -53,6 +53,7 @@ class BuildingCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         #Validate that the player owns this territory
         playerinfo = get_player_byGame(savegame, ctx.author.id)
@@ -64,16 +65,16 @@ class BuildingCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (territoryName in nation.territories.keys()):
+        if not (terrID in nation.territories.keys()):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
         
 
         #Validate that building can be bought
 
-        if not (nation.canBuyBuilding(savegame, buildingName, buildings.get_blueprint(buildingName, savegame), territoryName)):
+        if not (nation.canBuyBuilding(savegame, buildingName, buildings.get_blueprint(buildingName, savegame), terrID)):
             raise InputError(f"Could not buy {buildingName}")
 
-        nation.addBuilding(buildingName, territoryName, savegame)
+        nation.addBuilding(buildingName, terrID, savegame)
 
         await ctx.send(f"Successfully bought {buildingName} in {territoryName}!")
 
@@ -112,6 +113,7 @@ class BuildingCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         playerinfo = get_player_byGame(savegame, ctx.author.id)
 
@@ -122,10 +124,10 @@ class BuildingCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
         
-        if (territoryName not in nation.territories.keys()):
+        if not(nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
-        newstatus = territories.togglebuilding(nation, territoryName, buildingName, buildingIndex, savegame)
+        newstatus = territories.togglebuilding(nation, terrID, buildingName, buildingIndex, savegame)
 
         if not (newstatus):
             raise InputError(f"Could not toggle building {buildingName} {buildingIndex} in territory {terrID}.")
@@ -168,6 +170,7 @@ class BuildingCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         #Nation info
         playerinfo = get_player_byGame(savegame, ctx.author.id)
@@ -181,15 +184,15 @@ class BuildingCommands(commands.Cog):
         
         #Can we do the operation on this territory
 
-        if (territoryName not in nation.territories.keys()):
+        if not(nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
-        if (not territories.hasbuilding(nation, territoryName, buildingName)):
+        if (not territories.hasbuilding(nation, terrID, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
-        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprint)
+        territories.destroybuilding(nation, terrID, buildingName, buildingIndex, blueprint)
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 

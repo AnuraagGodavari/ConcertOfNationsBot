@@ -59,9 +59,10 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
         
         #Get nation info
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and cannot have a building placed in it.")
         nation = savegame.nations[nationName]
@@ -70,7 +71,7 @@ class AdminCommands(commands.Cog):
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
-        territory = nation.getTerritoryInfo(territoryName, savegame)
+        territory = nation.getTerritoryInfo(terrID, savegame)
 
         if not (nation.canHoldBuilding(savegame, buildingName, blueprint, territory)):
 
@@ -82,9 +83,9 @@ class AdminCommands(commands.Cog):
         if not (buildingName in get_allbuildings(savegame)):
             raise InputError(f"Building {buildingName} does not exist")
 
-        territories.add_building(nation, territoryName, buildingName, "Active", blueprint)
+        territories.add_building(nation, terrID, buildingName, "Active", blueprint)
 
-        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
+        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(terrID))
 
         await ctx.send(f"Successfully added {buildingName} to {territoryName}!")
 
@@ -126,17 +127,18 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         #Get nation info
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and does not have this building")
         nation = savegame.nations[nationName]
 
-        if (territoryName not in nation.territories.keys()):
+        if not(nation.get_territory(terrID)):
             raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
 
-        newstatus = territories.newbuildingstatus(nation, territoryName, buildingName, buildingIndex, newstatus, savegame)
+        newstatus = territories.newbuildingstatus(nation, terrID, buildingName, buildingIndex, newstatus, savegame)
 
         if not (newstatus):
             raise InputError(f"Could not toggle building {buildingName} {buildingIndex} in territory {terrID}.")
@@ -179,23 +181,24 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         #Get nation info
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and does not have this building")
         nation = savegame.nations[nationName]
 
         #Can we do the operation on this territory
 
-        if (not territories.hasbuilding(nation, territoryName, buildingName)):
+        if (not territories.hasbuilding(nation, terrID, buildingName)):
             raise InputError(f"Territory {territoryName} does not have building {buildingName}")
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
-        territories.destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprint)
+        territories.destroybuilding(nation, terrID, buildingName, buildingIndex, blueprint)
 
-        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(territoryName))
+        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(terrID))
 
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
@@ -247,19 +250,20 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         #Get nation info
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and does not have this building")
         nation = savegame.nations[nationName]
 
         #Add population if doesn't exist
-        if not (territories.get_population(nation, territoryName, occupation, identifiers)):
+        if not (territories.get_population(nation, terrID, occupation, identifiers)):
             if size == 0:
                 raise InputError("Cannot delete a population that does not already exist")
             logInfo("Specified population does not exist, adding new population")
-            pop = territories.add_population(nation, territoryName, populations.Population(size, gamerule["Base Population Growth"], occupation, identifiers))
+            pop = territories.add_population(nation, terrID, populations.Population(size, gamerule["Base Population Growth"], occupation, identifiers))
 
             all_building_national_modifiers = nation.get_all_buildingeffects(savegame)
             if ("Nation" in all_building_national_modifiers.keys()):
@@ -269,12 +273,12 @@ class AdminCommands(commands.Cog):
         #Delete the population if size is 0
         elif size == 0:
             logInfo("Specified population exists and will be deleted")
-            pop = territories.remove_population(nation, territoryName, occupation, identifiers)
+            pop = territories.remove_population(nation, terrID, occupation, identifiers)
             
         #Else, change the population size
         else:
             logInfo("Changing population size")
-            pop = territories.change_population(nation, territoryName, size, occupation, identifiers)
+            pop = territories.change_population(nation, terrID, size, occupation, identifiers)
 
         if not (pop):
             raise InputError(f"Changing population failed")
@@ -323,18 +327,19 @@ class AdminCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
         
         territoryName = world_terrInfo.name
+        terrID = world_terrInfo.id
 
         #Get nation info
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and does not have this building")
         nation = savegame.nations[nationName]
 
         #Add population if doesn't exist
-        if not (territories.get_population(nation, territoryName, occupation, identifiers)):
+        if not (territories.get_population(nation, terrID, occupation, identifiers)):
             raise InputError("Cannot change growth rate for a population that does not already exist")
 
-        pop = territories.change_populationgrowth(nation, territoryName, growthrate, occupation, identifiers)
+        pop = territories.change_populationgrowth(nation, terrID, growthrate, occupation, identifiers)
 
         if not (pop):
             raise InputError(f"Changing population growth rate failed")
@@ -377,12 +382,12 @@ class AdminCommands(commands.Cog):
 
         territoryName = world_terr.name
 
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and cannot have manpower changed for it.")
         nation = savegame.nations[nationName]
 
-        total_pop = territories.get_totalpopulation(nation, territoryName)
+        total_pop = territories.get_totalpopulation(nation, terrID)
 
         #If change amount is positive, raise manpower
 
@@ -391,10 +396,10 @@ class AdminCommands(commands.Cog):
             if (total_pop <= 0):
                 raise InputError("Manpower cannot be raised from this territory because it has no population")
 
-            if (territories.get_manpower(nation, territoryName) + amount > total_pop):
+            if (territories.get_manpower(nation, terrID) + amount > total_pop):
                 raise InputError(f"Cannot raise {amount} manpower because it exceeds total ummobilized population of {total_pop}")
 
-            territories.recruit_manpower(nation, territoryName, amount)
+            territories.recruit_manpower(nation, terrID, amount)
 
         #If change amount is negative, disband manpower
 
@@ -405,15 +410,15 @@ class AdminCommands(commands.Cog):
             if (total_pop <= 0):
                 raise InputError("Manpower cannot be disbanded from this territory because it has no population")
 
-            manpower = territories.get_manpower(nation, territoryName)
+            manpower = territories.get_manpower(nation, terrID)
 
             if (manpower < amount):
                 raise InputError(f"Cannot disband {amount} manpower because it exceeds total manpower {manpower}")
 
-            territories.disband_manpower(nation, territoryName, amount)
+            territories.disband_manpower(nation, terrID, amount)
 
-        logInfo(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, territoryName)}")
-        await ctx.send(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, territoryName)}")
+        logInfo(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, terrID)}")
+        await ctx.send(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, terrID)}")
 
         save_saveGame(savegame)
     
@@ -451,12 +456,12 @@ class AdminCommands(commands.Cog):
 
         territoryName = world_terr.name
 
-        nationName = savegame.find_terrOwner(territoryName)
+        nationName = savegame.find_terrOwner(terrID)
         if not (nationName): 
             raise InputError("Territory is unowned and cannot have manpower changed for it.")
         nation = savegame.nations[nationName]
 
-        total_pop = territories.get_totalpopulation(nation, territoryName)
+        total_pop = territories.get_totalpopulation(nation, terrID)
 
         #If change amount is positive, raise manpower
 
@@ -465,10 +470,10 @@ class AdminCommands(commands.Cog):
             if (total_pop <= 0):
                 raise InputError("Manpower cannot be raised from this territory because it has no population")
 
-            if (territories.get_manpower(nation, territoryName) + amount > total_pop):
+            if (territories.get_manpower(nation, terrID) + amount > total_pop):
                 raise InputError(f"Cannot raise {amount} manpower because it exceeds total ummobilized population of {total_pop}")
 
-            nation.get_territory(territoryName)["Manpower"] += amount
+            nation.get_territory(terrID)["Manpower"] += amount
 
         #If change amount is negative, disband manpower
 
@@ -479,15 +484,15 @@ class AdminCommands(commands.Cog):
             if (total_pop <= 0):
                 raise InputError("Manpower cannot be disbanded from this territory because it has no population")
 
-            manpower = territories.get_manpower(nation, territoryName)
+            manpower = territories.get_manpower(nation, terrID)
 
             if (manpower < amount):
                 raise InputError(f"Cannot disband {amount} manpower because it exceeds total manpower {manpower}")
 
-            nation.get_territory(territoryName)["Manpower"] -= amount
+            nation.get_territory(terrID)["Manpower"] -= amount
 
-        logInfo(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, territoryName)}")
-        await ctx.send(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, territoryName)}")
+        logInfo(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, terrID)}")
+        await ctx.send(f"Successfully changed manpower in territory {territoryName} to {territories.get_manpower(nation, terrID)}")
 
         save_saveGame(savegame)
 
@@ -559,7 +564,7 @@ class AdminCommands(commands.Cog):
 
             territoryName = world_terr.name
 
-            if not(nation.get_territory(territoryName)):
+            if not(nation.get_territory(terrID)):
                 raise InputError(f"Territory {terrID} does not belong to {nation.name}")
         
         #Actually remove the territories
@@ -572,7 +577,7 @@ class AdminCommands(commands.Cog):
 
             territoryName = world_terr.name
 
-            removed_terr = savegame.remove_territory(territoryName, nation)
+            removed_terr = savegame.remove_territory(terrID, nation)
 
             removed_terr_json = filehandling.saveObject(removed_terr)
 
@@ -747,12 +752,12 @@ class AdminCommands(commands.Cog):
 
         #Manually create and place the unit
         unitName = military.new_unitName(nation.military, name_template = f"{nation.name} {territoryName} {unitType}")
-        newunit = military.Unit(unitName, f"Active", unitType, amount, territoryName)
+        newunit = military.Unit(unitName, f"Active", unitType, amount, terrID)
 
         newforcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{nation.name} Force")
         nation.military[newforcename] = {
             "Status": "Active",
-            "Location": territoryName,
+            "Location": terrID,
             "Units": {unitName: newunit}
         }
         newforce = nation.military[newforcename]
@@ -1189,7 +1194,7 @@ class AdminCommands(commands.Cog):
 
         base_force = nation.military[base_forcename]
 
-        base_force["Location"] = territoryName
+        base_force["Location"] = terrID
 
         await ctx.send(f"Force {base_forcename} new location: {base_force['Location']}")
 

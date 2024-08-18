@@ -68,7 +68,10 @@ class Savegame:
         nation.resources = {resource: 0 for resource in gamerule["Resources"] + ["Money"]}
 
         #Add information to territories
-        for territoryName, territory in nation.territories.items():
+        for terrID, territory in nation.territories.items():
+
+            if ("Name" not in territory.keys()):
+                territory["Name"] = world[terrID].name
 
             if ("Buildings" not in territory.keys()):
                 territory["Buildings"] = dict()
@@ -80,7 +83,7 @@ class Savegame:
                 territory["Manpower"] = 0
  
             if ("Nodes" not in territory.keys()):
-                territory["Nodes"] = {resource: [0, capacity] for resource, capacity in world[territoryName].nodes.items()}
+                territory["Nodes"] = {resource: [0, capacity] for resource, capacity in world[terrID].nodes.items()}
         #Add base bureaucratic capacity
 
         base_bureaucracy = gamerule["Base Bureaucracy"]
@@ -195,62 +198,62 @@ class Savegame:
 
     # Territory operations
 
-    def get_territory_fromworld(self, territoryName):
+    def get_territory_fromworld(self, terrID):
         
         worldmap = self.getWorld()
 
-        if not(worldmap[territoryName]):
+        if not(worldmap[terrID]):
             return False
 
         return {
-                "Resources": worldmap[territoryName].resources,
-                "Details": worldmap[territoryName].details
+                "Resources": worldmap[terrID].resources,
+                "Details": worldmap[terrID].details
             }
 
-    def find_terrOwner(self, territoryName):
+    def find_terrOwner(self, terrID):
         """
         Go through each nation and find which one owns a specific territory
 
         Returns: The name of the owner nation or False.
         """
         for nation in self.nations.values():
-            if territoryName in nation.territories.keys(): return nation.name
+            if terrID in nation.territories.keys(): return nation.name
 
         return False
 
-    def transfer_territory(self, territoryName, targetNation):
+    def transfer_territory(self, terrID, targetNation):
         
         #Check if territory exists
-        worldTerr = self.getWorld()[territoryName]
+        worldTerr = self.getWorld()[terrID]
         if not (worldTerr):
-            raise InputError(f"Territory {territoryName} does not exist")
+            raise InputError(f"Territory {terrID} does not exist")
             return False
 
-        territoryName = worldTerr.name
+        terrID = worldTerr.name
 
         #Check territory owner
-        prevOwner = self.find_terrOwner(territoryName)
+        prevOwner = self.find_terrOwner(terrID)
 
         if not (prevOwner):
-            logInfo(f"Territory {territoryName} is unowned")
+            logInfo(f"Territory {terrID} is unowned")
 
         if (prevOwner == targetNation.name):
-            logInfo(f"Territory {territoryName} already owned by {prevOwner}")
+            logInfo(f"Territory {terrID} already owned by {prevOwner}")
             return False
 
         #Check if territory is owned, remove it
         if (prevOwner):
-            terrInfo = self.nations[prevOwner].cedeTerritory(territoryName, self)
+            terrInfo = self.nations[prevOwner].cedeTerritory(terrID, self)
 
         else:
-            terrInfo = {"name": territoryName}
+            terrInfo = {"id": terrID}
 
         if not (terrInfo):
             logInfo("Ceding territory failed")
             return False
 
         #Add this territory to the nation
-        self.nations[targetNation.name].annexTerritory(territoryName, terrInfo, worldTerr, self)
+        self.nations[targetNation.name].annexTerritory(terrID, terrInfo, worldTerr, self)
 
         #Does a new map need to be generated?
         if not (self.gamestate["mapChanged"]):
@@ -258,22 +261,22 @@ class Savegame:
 
         self.gamestate["mapChanged"] = True
 
-        logInfo(f"Transferred the territory {territoryName} from {prevOwner} to {targetNation.name}!")
+        logInfo(f"Transferred the territory {terrID} from {prevOwner} to {targetNation.name}!")
 
-        return self.nations[targetNation.name].territories[territoryName]
+        return self.nations[targetNation.name].territories[terrID]
 
-    def remove_territory(self, territoryName, targetNation):
+    def remove_territory(self, terrID, targetNation):
         """
         Remove a territory from a nation
 
         Returns: The info of the removed territory
         """
 
-        removed_territory = targetNation.cedeTerritory(territoryName, self)
+        removed_territory = targetNation.cedeTerritory(terrID, self)
 
         self.gamestate["mapChanged"] = True
 
-        logInfo(f"Removed the territory {territoryName} from {targetNation.name}")
+        logInfo(f"Removed the territory {terrID} from {targetNation.name}")
 
         return removed_territory
 
@@ -368,7 +371,7 @@ class Nation:
     
     # Territory management
 
-    def cedeTerritory(self, territoryName, savegame):
+    def cedeTerritory(self, terrID, savegame):
         """
         Removes a territory and all associated objects from this nation
         
@@ -376,12 +379,12 @@ class Nation:
             terrInfo(dict): Includes territory name and all associated objects
         """
 
-        logInfo(f"Nation {self.name} ceding territory {territoryName}")
+        logInfo(f"Nation {self.name} ceding territory {terrID}")
 
-        terrInfo = copy(self.get_territory(territoryName))
+        terrInfo = copy(self.get_territory(terrID))
 
         if not terrInfo: 
-            logInfo(f"Nation {self.name} could not cede territory {territoryName}!")
+            logInfo(f"Nation {self.name} could not cede territory {terrID}!")
             return False
 
         for buildingName, statuses in terrInfo["Buildings"].items():
@@ -393,17 +396,17 @@ class Nation:
                 if status == "Active":
                     self.remove_national_buildingeffects(buildings.get_alleffects(buildingName, savegame)["Nation"])
 
-        self.territories.pop(territoryName)
+        self.territories.pop(terrID)
 
         #Remove the effects on this territory of all buildings across the nation.
         blueprint = self.get_all_buildingeffects(savegame)
         if ("Nation" in blueprint.keys()):
             territories.add_buildingeffects(terrInfo, blueprint["Nation"], remove_modifiers = True)
 
-        logInfo(f"Nation {self.name} successfully ceded territory {territoryName}!")
+        logInfo(f"Nation {self.name} successfully ceded territory {terrID}!")
         return terrInfo
 
-    def annexTerritory(self, territoryName, territoryInfo, worldTerritory, savegame):
+    def annexTerritory(self, terrID, territoryInfo, worldTerritory, savegame):
         """
         Add a territory and related objects to this nation.
         
@@ -411,26 +414,29 @@ class Nation:
             territoryInfo(dict): Includes the name of the territory and all associated objects
         """
 
-        logInfo(f"Nation {self.name} annexing territory {territoryName}")
+        logInfo(f"Nation {self.name} annexing territory {terrID}")
 
         #Add the effects on this territory of all buildings across the nation.
         blueprint = self.get_all_buildingeffects(savegame)
         if ("Nation" in blueprint.keys()):
             territories.add_buildingeffects(territoryInfo, blueprint["Nation"])
 
-        self.territories[territoryName] = territoryInfo
+        self.territories[terrID] = territoryInfo
 
-        if ("Buildings" not in self.territories[territoryName].keys()):
-            self.territories[territoryName]["Buildings"] = dict()
+        if ("Name" not in self.territories[terrID].keys()):
+            self.territories[terrID]["Name"] = worldTerritory.name
 
-        if ("Population" not in self.territories[territoryName].keys()):
-            self.territories[territoryName]["Population"] = list()
+        if ("Buildings" not in self.territories[terrID].keys()):
+            self.territories[terrID]["Buildings"] = dict()
 
-        if ("Manpower" not in self.territories[territoryName].keys()):
-            self.territories[territoryName]["Manpower"] = 0
+        if ("Population" not in self.territories[terrID].keys()):
+            self.territories[terrID]["Population"] = list()
 
-        if ("Nodes" not in self.territories[territoryName].keys()):
-            self.territories[territoryName]["Nodes"] = {resource: [0, capacity] for resource, capacity in worldTerritory.nodes.items()}
+        if ("Manpower" not in self.territories[terrID].keys()):
+            self.territories[terrID]["Manpower"] = 0
+
+        if ("Nodes" not in self.territories[terrID].keys()):
+            self.territories[terrID]["Nodes"] = {resource: [0, capacity] for resource, capacity in worldTerritory.nodes.items()}
 
         for buildingName, statuses in territoryInfo["Buildings"].items():
 
@@ -441,30 +447,30 @@ class Nation:
 
                 self.add_national_buildingeffects(buildings.get_alleffects(buildingName, savegame)["Nation"])
 
-        logInfo(f"Nation {self.name} successfully annexed territory {territoryName}!")
+        logInfo(f"Nation {self.name} successfully annexed territory {terrID}!")
 
-    def get_territory(self, territoryName):
+    def get_territory(self, terrID):
         """
         Get the nation-related information about a territory this nation owns
         """
 
-        if not (territoryName in self.territories.keys()):
+        if not (terrID in self.territories.keys()):
             return False
 
-        return self.territories[territoryName]
+        return self.territories[terrID]
 
-    def getTerritoryInfo(self, territoryName, savegame):
+    def getTerritoryInfo(self, terrID, savegame):
         """Get a reference to a territory as stored in this savegame and the associated world, as well as all objects within it."""
 
-        world_terrInfo = savegame.get_territory_fromworld(territoryName)
+        world_terrInfo = savegame.get_territory_fromworld(terrID)
 
-        nation_terrInfo = self.get_territory(territoryName)
+        nation_terrInfo = self.get_territory(terrID)
 
         if not(world_terrInfo and nation_terrInfo):
             return False
 
         territoryInfo = {
-            "Name": territoryName,
+            "ID": terrID,
             "Savegame": nation_terrInfo,
             "World": world_terrInfo
         }
@@ -474,7 +480,7 @@ class Nation:
 
     # Economic management
 
-    def validate_prerequisites(self, prerequisites, territoryName, only_active = False):
+    def validate_prerequisites(self, prerequisites, terrID, only_active = False):
         """
         A blueprint may have prerequisites for being built, for example the existence of another building. If any prerequisite is not met, return False. Else return True
         Args:
@@ -496,7 +502,7 @@ class Nation:
 
             if ("Territory" in prerequisites["Buildings"]):
 
-                territory = self.territories[territoryName]
+                territory = self.territories[terrID]
 
                 allbuildings = [
                     building for building in territory["Buildings"].keys()
@@ -509,7 +515,7 @@ class Nation:
 
         return True
 
-    def can_buyBlueprint(self, blueprintName, blueprint, territoryName, active_prerequisites = False):
+    def can_buyBlueprint(self, blueprintName, blueprint, terrID, active_prerequisites = False):
         """
         Check if a blueprint's resource and bureaucratic costs are affordable by a nation and the prerequisites are met.
         """
@@ -524,7 +530,7 @@ class Nation:
                 raise InputError(f"Not enough bureaucratic capacity for {category}: {self.bureaucracy[category][0]}/{self.bureaucracy[category][1]}")
 
         if ("Prerequisites" in blueprint.keys()):
-            if not (self.validate_prerequisites(blueprint["Prerequisites"], territoryName, active_prerequisites)):
+            if not (self.validate_prerequisites(blueprint["Prerequisites"], terrID, active_prerequisites)):
                 return False
 
         return True
@@ -568,41 +574,41 @@ class Nation:
 
         return True
 
-    def canBuyBuilding(self, savegame, buildingName, blueprint, territoryName):
+    def canBuyBuilding(self, savegame, buildingName, blueprint, terrID):
         """
         Validate that an building with a given blueprint can be bought by this country
         """
 
         #Does the building already exist in this territory?
-        territory = self.getTerritoryInfo(territoryName, savegame)
+        territory = self.getTerritoryInfo(terrID, savegame)
 
         if not(territory):
-            raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
+            raise InputError(f"{self.name} does not own territory \"{terrID}\"")
 
         if not (self.canHoldBuilding(buildingName, blueprint, territory)):
 
             max_num = 1
             if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
 
-            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
+            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {terrID}, maximum is {max_num}")
 
         if not (self.enoughNodesForBuilding(blueprint, territory)):
 
-            raise InputError(f"{buildingName} requires nodes: {blueprint['Node Costs']} and territory {territoryName} only has nodes: {territory['Savegame']['Nodes']}")
+            raise InputError(f"{buildingName} requires nodes: {blueprint['Node Costs']} and territory {terrID} only has nodes: {territory['Savegame']['Nodes']}")
 
-        return self.can_buyBlueprint(buildingName, blueprint, territoryName)
+        return self.can_buyBlueprint(buildingName, blueprint, terrID)
 
 
     # Building management
 
-    def addBuilding(self, buildingName, territoryName, savegame):
+    def addBuilding(self, buildingName, terrID, savegame):
         """ Add a building to a territory and subtract the resource cost """
 
-        logInfo(f"Nation {self.name} purchasing {buildingName} for {territoryName}")
+        logInfo(f"Nation {self.name} purchasing {buildingName} for {terrID}")
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
-        territory = self.get_territory(territoryName)
+        territory = self.get_territory(terrID)
 
         #Subtract resource costs
         costs = blueprint["Costs"]
@@ -614,11 +620,11 @@ class Nation:
 
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
 
-        territories.add_building(self, territoryName, buildingName, f"Constructing:{constructiondate}", blueprint)
+        territories.add_building(self, terrID, buildingName, f"Constructing:{constructiondate}", blueprint)
 
-        logInfo(f"Added {buildingName} to {territoryName}! Status: {self.territories[territoryName]['Buildings'][buildingName]}")
+        logInfo(f"Added {buildingName} to territory {terrID}! Status: {self.territories[terrID]['Buildings'][buildingName]}")
 
-        return self.territories[territoryName]['Buildings'][buildingName]
+        return self.territories[terrID]['Buildings'][buildingName]
 
     def get_all_buildingeffects(self, savegame):
         """
@@ -703,32 +709,32 @@ class Nation:
 
     # Military management
 
-    def can_build_unit(self, savegame, territoryName, unitType, blueprint, size):
+    def can_build_unit(self, savegame, terrID, unitType, blueprint, size):
         """ Validate whether a territory can build a unit """
 
         #Does the building already exist in this territory?
-        territory = self.getTerritoryInfo(territoryName, savegame)
+        territory = self.getTerritoryInfo(terrID, savegame)
 
         if not(territory):
-            raise InputError(f"{self.name} does not own territory \"{territoryName}\"")
+            raise InputError(f"{self.name} does not own territory \"{terrID}\"")
 
-        if (size > territories.get_manpower(self, territoryName)):
-            raise InputError(f"{territoryName} has too little manpower to recruit {size} {unitType}")
+        if (size > territories.get_manpower(self, terrID)):
+            raise InputError(f"{terrID} has too little manpower to recruit {size} {unitType}")
 
-        return self.can_buyBlueprint(unitType, blueprint, territoryName, active_prerequisites = True)
+        return self.can_buyBlueprint(unitType, blueprint, terrID, active_prerequisites = True)
 
-    def can_build_vehicle(self, savegame, territoryName, unitType, blueprint, size):
+    def can_build_vehicle(self, savegame, terrID, unitType, blueprint, size):
         """ Validate whether a territory can build a vehicle; wrapper for can_build_unit. """
 
-        return self.can_build_unit(savegame, territoryName, unitType, ops.combineDicts(*[blueprint]*size), blueprint["Crew"] * size)
+        return self.can_build_unit(savegame, terrID, unitType, ops.combineDicts(*[blueprint]*size), blueprint["Crew"] * size)
 
-    def build_unit(self, territoryName, unitType, size, blueprint, savegame):
+    def build_unit(self, terrID, unitType, size, blueprint, savegame):
         """ Build a unit of a specified size in a territory """
 
-        logInfo(f"{self.name} creating {unitType} of size {size} in territory {territoryName}")
+        logInfo(f"{self.name} creating {unitType} of size {size} in territory {terrID}")
 
-        territory = self.get_territory(territoryName)
-        name = military.new_unitName(self.military, name_template = f"{self.name} {territoryName} {unitType}")
+        territory = self.get_territory(terrID)
+        name = military.new_unitName(self.military, name_template = f"{self.name} {terrID} {unitType}")
 
         #Subtract resource costs
         costs = blueprint["Costs"]
@@ -740,23 +746,23 @@ class Nation:
         constructiondate = dates.date_tostr(dates.date_add(savegame.date, int(blueprint['Construction Time'])))
         constructionstatus = f"Constructing:{constructiondate}"
 
-        newunit = military.load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, territoryName)
+        newunit = military.load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, terrID)
 
         territory["Manpower"] -= size
         forcename = military.new_forceName([name for nation in savegame.nations.values() for name in nation.military.keys()], name_template = f"{self.name} Force")
         self.military[forcename] = {
             "Status": constructionstatus,
-            "Location": territoryName,
+            "Location": terrID,
             "Units": {name: newunit}
         }
 
         return forcename
 
-    def build_vehicle(self, territoryName, vehicleType, size, blueprint, savegame):
+    def build_vehicle(self, terrID, vehicleType, size, blueprint, savegame):
         """ Build a vehicle in a specified amount in a territory; wrapper for build_unit. """
 
         forcenames = [
-            self.build_unit(territoryName, vehicleType, blueprint["Crew"], blueprint, savegame)
+            self.build_unit(terrID, vehicleType, blueprint["Crew"], blueprint, savegame)
             for num in range(size)
         ]
 
@@ -789,7 +795,7 @@ class Nation:
     def all_populations(self):
         """Get a list of all the populations in all of this nation's territories"""
 
-        return {territoryName: territoryInfo["Population"] for territoryName, territoryInfo in self.territories.items()}
+        return {terrID: territoryInfo["Population"] for terrID, territoryInfo in self.territories.items()}
 
 
     # New turn functions
@@ -815,9 +821,9 @@ class Nation:
         worldmap = savegame.getWorld()
         gamerule = savegame.getGamerule()
 
-        for territoryName in self.territories.keys():
+        for terrID in self.territories.keys():
 
-            territoryInfo = self.getTerritoryInfo(territoryName, savegame)
+            territoryInfo = self.getTerritoryInfo(terrID, savegame)
 
             if (not onlyestimate):
                 neweffects = territories.advanceconstruction(territoryInfo, savegame, self.bureaucracy)
@@ -825,7 +831,7 @@ class Nation:
                 if (neweffects): 
                     self.add_buildingeffects(neweffects, territoryInfo["Savegame"])
 
-            territories.validate_building_requirements(territoryName, self, savegame)
+            territories.validate_building_requirements(terrID, self, savegame)
 
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
 
@@ -859,11 +865,11 @@ class Nation:
 
         logInfo(f"Nation {self.name} growing population")
 
-        for territoryName, territoryInfo in self.territories.items():
+        for terrID, territoryInfo in self.territories.items():
 
             territories.grow_all_populations(territoryInfo, numMonths)
 
-            logInfo(f"Territory {territoryName} grew population")
+            logInfo(f"Territory {terrID} grew population")
 
         logInfo(f"Nation {self.name} successfully grew population")
 
