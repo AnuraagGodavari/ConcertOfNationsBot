@@ -65,7 +65,7 @@ class BuildingCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (terrID in nation.territories.keys()):
+        if not (nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
         
 

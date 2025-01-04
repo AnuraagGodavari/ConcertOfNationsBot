@@ -67,7 +67,7 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (terrID in nation.territories.keys()):
+        if not (nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         total_pop = territories.get_totalpopulation(nation, terrID)
@@ -128,7 +128,7 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (terrID in nation.territories.keys()):
+        if not (nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         total_pop = territories.get_totalpopulation(nation, terrID)
@@ -284,7 +284,7 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (terrID in nation.territories.keys()):
+        if not (nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         gamerule = savegame.getGamerule()
@@ -346,7 +346,7 @@ class MilitaryCommands(commands.Cog):
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
-        if not (terrID in nation.territories.keys()):
+        if not (nation.get_territory(terrID)):
             raise InputError(f"<@&{playerinfo['role_discord_id']}> does not own the territory {territoryName}")
 
         gamerule = savegame.getGamerule()

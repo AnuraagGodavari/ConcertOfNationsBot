@@ -454,7 +454,7 @@ class Nation:
         Get the nation-related information about a territory this nation owns
         """
 
-        if not (terrID in self.territories.keys()):
+        if not (str(terrID) in self.territories.keys()):
             return False
 
         return self.territories[terrID]

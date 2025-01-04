@@ -92,19 +92,19 @@ def generateGame(gamerule, world, conf):
         conf["Nation01"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = {
-            world.territories[0].name: 
+            world.territories[0].id: 
             {
 
             }, 
-            world.territories[1].name:
+            world.territories[1].id:
             {
                 
             },  
-            world.territories[5].name:
+            world.territories[5].id:
             {
                 
             },  
-            world.territories[6].name:
+            world.territories[6].id:
             {
                 
             } 
@@ -126,27 +126,27 @@ def generateGame(gamerule, world, conf):
         conf["Nation02"]["roleid"], 
         (randint(0, 255), randint(0, 255), randint(0, 255)),
         territories = {
-            world.territories[2].name:
+            world.territories[2].id:
             {
                 
             },  
-            world.territories[3].name:
+            world.territories[3].id:
             {
                 
             }, 
-            world.territories[4].name:
+            world.territories[4].id:
             {
                 
             }, 
-            world.territories[7].name:
+            world.territories[7].id:
             {
                 
             }, 
-            world.territories[8].name:
+            world.territories[8].id:
             {
                 
             }, 
-            world.territories[9].name:
+            world.territories[9].id:
             {
                 
             }
