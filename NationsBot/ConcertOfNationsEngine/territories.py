@@ -18,17 +18,17 @@ import ConcertOfNationsEngine.buildings as buildings
 
 #Building operations
 
-def hasbuilding(nation, territoryName, buildingName):
+def hasbuilding(nation, terrID, buildingName):
 
-    territoryInfo = nation.get_territory(territoryName)
+    territoryInfo = nation.get_territory(terrID)
 
     return bool(buildingName in territoryInfo["Buildings"])
 
-def add_building(nation, territoryName, buildingName, status, blueprint):
+def add_building(nation, terrID, buildingName, status, blueprint):
 
-    territory = nation.get_territory(territoryName)
+    territory = nation.get_territory(terrID)
 
-    if (not hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, terrID, buildingName)):
         territory["Buildings"][buildingName] = list()
 
     #Add Node Costs
@@ -36,19 +36,19 @@ def add_building(nation, territoryName, buildingName, status, blueprint):
         node_costs = blueprint["Node Costs"]
         for k, v in node_costs.items(): territory["Nodes"][k] = (territory["Nodes"][k][0] + v, territory["Nodes"][k][1])
 
-    nation.territories[territoryName]["Buildings"][buildingName].append(status) 
+    nation.territories[terrID]["Buildings"][buildingName].append(status) 
 
-def newbuildingstatus(nation, territoryName, buildingName, buildingIndex, newstatus, savegame):
+def newbuildingstatus(nation, terrID, buildingName, buildingIndex, newstatus, savegame):
 
-    if (not hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, terrID, buildingName)):
         return False
 
-    territoryInfo = nation.get_territory(territoryName)
+    territoryInfo = nation.get_territory(terrID)
 
     if (buildingName not in territoryInfo["Buildings"]):
         return False
 
-    logInfo(f"Territory {territoryName} changing building {buildingName} {buildingIndex} status from {territoryInfo['Buildings'][buildingName]}")
+    logInfo(f"Territory {terrID} changing building {buildingName} {buildingIndex} status from {territoryInfo['Buildings'][buildingName]}")
 
     if buildings.validate_status(newstatus):
 
@@ -82,14 +82,14 @@ def newbuildingstatus(nation, territoryName, buildingName, buildingIndex, newsta
 
     return territoryInfo['Buildings'][buildingName][buildingIndex]
 
-def togglebuilding(nation, territoryName, buildingName, buildingIndex, savegame):
+def togglebuilding(nation, terrID, buildingName, buildingIndex, savegame):
 
-    if (not hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, terrID, buildingName)):
         return False
 
-    territoryInfo = nation.get_territory(territoryName)
+    territoryInfo = nation.get_territory(terrID)
 
-    logInfo(f"Territory {territoryName} toggling building {buildingName} {buildingIndex} with current status {territoryInfo['Buildings'][buildingName]}")
+    logInfo(f"Territory {terrID} toggling building {buildingName} {buildingIndex} with current status {territoryInfo['Buildings'][buildingName]}")
 
     # Switch between Active and Inactive if the building is one or the other
 
@@ -105,12 +105,12 @@ def togglebuilding(nation, territoryName, buildingName, buildingIndex, savegame)
 
     return territoryInfo['Buildings'][buildingName][buildingIndex]
 
-def destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprint):
+def destroybuilding(nation, terrID, buildingName, buildingIndex, blueprint):
 
-    if (not hasbuilding(nation, territoryName, buildingName)):
+    if (not hasbuilding(nation, terrID, buildingName)):
         return False
 
-    territoryInfo = nation.get_territory(territoryName)
+    territoryInfo = nation.get_territory(terrID)
 
     territoryInfo["Buildings"][buildingName].pop(buildingIndex)
 
@@ -122,12 +122,12 @@ def destroybuilding(nation, territoryName, buildingName, buildingIndex, blueprin
         node_costs = blueprint["Node Costs"]
         for k, v in node_costs.items(): territoryInfo["Nodes"][k] = (territoryInfo["Nodes"][k][0] - v, territoryInfo["Nodes"][k][1])
 
-    logInfo(f"Territory {territoryName} destroyed building {buildingName} {buildingIndex}")
+    logInfo(f"Territory {terrID} destroyed building {buildingName} {buildingIndex}")
 
-def validate_building_requirements(territoryName, nation, savegame):
+def validate_building_requirements(terrID, nation, savegame):
     """ Check if all buildings in this territory have what they need to remain active """
 
-    territoryInfo = nation.territories[territoryName]
+    territoryInfo = nation.territories[terrID]
 
     for buildingName in territoryInfo["Buildings"].keys():
 
@@ -139,7 +139,7 @@ def validate_building_requirements(territoryName, nation, savegame):
         if not ("Prerequisites" in blueprint.keys()):
             continue
 
-        if not(nation.validate_prerequisites(blueprint["Prerequisites"], territoryName, only_active = True)):
+        if not(nation.validate_prerequisites(blueprint["Prerequisites"], terrID, only_active = True)):
             territoryInfo["Buildings"][buildingName] = "Inactive"
 
 
@@ -156,14 +156,14 @@ def add_buildingeffects(territoryInfo, effects, remove_modifiers = False):
 
 #Manpower management
 
-def get_manpower(nation, territoryName):
+def get_manpower(nation, terrID):
 
-    return nation.get_territory(territoryName)["Manpower"]
+    return nation.get_territory(terrID)["Manpower"]
 
-def recruit_manpower(nation, territoryName, recruitment_amt):
+def recruit_manpower(nation, terrID, recruitment_amt):
     """ Recruit manpower for this territory proportionally from among the population """
 
-    territoryInfo = nation.get_territory(territoryName)
+    territoryInfo = nation.get_territory(terrID)
 
     total_pop = sum([pop.size for pop in territoryInfo["Population"]])
 
@@ -175,10 +175,10 @@ def recruit_manpower(nation, territoryName, recruitment_amt):
 
     territoryInfo["Manpower"] += recruitment_amt
 
-def disband_manpower(nation, territoryName, disband_amt):
+def disband_manpower(nation, terrID, disband_amt):
     """ Reduce the available manpower of this territory and distribute it proportionally among the population """
 
-    territoryInfo = nation.get_territory(territoryName)
+    territoryInfo = nation.get_territory(terrID)
 
     #Account for manpower edited in manually
     real_manpower = sum([pop.manpower for pop in territoryInfo["Population"]])
@@ -198,20 +198,20 @@ def disband_manpower(nation, territoryName, disband_amt):
 
 #Population management
 
-def get_totalpopulation(nation, territoryName):
+def get_totalpopulation(nation, terrID):
     """ Returns True if the sum of the populations in this territory is greater than 0, otherwise returns False """
 
-    return sum([pop.size for pop in nation.get_territory(territoryName)["Population"]])
+    return sum([pop.size for pop in nation.get_territory(terrID)["Population"]])
 
-def add_population(nation, territoryName, population):
-    nation.territories[territoryName]["Population"].append(population)
+def add_population(nation, terrID, population):
+    nation.territories[terrID]["Population"].append(population)
 
     return population
 
-def get_population(nation, territoryName, occupation, identifiers):
+def get_population(nation, terrID, occupation, identifiers):
     """ Returns a population in this territory matching specified occupation and identifiers or False if none exists """
 
-    territory_info = nation.get_territory(territoryName)
+    territory_info = nation.get_territory(terrID)
 
     pop = next(
         (
@@ -222,11 +222,11 @@ def get_population(nation, territoryName, occupation, identifiers):
 
     return pop
 
-def remove_population(nation, territoryName, occupation, identifiers):
+def remove_population(nation, terrID, occupation, identifiers):
     
-    pop = get_population(nation, territoryName, occupation, identifiers)
+    pop = get_population(nation, terrID, occupation, identifiers)
 
-    territory_info = nation.get_territory(territoryName)
+    territory_info = nation.get_territory(terrID)
 
     pop = next(
         (
@@ -260,10 +260,10 @@ def apply_population_modifiers(territoryInfo, all_modifiers, remove_modifiers = 
     for pop in territoryInfo["Population"]:
         pop.apply_modifiers(all_modifiers, remove_modifiers)
 
-def change_population(nation, territoryName, newsize, occupation, identifiers):
+def change_population(nation, terrID, newsize, occupation, identifiers):
     """ Changes the size of a population in this territory matching specified occupation and identifiers or False if none exists """
     
-    pop = get_population(nation, territoryName, occupation, identifiers)
+    pop = get_population(nation, terrID, occupation, identifiers)
 
     if not(pop):
         return False
@@ -272,10 +272,10 @@ def change_population(nation, territoryName, newsize, occupation, identifiers):
 
     return pop
 
-def change_populationgrowth(nation, territoryName, growthrate, occupation, identifiers):
+def change_populationgrowth(nation, terrID, growthrate, occupation, identifiers):
     """ Changes the size of a population in this territory matching specified occupation and identifiers or False if none exists """
     
-    pop = get_population(nation, territoryName, occupation, identifiers)
+    pop = get_population(nation, terrID, occupation, identifiers)
 
     if not(pop):
         return False
@@ -300,7 +300,7 @@ def advanceconstruction(territoryInfo, savegame, bureaucracy):
 
     neweffects = []
 
-    logInfo(f"Advancing construction for buildings in {territoryInfo['Name']}")
+    logInfo(f"Advancing construction for buildings in territory {territoryInfo['ID']}")
 
     for building, oldstatus in territoryInfo["Savegame"]["Buildings"].items():
 

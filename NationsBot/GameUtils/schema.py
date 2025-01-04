@@ -69,6 +69,9 @@ def schema_validate_list(schema, input_obj, path, **kwargs):
 
     logInfo(f"Validating Schema Path: {path}")
 
+    if (not isinstance(input_obj, list)):
+        raise InputError(f"{path}: Must be a list")
+
     for i, element in enumerate(input_obj):
         schema_validate(schema[0], element, path + f'[{i}]', **kwargs)
 
@@ -84,6 +87,9 @@ def schema_validate_dict(schema, input_obj, path, **kwargs):
     """
 
     logInfo(f"Validating Schema Path: {path}")
+
+    if (not isinstance(input_obj, dict)):
+        raise InputError(f"{path}: Must be a dict")
 
     for key, val in schema.items():
 

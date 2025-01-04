@@ -98,14 +98,14 @@ def get_forcespeed(force, gamerule):
 
 
 # New Units
-def load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, territoryName):
+def load_fromBlueprint(name, blueprint, constructionstatus, unitType, size, terrID):
 
     if (blueprint["Class"] == "Unit"):
-        return Unit(name, constructionstatus, unitType, size, territoryName)
+        return Unit(name, constructionstatus, unitType, size, terrID)
 
     if (blueprint["Class"] == "Vehicle"):
-        return Vehicle(name, constructionstatus, unitType, dict(), territoryName, 
-            Unit(f"{name} Crew", constructionstatus, f"{unitType} Crew", blueprint["Crew"], territoryName)
+        return Vehicle(name, constructionstatus, unitType, dict(), terrID, 
+            Unit(f"{name} Crew", constructionstatus, f"{unitType} Crew", blueprint["Crew"], terrID)
         )
 
 

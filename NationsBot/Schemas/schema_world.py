@@ -24,6 +24,20 @@ import ConcertOfNationsEngine.diplomacy as diplomacy
 from Schemas import schema_gamerule
 
 
+# World Validations
+
+def validate_territories(terr, path, world = None, **kwargs):
+    """
+    Index of each territory must equal its id.
+    """
+
+    #validate terr
+    schema.schema_validate(schema_territory, terr, path, world = world, **kwargs)
+
+    if (world["territories"][terr["id"]] != terr):
+        raise InputError(f"{path}: Territory id must be equal to its index in world.territories")
+
+
 # Territory validations
 
 def validate_territory_pos(pos, path, **kwargs):
@@ -79,25 +93,26 @@ def validate_terrain(terrain, path, gamerule = None, **kwargs):
         raise InputError(f"{path}: Key {terrain} in terrain must be a terrain type which exists in the gamerule.")
 
 
+schema_territory = {
+    "__class__": schema.SchemaProperties(exact_value = "Territory"),
+    "__module__": schema.SchemaProperties(exact_value = "GameUtils.mapping"),
+    "name": schema.SchemaProperties(primitive_type = str),
+    "id": schema.SchemaProperties(primitive_type = int),
+    "pos": schema.SchemaProperties(validator = validate_territory_pos),
+    "edges": schema.SchemaProperties(validator = validate_territory_edges),
+    "details": {
+        "Terrain": schema.SchemaProperties(validator = validate_terrain)
+    },
+    "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
+    "nodes": schema.SchemaProperties(validator = schema_gamerule.validate_resources)
+}
+
 schema_world = {
 
     "__class__": schema.SchemaProperties(exact_value = "World"),
     "__module__": schema.SchemaProperties(exact_value = "GameUtils.mapping"),
     "name": schema.SchemaProperties(primitive_type = str),
-    "territories":
-    [
-        {
-            "__class__": schema.SchemaProperties(exact_value = "Territory"),
-            "__module__": schema.SchemaProperties(exact_value = "GameUtils.mapping"),
-            "name": schema.SchemaProperties(primitive_type = str),
-            "id": schema.SchemaProperties(primitive_type = int),
-            "pos": schema.SchemaProperties(validator = validate_territory_pos),
-            "edges": schema.SchemaProperties(validator = validate_territory_edges),
-            "details": {
-                "Terrain": schema.SchemaProperties(validator = validate_terrain)
-            },
-            "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
-            "nodes": schema.SchemaProperties(validator = schema_gamerule.validate_resources)
-        }
-    ]
+    "territories": [ 
+        schema.SchemaProperties(validator = validate_territories)
+        ]
 }

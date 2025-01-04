@@ -207,8 +207,10 @@ class World:
             terrColor = (255,255,255)
 
             if colorRules:
-                if terr.name in colorRules.keys():
-                    terrColor = colorRules[terr.name]
+
+                terrid_str = str(terr.id)
+                if terrid_str in colorRules.keys():
+                    terrColor = colorRules[terrid_str]
 
             #Now draw the territory as a circle
             imgDraw.ellipse(
