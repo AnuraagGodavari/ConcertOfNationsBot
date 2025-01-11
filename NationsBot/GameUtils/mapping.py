@@ -5,6 +5,7 @@ import operator
 
 from logger import *
 from common import *
+import imgur
 
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
@@ -238,6 +239,16 @@ class World:
         logInfo(f"Successfully saved world {self.name}!")
 
         return filename
+
+    def get_baseImage(self, mapScale = None, filename = None):
+
+        worldfile = self.toImage(mapScale = mapScale, filename = filename)
+
+        link = imgur.upload(worldfile)
+
+        logInfo(f"Created map image of world {self.name} and uploaded it", details = {"link": link})
+        
+        return link
 
     def constructPath(self, prevTerrs, current, min_dist = float('inf')):
         
