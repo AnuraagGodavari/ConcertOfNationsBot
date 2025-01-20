@@ -297,7 +297,7 @@ class InfoCommands(commands.Cog):
 
         #Handles getting the world map if one exists that represents the current gamestate, or creating a new one otherwise.
         savegame.world_toImage(mapScale = (100, 100))
-        worldMapInfo = dbget_worldMap(world, savegame, savegame.turn)
+        worldMapInfo = dbget_gameWorldMap(world, savegame, savegame.turn)
 
         logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
 

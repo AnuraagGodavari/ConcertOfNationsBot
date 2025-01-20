@@ -329,7 +329,7 @@ class Savegame:
 
         logInfo("Created map image of the world and uploaded it")
 
-        gamehandling.insert_worldMap(world, self, worldfile, link, None)
+        gamehandling.insert_gameWorldMap(world, self, worldfile, link, None)
         
         self.gamestate["mapChanged"] = False
 

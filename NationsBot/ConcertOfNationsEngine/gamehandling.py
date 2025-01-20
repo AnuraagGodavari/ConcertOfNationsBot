@@ -94,13 +94,13 @@ def setupNew_world(world):
     save_world(world)
 
 
-def insert_worldMap(world, savegame, filename, link, nation = None):
+def insert_gameWorldMap(world, savegame, filename, link, nation = None):
     """
     Inserting a worldImage into the database based on savegame, nation, turn number, etc. and containing a filename and imgur link
     """
     logInfo("Saving information for a world image")
     
-    if ((savegame.gamestate["mapChanged"] == False) and (dbget_worldMap(world, savegame, savegame.turn, nation))):
+    if ((savegame.gamestate["mapChanged"] == False) and (dbget_gameWorldMap(world, savegame, savegame.turn, nation))):
         logInfo(f"World Map already exists for world {world.name}, savegame {savegame.name} turn {savegame.turn} and nation {nation or 'n/a'}")
         return
 
@@ -123,11 +123,11 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         cursor = db.cursor(buffered=True)
 
         if (nation):
-            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            stmt = "INSERT INTO GameWorldMaps (world_id, savegame_id, turn_no, turn_map_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s, %s)"
             params = [worldInfo['id'], savegameInfo['id'], savegame.turn, savegame.gamestate["mapNum"], roleInfo['id'], filename, link]
 
         else:
-            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
+            stmt = "INSERT INTO GameWorldMaps (world_id, savegame_id, turn_no, turn_map_no, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
             params = [worldInfo['id'], savegameInfo['id'], savegame.turn, savegame.gamestate["mapNum"], filename, link]
 
         cursor.execute(stmt, params)
@@ -136,9 +136,9 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         logError(e)
         raise LogicError(f"World could not be inserted!")
 
-def dbget_worldMap(world, savegame, turn, nation = None):
+def dbget_gameWorldMap(world, savegame, turn, nation = None):
     """
-    Get the row in the database table WorldMaps pertaining to the information provided
+    Get the row in the database table GameWorldMaps pertaining to the information provided
     """
     logInfo(f"Retrieving a world map with the world {world.name} and the game {savegame.name} from the database")
 
@@ -146,11 +146,11 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     cursor = db.cursor(buffered=True)
 
     if (nation):
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s AND Roles.role_discord_id=%s"
+        stmt = "SELECT GameWorldMaps.* FROM GameWorldMaps JOIN Worlds on GameWorldMaps.world_id = Worlds.id JOIN Savegames on GameWorldMaps.savegame_id = Savegames.id JOIN Roles on GameWorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND GameWorldMaps.turn_no=%s AND GameWorldMaps.turn_map_no=%s AND Roles.role_discord_id=%s"
         params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"]), nation.role_id]
 
     else:
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s ORDER BY WorldMaps.created DESC LIMIT 1"
+        stmt = "SELECT GameWorldMaps.* FROM GameWorldMaps JOIN Worlds on GameWorldMaps.world_id = Worlds.id JOIN Savegames on GameWorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND GameWorldMaps.turn_no=%s AND GameWorldMaps.turn_map_no=%s ORDER BY GameWorldMaps.created DESC LIMIT 1"
         params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"])]
 
     cursor.execute(stmt, params)
