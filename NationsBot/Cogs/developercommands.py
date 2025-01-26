@@ -114,6 +114,8 @@ class DeveloperCommands(commands.Cog):
 
         logInfo(f"Successfully sent the file {world_name}.json")
 
+        save_world(world)
+
     @commands.command(aliases = ["getgamerule", "get-gamerule", "getGamerule"])
     async def get_gamerule(self, ctx, gamerule_name):
         """ 

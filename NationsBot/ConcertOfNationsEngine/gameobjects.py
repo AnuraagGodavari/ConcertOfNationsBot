@@ -136,7 +136,7 @@ class Savegame:
                     synced_nodes[node][1] = 0
                     
                 else:
-                    synced_nodes[node][1] = world_terr.nodes[node]
+                    synced_nodes[node] = (synced_nodes[node][0], world_terr.nodes[node])
 
             # Add new nodes to the game
             for node, node_vals in world_terr.nodes.items():

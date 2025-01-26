@@ -442,12 +442,37 @@ def validate_modified_gamerule(gamerule_name, gamerule_contents):
 
     save_gamerule(gamerule_name, gamerule_contents)
 
+def iterate_world_ifModified(world_contents):
+    """
+    Check against previous map if modified, and iterate the version number for the world map.
+    """
+
+    with open(f"{worldsDir}/{world_contents['name']}.json", 'r') as f:
+        prev_world = json.load(f)
+
+    prev_terrs, new_terrs = prev_world["territories"], world_contents["territories"]
+
+    same_num_of_terrs = len(prev_terrs) == len(new_terrs)
+
+    all_changed_terrs = [terr_id for terr_id in range(len(new_terrs)) if (terr_id >= len(prev_terrs)) or (prev_terrs[terr_id]["pos"] != new_terrs[terr_id]["pos"])]
+
+    if (not(same_num_of_terrs) or all_changed_terrs):
+        
+        version = 1
+        if ("version" in prev_world.keys()): version = prev_world["version"] + 1
+        
+        world_contents["modified"] = True
+        world_contents["version"] = version
+
 def validate_modified_world(world_name, world_contents):
     """
     Validate a world against its schema
     """
     
     schema.schema_validate(schema_world, world_contents, world = world_contents)
+
+    if (world_contents["name"] != world_name):
+        raise InputError(f"The value of 'name' in the World file is \"{world_contents['name']}\" and does not match the input name \"{world_name}\".")
 
     connected_files = world_connected_files(world_name)
 
@@ -461,20 +486,19 @@ def validate_modified_world(world_name, world_contents):
         except Exception as e:
             logError(e)
             raise InputError(f"Modified world {world_name} is now incompatible with the gamerule {gamerule_name}.")
-
-    try:
-        world = filehandling.loadObject(world_contents)
-    except Exception as e:
-        logError(e)
-        raise InputError(f"World could not be converted to the World class.")
     
     for savegame_server_id in [files["savefile_server_id"] for files in connected_files]:
         savegame = load_saveGame_from_server(savegame_server_id)
         savegame.sync_withWorld()
 
-    logInfo(f"Successfully validated modified world {world.name} and synced related savegames.")
+    iterate_world_ifModified(world_contents)
 
+    # We want to clear the cache when the world is modified because while the cache is useful, on the rare occasions we want to modify the world, this is a clean and simple way to do it in the cache too.
+    world = filehandling.loadObject(world_contents)
     save_world(world)
+    load_world.cache_clear()
+
+    logInfo(f"Successfully validated modified world {world_contents['name']} and synced related savegames.")
 
 
 # Edit game files
