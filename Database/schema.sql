@@ -41,6 +41,18 @@ CREATE TABLE IF NOT EXISTS `Roles` (
 CREATE TABLE IF NOT EXISTS `WorldMaps` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `world_id` BIGINT UNSIGNED NOT NULL,
+    `version` INT UNSIGNED NOT NULL,
+    `filename` VARCHAR(128),
+    `link` VARCHAR(128) UNIQUE,
+    `created` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    CONSTRAINT `WorldMaps_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`),
+    UNIQUE(`world_id`, `version`)
+);
+
+CREATE TABLE IF NOT EXISTS `GameWorldMaps` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `world_id` BIGINT UNSIGNED NOT NULL,
     `savegame_id` BIGINT UNSIGNED NOT NULL,
     `role_id` BIGINT UNSIGNED,
     `turn_no` INT UNSIGNED NOT NULL,
@@ -49,9 +61,9 @@ CREATE TABLE IF NOT EXISTS `WorldMaps` (
     `link` VARCHAR(128) UNIQUE,
     `created` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`),
-    CONSTRAINT `WorldMaps_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`),
-    CONSTRAINT `WorldMaps_ibfk_2` FOREIGN KEY (`savegame_id`) REFERENCES `Savegames` (`id`),
-    CONSTRAINT `WorldMaps_ibfk_3` FOREIGN KEY (`role_id`) REFERENCES `Roles` (`id`),
+    CONSTRAINT `GameWorldMaps_ibfk_1` FOREIGN KEY (`world_id`) REFERENCES `Worlds` (`id`),
+    CONSTRAINT `GameWorldMaps_ibfk_2` FOREIGN KEY (`savegame_id`) REFERENCES `Savegames` (`id`),
+    CONSTRAINT `GameWorldMaps_ibfk_3` FOREIGN KEY (`role_id`) REFERENCES `Roles` (`id`),
     UNIQUE(`world_id`, `savegame_id`, `turn_no`, `role_id`)
 );
 

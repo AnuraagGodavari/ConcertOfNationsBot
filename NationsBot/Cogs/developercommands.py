@@ -14,6 +14,8 @@ from DiscordUtils.getgameinfo import *
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 
+import GameUtils.mapping as mapping
+
 from GameUtils.filehandling import *
 import GameUtils.operations as ops
 
@@ -99,10 +101,20 @@ class DeveloperCommands(commands.Cog):
 
         if not(os.path.isfile(filepath)):
             raise InputError(f"\"{world_name}\" is not a valid world")
-        
-        await ctx.send(f"Attaching file {world_name}.json", file=discord.File(filepath))
+
+        world = gamehandling.load_world(world_name)        
+
+        world_filename = filename = f"{worldsDir}/{world.name}"
+        worldmap_link = world.get_baseImage((100,100), world_filename)
+
+        worldmap_embed = discord.Embed(title = f"{world.name} World Map")
+        worldmap_embed.set_image(url = worldmap_link)
+
+        await ctx.send(f"Attaching file {world_name}.json", file=discord.File(filepath), embed = worldmap_embed)
 
         logInfo(f"Successfully sent the file {world_name}.json")
+
+        save_world(world)
 
     @commands.command(aliases = ["getgamerule", "get-gamerule", "getGamerule"])
     async def get_gamerule(self, ctx, gamerule_name):

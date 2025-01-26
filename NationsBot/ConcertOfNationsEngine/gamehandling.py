@@ -94,13 +94,61 @@ def setupNew_world(world):
     save_world(world)
 
 
-def insert_worldMap(world, savegame, filename, link, nation = None):
+def insert_worldMap(world, filename, link):
+    """
+    Inserting a worldImage into the database based on version, containing a filename and imgur link
+    """
+    logInfo("Saving information for a world image")
+
+    worldInfo = dbget_world_byName(world.name)
+    if not (worldInfo):
+        logInfo(f"World {world.name} does not exist in the database")
+        setupNew_world(world)
+        logInfo(f"Added world {world.name} to the database")
+
+     #Update database
+    try:
+        db = getdb()
+        cursor = db.cursor(buffered=True)
+
+        stmt = "INSERT INTO WorldMaps (world_id, version, filename, link) VALUES (%s, %s, %s, %s)"
+        params = [worldInfo['id'], world.version, filename, link]
+
+        cursor.execute(stmt, params)
+        db.commit()
+
+    except Exception as e:
+        logError(e)
+        raise LogicError(f"World could not be inserted!")
+
+def dbget_worldMap(world):
+    """
+    Get the row in the database table GameWorldMaps pertaining to the information provided
+    """
+    logInfo(f"Retrieving a world map for world {world.name} version {world.version} from the database")
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id WHERE Worlds.name=%s AND WorldMaps.version=%s ORDER BY WorldMaps.created DESC LIMIT 1"
+    params = [world.name, world.version - int(world.modified)]
+
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result): return False
+
+    logInfo(f"Successfully retrieved world map image!")
+    return result
+
+
+def insert_gameWorldMap(world, savegame, filename, link, nation = None):
     """
     Inserting a worldImage into the database based on savegame, nation, turn number, etc. and containing a filename and imgur link
     """
     logInfo("Saving information for a world image")
     
-    if ((savegame.gamestate["mapChanged"] == False) and (dbget_worldMap(world, savegame, savegame.turn, nation))):
+    if ((savegame.gamestate["mapChanged"] == False) and (dbget_gameWorldMap(world, savegame, savegame.turn, nation))):
         logInfo(f"World Map already exists for world {world.name}, savegame {savegame.name} turn {savegame.turn} and nation {nation or 'n/a'}")
         return
 
@@ -123,11 +171,11 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         cursor = db.cursor(buffered=True)
 
         if (nation):
-            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            stmt = "INSERT INTO GameWorldMaps (world_id, savegame_id, turn_no, turn_map_no, role_id, filename, link) VALUES (%s, %s, %s, %s, %s, %s, %s)"
             params = [worldInfo['id'], savegameInfo['id'], savegame.turn, savegame.gamestate["mapNum"], roleInfo['id'], filename, link]
 
         else:
-            stmt = "INSERT INTO WorldMaps (world_id, savegame_id, turn_no, turn_map_no, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
+            stmt = "INSERT INTO GameWorldMaps (world_id, savegame_id, turn_no, turn_map_no, filename, link) VALUES (%s, %s, %s, %s, %s, %s)"
             params = [worldInfo['id'], savegameInfo['id'], savegame.turn, savegame.gamestate["mapNum"], filename, link]
 
         cursor.execute(stmt, params)
@@ -136,9 +184,9 @@ def insert_worldMap(world, savegame, filename, link, nation = None):
         logError(e)
         raise LogicError(f"World could not be inserted!")
 
-def dbget_worldMap(world, savegame, turn, nation = None):
+def dbget_gameWorldMap(world, savegame, turn, nation = None):
     """
-    Get the row in the database table WorldMaps pertaining to the information provided
+    Get the row in the database table GameWorldMaps pertaining to the information provided
     """
     logInfo(f"Retrieving a world map with the world {world.name} and the game {savegame.name} from the database")
 
@@ -146,11 +194,11 @@ def dbget_worldMap(world, savegame, turn, nation = None):
     cursor = db.cursor(buffered=True)
 
     if (nation):
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id JOIN Roles on WorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s AND Roles.role_discord_id=%s"
+        stmt = "SELECT GameWorldMaps.* FROM GameWorldMaps JOIN Worlds on GameWorldMaps.world_id = Worlds.id JOIN Savegames on GameWorldMaps.savegame_id = Savegames.id JOIN Roles on GameWorldMaps.role_id = Roles.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND GameWorldMaps.turn_no=%s AND GameWorldMaps.turn_map_no=%s AND Roles.role_discord_id=%s"
         params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"]), nation.role_id]
 
     else:
-        stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id JOIN Savegames on WorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND WorldMaps.turn_no=%s AND WorldMaps.turn_map_no=%s ORDER BY WorldMaps.created DESC LIMIT 1"
+        stmt = "SELECT GameWorldMaps.* FROM GameWorldMaps JOIN Worlds on GameWorldMaps.world_id = Worlds.id JOIN Savegames on GameWorldMaps.savegame_id = Savegames.id WHERE Worlds.name=%s AND Savegames.server_id=%s AND GameWorldMaps.turn_no=%s AND GameWorldMaps.turn_map_no=%s ORDER BY GameWorldMaps.created DESC LIMIT 1"
         params = [world.name, savegame.server_id, turn, savegame.gamestate["mapNum"] - int(savegame.gamestate["mapChanged"])]
 
     cursor.execute(stmt, params)
@@ -394,12 +442,37 @@ def validate_modified_gamerule(gamerule_name, gamerule_contents):
 
     save_gamerule(gamerule_name, gamerule_contents)
 
+def iterate_world_ifModified(world_contents):
+    """
+    Check against previous map if modified, and iterate the version number for the world map.
+    """
+
+    with open(f"{worldsDir}/{world_contents['name']}.json", 'r') as f:
+        prev_world = json.load(f)
+
+    prev_terrs, new_terrs = prev_world["territories"], world_contents["territories"]
+
+    same_num_of_terrs = len(prev_terrs) == len(new_terrs)
+
+    all_changed_terrs = [terr_id for terr_id in range(len(new_terrs)) if (terr_id >= len(prev_terrs)) or (prev_terrs[terr_id]["pos"] != new_terrs[terr_id]["pos"])]
+
+    if (not(same_num_of_terrs) or all_changed_terrs):
+        
+        version = 1
+        if ("version" in prev_world.keys()): version = prev_world["version"] + 1
+        
+        world_contents["modified"] = True
+        world_contents["version"] = version
+
 def validate_modified_world(world_name, world_contents):
     """
     Validate a world against its schema
     """
     
     schema.schema_validate(schema_world, world_contents, world = world_contents)
+
+    if (world_contents["name"] != world_name):
+        raise InputError(f"The value of 'name' in the World file is \"{world_contents['name']}\" and does not match the input name \"{world_name}\".")
 
     connected_files = world_connected_files(world_name)
 
@@ -413,20 +486,19 @@ def validate_modified_world(world_name, world_contents):
         except Exception as e:
             logError(e)
             raise InputError(f"Modified world {world_name} is now incompatible with the gamerule {gamerule_name}.")
-
-    try:
-        world = filehandling.loadObject(world_contents)
-    except Exception as e:
-        logError(e)
-        raise InputError(f"World could not be converted to the World class.")
     
     for savegame_server_id in [files["savefile_server_id"] for files in connected_files]:
         savegame = load_saveGame_from_server(savegame_server_id)
         savegame.sync_withWorld()
 
-    logInfo(f"Successfully validated modified world {world.name} and synced related savegames.")
+    iterate_world_ifModified(world_contents)
 
+    # We want to clear the cache when the world is modified because while the cache is useful, on the rare occasions we want to modify the world, this is a clean and simple way to do it in the cache too.
+    world = filehandling.loadObject(world_contents)
     save_world(world)
+    load_world.cache_clear()
+
+    logInfo(f"Successfully validated modified world {world_contents['name']} and synced related savegames.")
 
 
 # Edit game files

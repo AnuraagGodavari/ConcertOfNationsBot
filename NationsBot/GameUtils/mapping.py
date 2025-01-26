@@ -5,8 +5,10 @@ import operator
 
 from logger import *
 from common import *
+import imgur
 
 from ConcertOfNationsEngine.concertofnations_exceptions import *
+import ConcertOfNationsEngine.gamehandling as gamehandling
 
 class Territory:
     """
@@ -41,11 +43,15 @@ class World:
 
     Attributes:
         territories (dict): Keys are territory names, values are the objects.
+        version (int): How many territory placement modifications have been made to this world
+        modified (boolean): Have this world's territory placements been modified since the last world map image?
     """
 
-    def __init__(self, name, territories = None):
+    def __init__(self, name, territories = None, version = 0, modified = False):
         self.name = name
         self.territories = territories or list()
+        self.version = version
+        self.modified = modified
 
     def addNewTerritory(self, name, pos, edges = None, details = None, resources = None, nodes = None):
         
@@ -238,6 +244,26 @@ class World:
         logInfo(f"Successfully saved world {self.name}!")
 
         return filename
+
+    def get_baseImage(self, mapScale = None, filename = None):
+
+        worldMapInfo = gamehandling.dbget_worldMap(self)
+
+        if (self.modified or not(worldMapInfo)):
+
+            worldfile = self.toImage(mapScale = mapScale, filename = filename)
+
+            link = imgur.upload(worldfile)
+
+            gamehandling.insert_worldMap(self, filename, link)
+
+            logInfo(f"Created map image of world {self.name} and uploaded it", details = {"link": link})
+
+            self.modified = False
+
+            return link
+
+        return worldMapInfo["link"]
 
     def constructPath(self, prevTerrs, current, min_dist = float('inf')):
         

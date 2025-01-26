@@ -136,7 +136,7 @@ class Savegame:
                     synced_nodes[node][1] = 0
                     
                 else:
-                    synced_nodes[node][1] = world_terr.nodes[node]
+                    synced_nodes[node] = (synced_nodes[node][0], world_terr.nodes[node])
 
             # Add new nodes to the game
             for node, node_vals in world_terr.nodes.items():
@@ -329,7 +329,7 @@ class Savegame:
 
         logInfo("Created map image of the world and uploaded it")
 
-        gamehandling.insert_worldMap(world, self, worldfile, link, None)
+        gamehandling.insert_gameWorldMap(world, self, worldfile, link, None)
         
         self.gamestate["mapChanged"] = False
 
