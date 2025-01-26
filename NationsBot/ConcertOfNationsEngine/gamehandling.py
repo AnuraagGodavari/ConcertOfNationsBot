@@ -94,6 +94,54 @@ def setupNew_world(world):
     save_world(world)
 
 
+def insert_worldMap(world, filename, link):
+    """
+    Inserting a worldImage into the database based on version, containing a filename and imgur link
+    """
+    logInfo("Saving information for a world image")
+
+    worldInfo = dbget_world_byName(world.name)
+    if not (worldInfo):
+        logInfo(f"World {world.name} does not exist in the database")
+        setupNew_world(world)
+        logInfo(f"Added world {world.name} to the database")
+
+     #Update database
+    try:
+        db = getdb()
+        cursor = db.cursor(buffered=True)
+
+        stmt = "INSERT INTO WorldMaps (world_id, version, filename, link) VALUES (%s, %s, %s, %s)"
+        params = [worldInfo['id'], world.version, filename, link]
+
+        cursor.execute(stmt, params)
+        db.commit()
+
+    except Exception as e:
+        logError(e)
+        raise LogicError(f"World could not be inserted!")
+
+def dbget_worldMap(world):
+    """
+    Get the row in the database table GameWorldMaps pertaining to the information provided
+    """
+    logInfo(f"Retrieving a world map for world {world.name} version {world.version} from the database")
+
+    db = getdb()
+    cursor = db.cursor(buffered=True)
+
+    stmt = "SELECT WorldMaps.* FROM WorldMaps JOIN Worlds on WorldMaps.world_id = Worlds.id WHERE Worlds.name=%s AND WorldMaps.version=%s ORDER BY WorldMaps.created DESC LIMIT 1"
+    params = [world.name, world.version - int(world.modified)]
+
+    cursor.execute(stmt, params)
+    result = fetch_assoc(cursor)
+
+    if not (result): return False
+
+    logInfo(f"Successfully retrieved world map image!")
+    return result
+
+
 def insert_gameWorldMap(world, savegame, filename, link, nation = None):
     """
     Inserting a worldImage into the database based on savegame, nation, turn number, etc. and containing a filename and imgur link
