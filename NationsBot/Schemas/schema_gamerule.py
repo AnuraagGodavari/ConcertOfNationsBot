@@ -73,6 +73,26 @@ def validator_bureaucracy(bureaucracy, path, gamerule = None, **kwargs):
         if not (isinstance(amount, int)):
             raise InputError(f"{path}: Bureaucracy amounts must be numbers")
 
+def validate_prerequisites_exist(prerequisites, path, gamerule = None, **kwargs):
+    """
+    A building's prerequisites must exist in the gamerule.
+    """
+
+    if not (gamerule):
+        raise InputError(f"{path}: There must be a gamerule provided in order to validate prerequisites.")
+
+    if not (isinstance(prerequisites, list)):
+        raise InputError(f"{path}: Prerequisites must be in a list/array.")
+
+    for prerequisite in prerequisites:
+
+        if not (isinstance(prerequisite, str)):
+            raise InputError(f"{path}: Prerequisite must be a string indicating building names.")
+
+        if not (prerequisite in gamerule["Buildings"].keys()):
+            print(prerequisite)
+            raise InputError(f"{path}: Prerequisite {prerequisite} must be a building which exists in the gamerule.")
+
 
 numval_dict_schemaproperties = schema.SchemaProperties(
     validator = schema.schema_validate_values, 
@@ -112,7 +132,18 @@ schema_gamerule_building = {
 
     "Construction Time": schema.SchemaProperties(primitive_type = int),
 
-    "Territory Maximum": schema.SchemaProperties(validator = validate_positive_int, is_required = False)
+    "Territory Maximum": schema.SchemaProperties(validator = validate_positive_int, is_required = False),
+
+    "Prerequisites": {
+
+        "Buildings": {
+
+            "Nation": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False),
+
+            "Territory": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False)
+
+        }
+    }
 }
 
 schema_gamerule_unit = {
@@ -122,7 +153,18 @@ schema_gamerule_unit = {
 
     "Maintenance": schema.SchemaProperties(validator = validate_resources),
 
-    "Construction Time": schema.SchemaProperties(primitive_type = int)
+    "Construction Time": schema.SchemaProperties(primitive_type = int),
+
+    "Prerequisites": {
+
+        "Buildings": {
+
+            "Nation": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False),
+
+            "Territory": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False)
+
+        }
+    }
 }
 
 schema_gamerule = {
