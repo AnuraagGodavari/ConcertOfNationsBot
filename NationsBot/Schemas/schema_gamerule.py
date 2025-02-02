@@ -164,7 +164,20 @@ schema_gamerule_unit = {
             "Territory": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False)
 
         }
-    }
+    },
+
+    "Speed": schema.SchemaProperties(primitive_type = int)
+}
+
+schema_gamerule_vehicle = {
+
+    **schema_gamerule_unit,
+
+    "Carry Capacity": schema.SchemaProperties(primitive_type = int),
+
+    "Crew": schema.SchemaProperties(primitive_type = int),
+
+    "Costs": schema.SchemaProperties(validator = validate_resources)
 }
 
 schema_gamerule = {
@@ -178,6 +191,8 @@ schema_gamerule = {
 	"Buildings": schema.SchemaProperties(validator = schema.schema_validate_values, schema = schema_gamerule_building),
 
 	"Units": schema.SchemaProperties(validator = schema.schema_validate_values, schema = schema_gamerule_unit),
+
+	"Vehicles": schema.SchemaProperties(validator = schema.schema_validate_values, schema = schema_gamerule_vehicle),
 
 	"Base Population Growth": schema.SchemaProperties(primitive_type = gamerule_numbertypes),
 
