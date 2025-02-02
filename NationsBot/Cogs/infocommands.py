@@ -371,6 +371,12 @@ class InfoCommands(commands.Cog):
                 ("Nodes", {resource: f"{val[0]}/{val[1]}" for resource, val in nation_terrInfo["Savegame"]["Nodes"].items()})
             ]
 
+        else:
+
+            fields += [
+                ("Nodes", {resource: str(val) for resource, val in world_terrInfo.nodes.items()})
+            ]
+
         
         menu = MenuEmbed(
             f"[{world_terrInfo.id}] {world_terrInfo.name}", 
