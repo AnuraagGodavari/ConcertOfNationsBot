@@ -29,6 +29,8 @@ class Savegame:
         date (dict): Represents the ingame month (m) and year (y)
         turn (int): The turn number that the game is currently on
         nations (dict): Contains all the nations that populate the game, controlled by players.
+        trade (dict): Contains all trade between nations.
+        offers (dict): Contains all proposed deals between nations.
 
         gamestate (dict): Describes seperate aspects of the game as it presently exists. Format:
         [
@@ -41,7 +43,7 @@ class Savegame:
 
     # Setup
     
-    def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
+    def __init__(self, name, server_id, date: dict, turn, nations = None, trade = None, offers = None, gamestate = None):
 
         self.name = name
         self.server_id = server_id
@@ -49,6 +51,8 @@ class Savegame:
         self.turn = turn
 
         self.nations = nations or dict()
+        self.trade = trade or dict()
+        self.offers = offers or dict()
         self.gamestate = gamestate or {
             "mapChanged": True,
             "mapNum": 0
@@ -707,6 +711,29 @@ class Nation:
             territories.add_buildingeffects(territoryInfo, effects["Territory"], remove_modifiers = True)
 
 
+    # Trade management
+
+    def offer_trade(self, savegame, target, resources):
+        """
+        Offer trade to another target nation.
+        """
+        
+        existing_offers = dict() if self.name not in savegame.offers.keys() else savegame.offers[self.name]
+
+        existing_offers[target.name] = resources
+
+        savegame.offers[self.name] = existing_offers
+
+        return savegame.offers[self.name][target.name]
+
+
+    def accept_trade(self, target):
+        pass
+
+    def stop_trade(self, target):
+        pass
+
+
     # Military management
 
     def can_build_unit(self, savegame, terrID, unitType, blueprint, size):
@@ -799,6 +826,9 @@ class Nation:
 
 
     # New turn functions
+
+    def get_trade(self, savegame):
+        pass
     
     def get_taxrate(self, gamerule):
         return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]

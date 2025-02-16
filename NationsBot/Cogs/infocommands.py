@@ -444,6 +444,7 @@ class InfoCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
+
     # Building Information
 
     @commands.command()
@@ -475,6 +476,16 @@ class InfoCommands(commands.Cog):
         logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+
+    # Trade Information
+    @commands.command()
+    async def trade(self, ctx):
+        """ 
+        Show all of the ongoing trade in a game.
+        """
+        logInfo(f"trade({ctx.guild.id})")
+
 
 
     # Population Information

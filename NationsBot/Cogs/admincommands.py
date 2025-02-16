@@ -1312,6 +1312,37 @@ class AdminCommands(commands.Cog):
         save_saveGame(savegame)
 
 
+    # Manage trade
+
+    @commands.command(aliases = ["definetrade", "define-trade", "defineTrade"])
+    @commands.has_permissions(administrator = True)
+    async def define_trade(self, ctx, roleid01 = None, roleid02 = None, *args):
+        """
+        As an admin, manually define the trade between two nations.
+        Args:
+            roleid01, roleid02: The nation roles.
+
+        """
+        logInfo(f"define_trade({ctx.guild.id}, {roleid01}, {roleid02}, {args})")
+
+        pass
+        
+    @commands.command(aliases = ["removetrade", "remove-trade", "removeTrade"])
+    @commands.has_permissions(administrator = True)
+    async def remove_trade(self, ctx, roleid01 = None, roleid02 = None, *args):
+        """
+        As an admin, manually remove the trade between two nations.
+        Args:
+            roleid01, roleid02: The nation roles.
+            *args (tuple): A list of resources and numbers. Example:
+            ("Iron", "2", "Money", "3")
+
+        """
+        logInfo(f"admin_trade({ctx.guild.id}, {roleid01}, {roleid02}, {args})")
+
+        pass
+
+
     # Manage the savegame
 
     @commands.command(aliases = ["advanceTurn", "advanceturn", "advance-turn"])
