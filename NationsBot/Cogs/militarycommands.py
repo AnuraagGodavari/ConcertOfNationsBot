@@ -47,7 +47,6 @@ class MilitaryCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -108,7 +107,6 @@ class MilitaryCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -264,7 +262,6 @@ class MilitaryCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -326,7 +323,6 @@ class MilitaryCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -667,8 +663,6 @@ class MilitaryCommands(commands.Cog):
         territories = list()
 
         for terrID in terrIDs:
-
-            if terrID.isdigit(): terrID = int(terrID)
 
             #Territory info from the map
             world_terr = world[terrID]
