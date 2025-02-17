@@ -233,7 +233,7 @@ class Savegame:
             raise InputError(f"Territory {terrID} does not exist")
             return False
 
-        terrID = worldTerr.name
+        terrID = str(worldTerr.id)
 
         #Check territory owner
         prevOwner = self.find_terrOwner(terrID)
@@ -458,7 +458,7 @@ class Nation:
         Get the nation-related information about a territory this nation owns
         """
 
-        if not (str(terrID) in self.territories.keys()):
+        if not (terrID in self.territories.keys()):
             return False
 
         return self.territories[terrID]

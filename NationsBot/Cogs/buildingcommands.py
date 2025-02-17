@@ -44,7 +44,6 @@ class BuildingCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -104,7 +103,6 @@ class BuildingCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -161,7 +159,6 @@ class BuildingCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]

@@ -50,8 +50,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
-
         #Territory info from the map
         world_terrInfo = world[terrID]
 
@@ -118,7 +116,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -172,7 +169,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -241,7 +237,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -318,7 +313,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -372,7 +366,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -446,7 +439,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -554,8 +546,6 @@ class AdminCommands(commands.Cog):
         #Check that all territories are valid before removing
         for terrID in terrIDs:
 
-            if terrID.isdigit(): terrID = int(terrID)
-
             #Territory info from the map
             world_terr = world[terrID]
 
@@ -569,8 +559,6 @@ class AdminCommands(commands.Cog):
         
         #Actually remove the territories
         for terrID in terrIDs:
-
-            if terrID.isdigit(): terrID = int(terrID)
 
             #Territory info from the map
             world_terr = world[terrID]
@@ -588,7 +576,7 @@ class AdminCommands(commands.Cog):
 
         removed_terrs_file = io.StringIO(json.dumps(removed_terrs, indent = 2))
 
-        await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
+        await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}. Attached removed territory information.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
 
         removed_terrs_file.close()
 
@@ -734,7 +722,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -1132,8 +1119,6 @@ class AdminCommands(commands.Cog):
 
         for terrID in terrIDs:
 
-            if terrID.isdigit(): terrID = int(terrID)
-
             #Territory info from the map
             world_terr = world[terrID]
 
@@ -1177,7 +1162,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
