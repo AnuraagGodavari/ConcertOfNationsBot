@@ -476,16 +476,6 @@ class InfoCommands(commands.Cog):
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
 
-    # Trade Information
-    @commands.command()
-    async def trade(self, ctx):
-        """ 
-        Show all of the ongoing trade in a game.
-        """
-        logInfo(f"trade({ctx.guild.id})")
-
-
-
     # Population Information
 
     def nation_population(self, ctx, nation):
