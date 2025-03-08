@@ -732,7 +732,6 @@ class Nation:
 
         return savegame.offers[self.name][target.name]
 
-
     def accept_trade(self, savegame, target):
         """
         Accept trade from another target nation, adding it to the savegame's ongoing trades.
@@ -743,6 +742,35 @@ class Nation:
         self.trade[target.name] = offer
 
         target.trade[self.name] = ops.invertDict(offer)
+
+        return offer
+
+    def reject_trade(self, savegame, target):
+        """
+        Reject and discard trade from another target nation.
+        """
+
+        offer = savegame.offers[target.name].pop(self.name)
+
+        return offer
+
+    def cancel_trade(self, savegame, target):
+        """
+        Cancel your ongoing trade to and from another target nation.
+        """
+
+        self_trade = self.trade.pop(target.name)
+
+        target_trade = target.trade.pop(self.name)
+
+        return self_trade
+
+    def cancel_trade_offer(self, savegame, target):
+        """
+        Cancel a trade offer from you to another target nation.
+        """
+
+        offer = savegame.offers[self.name].pop(target.name)
 
         return offer
 
