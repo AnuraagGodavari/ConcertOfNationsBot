@@ -99,7 +99,6 @@ class TradeCommands(commands.Cog):
 
         await ctx.send(embed = trade_menu.toEmbed(), view = trade_menu.embedView())
 
-
     @commands.command(aliases = ["tradeoffers", "trade-offers", "tradeOffers"])
     async def trade_offers(self, ctx):
         """
@@ -109,7 +108,6 @@ class TradeCommands(commands.Cog):
 
         savegame = get_SavegameFromCtx(ctx)
 
-        #Validate that the player owns this territory
         playerinfo = get_player_byGame(savegame, ctx.author.id)
 
         if not (playerinfo):
@@ -126,7 +124,6 @@ class TradeCommands(commands.Cog):
         logInfo(f"Created trade offers menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = trade_menu.toEmbed(), view = trade_menu.embedView())
-       
 
     @commands.command(aliases = ["offertrade", "offer-trade", "offerTrade"])
     async def offer_trade(self, ctx, target_roleid, *args):
@@ -141,7 +138,6 @@ class TradeCommands(commands.Cog):
 
         savegame = get_SavegameFromCtx(ctx)
 
-        #Validate that the player owns this territory
         playerinfo = get_player_byGame(savegame, ctx.author.id)
 
         if not (playerinfo):
@@ -177,7 +173,6 @@ class TradeCommands(commands.Cog):
 
         savegame = get_SavegameFromCtx(ctx)
 
-        #Validate that the player owns this territory
         playerinfo = get_player_byGame(savegame, ctx.author.id)
 
         if not (playerinfo):
@@ -204,18 +199,117 @@ class TradeCommands(commands.Cog):
         await ctx.send(f"Successfully accepted trade offer from {nation.name}, type \"_n.trade_\" to view offer")
 
         save_saveGame(savegame)
-        
+
+    @commands.command(aliases = ["rejecttrade", "reject-trade", ])
+    async def reject_trade(self, ctx, target_roleid):
+        """
+        Reject another nation's trade offer.
+        Args:
+            roleid: The target nation role.
+        """
+        logInfo(f"reject_trade({ctx.guild.id}, {target_roleid})")
+
+        savegame = get_SavegameFromCtx(ctx)
+
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        target_nation = get_NationFromRole(ctx, target_roleid, savegame)
+
+        if (nation == target_nation):
+            raise InputError(f"Cannot trade with self!")
+
+        if not(target_nation.name in savegame.offers.keys()):
+            raise InputError(f"No offers exist from other nation!")
+
+        if not(nation.name in savegame.offers[target_nation.name].keys()):
+            raise InputError(f"No offer exists to you from other nation!")
+
+        rejected_trade = nation.reject_trade(savegame, target_nation)
+
+        logInfo(f"Successfully rejected trade offer", details = {"Nation": nation.name, "Sender": target_nation.name, "Trade": rejected_trade})
+        await ctx.send(f"Rejected trade offer from {target_roleid}")
+
+        save_saveGame(savegame)
+
+    @commands.command(aliases = ["canceltradeoffer", "cancel-trade-offer", "cancelTradeOffer"])
+    async def cancel_trade_offer(self, ctx, target_roleid):
+        """
+        Cancel your trade offer to another nation.
+        Args:
+            roleid: The target nation role.
+        """
+        logInfo(f"cancel_trade_offer({ctx.guild.id}, {target_roleid})")
+
+        savegame = get_SavegameFromCtx(ctx)
+
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        target_nation = get_NationFromRole(ctx, target_roleid, savegame)
+
+        if (nation == target_nation):
+            raise InputError(f"Cannot trade with self!")
+
+        if not(nation.name in savegame.offers.keys()):
+            raise InputError(f"No offers exist from you!")
+
+        if not(target_nation.name in savegame.offers[nation.name].keys()):
+            raise InputError(f"No offer exists from you to other nation!")
+
+        cancelled_trade = nation.cancel_trade_offer(savegame, target_nation)
+
+        logInfo(f"Successfully cancelled trade offer", details = {"Nation": nation.name, "Sender": target_nation.name, "Trade": cancelled_trade})
+        await ctx.send(f"Cancelled trade offer to {target_roleid}")
+
+        save_saveGame(savegame)
         
     @commands.command(aliases = ["canceltrade", "cancel-trade", "cancelTrade"])
     async def cancel_trade(self, ctx, roleid):
         """
-        Cancel or reject trade or a trade offer with another nation.
+        Cancel ongoing trade with another nation.
         Args:
             roleid: The target nation role.
         """
         logInfo(f"cancel_trade({ctx.guild.id}, {roleid})")
 
-        pass
+        savegame = get_SavegameFromCtx(ctx)
+
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+        if not (playerinfo):
+            raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+        roleid = playerinfo['role_discord_id']
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+
+        target_nation = get_NationFromRole(ctx, target_roleid, savegame)
+
+        if (nation == target_nation):
+            raise InputError(f"Cannot trade with self!")
+
+        if not(target_nation.name in nation.trade.keys()):
+            raise InputError(f"No ongoing trade exists with other nation!")
+
+        cancelled_trade = nation.cancel_trade(savegame, target_nation)
+
+        logInfo(f"Successfully cancelled ongoing trade", details = {"Nation": nation.name, "Sender": target_nation.name, "Trade": cancelled_trade})
+        await ctx.send(f"Cancelled ongoing trade to {target_roleid}")
+
+        save_saveGame(savegame)
         
 
 async def setup(client):
