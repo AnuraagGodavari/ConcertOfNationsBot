@@ -29,6 +29,7 @@ class Savegame:
         date (dict): Represents the ingame month (m) and year (y)
         turn (int): The turn number that the game is currently on
         nations (dict): Contains all the nations that populate the game, controlled by players.
+        offers (dict): Contains all proposed deals between nations.
 
         gamestate (dict): Describes seperate aspects of the game as it presently exists. Format:
         [
@@ -41,7 +42,7 @@ class Savegame:
 
     # Setup
     
-    def __init__(self, name, server_id, date: dict, turn, nations = None, gamestate = None):
+    def __init__(self, name, server_id, date: dict, turn, nations = None, trade = None, offers = None, gamestate = None):
 
         self.name = name
         self.server_id = server_id
@@ -49,6 +50,7 @@ class Savegame:
         self.turn = turn
 
         self.nations = nations or dict()
+        self.offers = offers or dict()
         self.gamestate = gamestate or {
             "mapChanged": True,
             "mapNum": 0
@@ -229,7 +231,7 @@ class Savegame:
             raise InputError(f"Territory {terrID} does not exist")
             return False
 
-        terrID = worldTerr.name
+        terrID = str(worldTerr.id)
 
         #Check territory owner
         prevOwner = self.find_terrOwner(terrID)
@@ -345,13 +347,19 @@ class Nation:
     Represents a nation, which controls a number of territories and ingame objects such as buildings and armies, as well as having an economy, meaning resources and their production.
 
     Attributes:
+        name (str): The nation's name.
+        mapcolor (tuple): The RGB values of the color which the nation will be displayed as on a map.
         resources (dict): Represents the total resources available for spending by the nation.
         territories (list): Holds the name of every territory owned by the nation.
+        military (dict): All forces and therefore all units controlled by this nation.
         bureaucracy (dict): Represents the capacity and current load on each bureaucratic category of the nation, with values being tuples (load, capacity)
-        tax_modifier (float): Added onto the base national tax rate and used to calculate the tax revenue from the national population
-    """
+        role_id (int): The discord role id associated with this nation.
+        diplomacy (dict): All diplomatic relations with other nations.
+        trade (dict): Contains trade information by partner nation, with each entry a dict of resources.
+        modifiers (dict): Contains all modifiable values for this nation.
+        """
 
-    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, military = None, diplomacy = None, modifiers = None):
+    def __init__(self, name, role_id, mapcolor, resources = None, territories = None, bureaucracy = None, military = None, diplomacy = None, trade = None, modifiers = None):
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
@@ -365,6 +373,8 @@ class Nation:
         self.role_id = role_id
 
         self.diplomacy = diplomacy or dict()
+
+        self.trade = trade or dict()
         
         self.modifiers = modifiers or copy(nationmodifiers_template)
 
@@ -454,7 +464,7 @@ class Nation:
         Get the nation-related information about a territory this nation owns
         """
 
-        if not (str(terrID) in self.territories.keys()):
+        if not (terrID in self.territories.keys()):
             return False
 
         return self.territories[terrID]
@@ -707,6 +717,68 @@ class Nation:
             territories.add_buildingeffects(territoryInfo, effects["Territory"], remove_modifiers = True)
 
 
+    # Trade management
+
+    def offer_trade(self, savegame, target, resources):
+        """
+        Offer trade to another target nation. Trade can be retrieved at savegame[self.name][target.name]
+        """
+        
+        existing_offers = dict() if self.name not in savegame.offers.keys() else savegame.offers[self.name]
+
+        existing_offers[target.name] = resources
+
+        savegame.offers[self.name] = existing_offers
+
+        return savegame.offers[self.name][target.name]
+
+    def accept_trade(self, savegame, target):
+        """
+        Accept trade from another target nation, adding it to the savegame's ongoing trades.
+        """
+
+        offer = savegame.offers[target.name].pop(self.name)
+
+        self.trade[target.name] = offer
+
+        target.trade[self.name] = ops.invertDict(offer)
+
+        return offer
+
+    def reject_trade(self, savegame, target):
+        """
+        Reject and discard trade from another target nation.
+        """
+
+        offer = savegame.offers[target.name].pop(self.name)
+
+        return offer
+
+    def cancel_trade(self, savegame, target):
+        """
+        Cancel your ongoing trade to and from another target nation.
+        """
+
+        self_trade = self.trade.pop(target.name)
+
+        target_trade = target.trade.pop(self.name)
+
+        return self_trade
+
+    def cancel_trade_offer(self, savegame, target):
+        """
+        Cancel a trade offer from you to another target nation.
+        """
+
+        offer = savegame.offers[self.name].pop(target.name)
+
+        return offer
+
+
+    def stop_trade(self, target):
+        pass
+
+
     # Military management
 
     def can_build_unit(self, savegame, terrID, unitType, blueprint, size):
@@ -799,6 +871,10 @@ class Nation:
 
 
     # New turn functions
+
+    def get_trade(self, savegame):
+
+        return ops.combineDicts( *[trade for trade in self.trade.values()])
     
     def get_taxrate(self, gamerule):
         return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]
@@ -834,6 +910,8 @@ class Nation:
             territories.validate_building_requirements(terrID, self, savegame)
 
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
+
+        revenuesources.append(self.get_trade(savegame))
 
         if (onlyestimate):
             for force in self.military.values():

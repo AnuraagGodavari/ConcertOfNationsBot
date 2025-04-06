@@ -48,6 +48,35 @@ def combineDicts(*args, subtractDicts = False):
 
     return rtnDict
 
+def invertValue(v):
+
+    if isinstance(v, (int, float)):
+        return v*-1
+    elif isinstance(v, (dict)):
+        return invertDict(v)
+    elif (isinstance(v, list)):
+        return invertList(v)
+    else:
+        return v
+
+def invertList(l):
+
+    invertedList = list()
+    
+    for i, v in enumerate(l):
+        invertedList[i] = invertValue(v)
+
+    return invertedList
+
+def invertDict(d):
+
+    invertedDict = dict()
+
+    for k, v in d.items():
+        invertedDict[k] = invertValue(v)
+
+    return invertedDict
+
 def isInt(inStr: str):
      return bool(re.search("^-?[1234567890]*$", inStr))
 

@@ -344,7 +344,6 @@ class InfoCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -408,7 +407,6 @@ class InfoCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -443,6 +441,7 @@ class InfoCommands(commands.Cog):
         logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
 
     # Building Information
 
@@ -508,7 +507,6 @@ class InfoCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]

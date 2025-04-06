@@ -10,6 +10,7 @@ from logger import *
 
 import GameUtils.operations as ops
 from DiscordUtils.getgameinfo import *
+from DiscordUtils import validationutils as validationutils
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -49,8 +50,6 @@ class AdminCommands(commands.Cog):
         world = savegame.getWorld()
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
-
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -118,7 +117,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -172,7 +170,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -241,7 +238,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -318,7 +314,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terrInfo = world[terrID]
@@ -372,7 +367,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -446,7 +440,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -554,8 +547,6 @@ class AdminCommands(commands.Cog):
         #Check that all territories are valid before removing
         for terrID in terrIDs:
 
-            if terrID.isdigit(): terrID = int(terrID)
-
             #Territory info from the map
             world_terr = world[terrID]
 
@@ -569,8 +560,6 @@ class AdminCommands(commands.Cog):
         
         #Actually remove the territories
         for terrID in terrIDs:
-
-            if terrID.isdigit(): terrID = int(terrID)
 
             #Territory info from the map
             world_terr = world[terrID]
@@ -588,7 +577,7 @@ class AdminCommands(commands.Cog):
 
         removed_terrs_file = io.StringIO(json.dumps(removed_terrs, indent = 2))
 
-        await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
+        await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}. Attached removed territory information.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
 
         removed_terrs_file.close()
 
@@ -734,7 +723,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -1132,8 +1120,6 @@ class AdminCommands(commands.Cog):
 
         for terrID in terrIDs:
 
-            if terrID.isdigit(): terrID = int(terrID)
-
             #Territory info from the map
             world_terr = world[terrID]
 
@@ -1177,7 +1163,6 @@ class AdminCommands(commands.Cog):
         if not (world):
             raise InputError("Savegame's world could not be retrieved")
 
-        if terrID.isdigit(): terrID = int(terrID)
 
         #Territory info from the map
         world_terr = world[terrID]
@@ -1308,6 +1293,96 @@ class AdminCommands(commands.Cog):
         diplomacy.set_relation(relation, *nations)
 
         await ctx.send(f"Made the following nations have the relationship {relation} with each other: {', '.join([nation.name for nation in nations])}")
+
+        save_saveGame(savegame)
+
+
+    # Manage trade
+
+    @commands.command(aliases = ["definetrade", "define-trade", "defineTrade"])
+    @commands.has_permissions(administrator = True)
+    async def define_trade(self, ctx, roleid01 = None, roleid02 = None, *args):
+        """
+        As an admin, manually define the trade between two nations. Positive numbers are exported from the first nation to the second, and negative numbers are vice versa.
+        Args:
+            roleid01, roleid02: The nation roles.
+            *args (tuple): A list of resources and numbers. Example:
+            ("Iron", "2", "Money", "3")
+
+        """
+        logInfo(f"define_trade({ctx.guild.id}, {roleid01}, {roleid02}, {args})")
+
+        savegame = get_SavegameFromCtx(ctx)
+
+        nation01 = get_NationFromRole(ctx, roleid01, savegame)
+
+        nation02 = get_NationFromRole(ctx, roleid02, savegame)
+
+        if (nation01 == nation02):
+            raise InputError(f"Cannot trade with self!")
+        
+        #Get and validate resources
+        resources_toadd = validationutils.get_resources_input(args, savegame)
+
+        nation01.offer_trade(savegame, nation02, resources_toadd)
+
+        nation02.accept_trade(savegame, nation01)
+
+        trade_view = {
+            f"{nation01.name} Receives": {
+                resource: amount for resource, amount in nation01.trade[nation02.name].items() if amount > 0
+            },
+
+            f"{nation02.name} Receives": {
+                resource: amount for resource, amount in nation02.trade[nation01.name].items() if amount > 0
+            }
+        }
+
+        logInfo(f"Successfully defined trade", details = trade_view)
+        await ctx.send(f"Successfully defined trade between {nation01.name} and {nation02.name}, type \"_n.trade_\" to view trade.")
+
+        save_saveGame(savegame)
+
+        
+    @commands.command(aliases = ["removetrade", "remove-trade", "removeTrade"])
+    @commands.has_permissions(administrator = True)
+    async def remove_trade(self, ctx, roleid01 = None, roleid02 = None):
+        """
+        As an admin, manually remove the trade between two nations.
+        Args:
+            roleid01, roleid02: The nation roles.
+            *args (tuple): A list of resources and numbers. Example:
+            ("Iron", "2", "Money", "3")
+
+        """
+        logInfo(f"remove_trade({ctx.guild.id}, {roleid01}, {roleid02})")
+        
+        savegame = get_SavegameFromCtx(ctx)
+
+        nation01 = get_NationFromRole(ctx, roleid01, savegame)
+
+        nation02 = get_NationFromRole(ctx, roleid02, savegame)
+
+        if (nation01 == nation02):
+            raise InputError(f"Cannot trade with self!")
+
+        if not(nation02.name in nation01.trade.keys()):
+            raise InputError(f"No ongoing trade exists with other nation!")
+
+        cancelled_trade = nation01.cancel_trade(savegame, nation02)
+
+        trade_view = {
+            f"{nation01.name} Receives": {
+                resource: amount for resource, amount in cancelled_trade.items() if amount > 0
+            },
+
+            f"{nation02.name} Receives": {
+                resource: amount * -1 for resource, amount in cancelled_trade.items() if amount < 0
+            }
+        }
+
+        logInfo(f"Successfully removed ongoing trade", details = trade_view)
+        await ctx.send(f"Removed ongoing trade between {nation01.name} and {nation02.name}")
 
         save_saveGame(savegame)
 
