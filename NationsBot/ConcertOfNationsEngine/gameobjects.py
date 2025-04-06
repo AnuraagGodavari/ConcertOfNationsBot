@@ -873,7 +873,8 @@ class Nation:
     # New turn functions
 
     def get_trade(self, savegame):
-        pass
+
+        return ops.combineDicts( *[trade for trade in self.trade.values()])
     
     def get_taxrate(self, gamerule):
         return gamerule["Base National Modifiers"]["Tax"] + self.modifiers["Tax"]
@@ -909,6 +910,8 @@ class Nation:
             territories.validate_building_requirements(terrID, self, savegame)
 
             revenuesources.append(territories.newturnresources(territoryInfo, savegame))
+
+        revenuesources.append(self.get_trade(savegame))
 
         if (onlyestimate):
             for force in self.military.values():
