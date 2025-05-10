@@ -251,7 +251,7 @@ class InfoCommands(commands.Cog):
                 (unitName, unitInfo)
                 for unitName, unitInfo in military.get_allunits(gamerule).items()
             ],
-            pagesize = 20,
+            pagesize = 6,
             sortable = True,
             isPaged = True
             )
@@ -316,7 +316,7 @@ class InfoCommands(commands.Cog):
                 ) 
                 for terr in nation.territories.keys()
             ],
-            pagesize = 9,
+            pagesize = 3,
             sortable = True,
             isPaged = True
             )
@@ -431,7 +431,7 @@ class InfoCommands(commands.Cog):
                 )
                 for buildingName, buildingStatus in nation_terrInfo["Savegame"]["Buildings"].items()
             ],
-            pagesize = 20,
+            pagesize = 3,
             sortable = True,
             isPaged = True
             )
@@ -464,7 +464,7 @@ class InfoCommands(commands.Cog):
                 (buildingName, buildingInfo)
                 for buildingName, buildingInfo in get_allbuildings(savegame).items()
             ],
-            pagesize = 20,
+            pagesize = 3,
             sortable = True,
             isPaged = True
             )

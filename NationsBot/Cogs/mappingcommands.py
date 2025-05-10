@@ -61,7 +61,7 @@ class MappingCommands(commands.Cog):
                 ) 
                 for i, terr in enumerate(world.territories)
             ],
-            pagesize = 9,
+            pagesize = 3,
             sortable = True,
             isPaged = True
             )
@@ -115,7 +115,7 @@ class MappingCommands(commands.Cog):
                 ) 
                 for i, terr in enumerate(world.territories)
             ],
-            pagesize = 9,
+            pagesize = 3,
             sortable = True,
             isPaged = True
             )

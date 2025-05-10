@@ -47,7 +47,7 @@ class DeveloperCommands(commands.Cog):
                 ) 
                 for world in worlds
             ],
-            pagesize = 9,
+            pagesize = 3,
             isPaged = True
             )
 

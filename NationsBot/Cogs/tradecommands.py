@@ -42,7 +42,7 @@ def nation_trade_offers(ctx, nation, savegame):
         "_List of each trade offer this nation has sent or recieved, in terms of effects on this nation's economy. Positive numbers will be your imports from them, and negative numbers will be your exports to them._", 
         ctx.author.id,
         fields = sent_trades + recieved_trades,
-        pagesize = 5,
+        pagesize = 3,
         sortable = True,
         isPaged = True
         )
@@ -88,7 +88,7 @@ class TradeCommands(commands.Cog):
         "_Positive numbers are imports, and negative numbers are exports._", 
         ctx.author.id,
         fields = [(target, trade) for target, trade in nation.trade.items()],
-        pagesize = 5,
+        pagesize = 3,
         sortable = True,
         isPaged = True
         )
