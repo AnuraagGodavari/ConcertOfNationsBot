@@ -48,6 +48,26 @@ def combineDicts(*args, subtractDicts = False):
 
     return rtnDict
 
+def cleanDict(d):
+
+    if (not d):
+        return
+
+    cleaned_dict = {}
+
+    for k, v in d.items():
+
+        if (not v):
+            continue
+
+        if (type(v) != dict):
+            cleaned_dict[k] = v
+    
+        else:
+            cleaned_dict[k] = cleanDict(v)
+
+    return cleaned_dict
+
 def invertValue(v):
 
     if isinstance(v, (int, float)):

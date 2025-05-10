@@ -7,6 +7,7 @@ from common import *
 from logger import *
 
 from ConcertOfNationsEngine.concertofnations_exceptions import *
+import GameUtils.operations as ops
 
 """ A dictionary of depth 1 where keys are player IDs and values are menu objects """
 menucache = dict()
@@ -116,6 +117,8 @@ class MenuEmbed:
         pagestart = pagenumber * self.pagesize
         pageend = min(len(self.fields), (pagenumber + 1) * self.pagesize)
         
+        paginatedFields = self.removeEmptyFromFields(self.fields[pagestart:pageend])
+        
         paginatedFields = self.fields[pagestart:pageend]
 
         for field in paginatedFields:
@@ -163,6 +166,23 @@ class MenuEmbed:
             )
 
         return embed
+
+    def removeEmptyFromFields(self, fields):
+        
+        cleaned_fields = []
+
+        for field_tuple in fields:
+
+            k = field_tuple[0]
+            field = field_tuple[1]
+                
+            if (type(field) == dict):
+
+                cleaned_field = ops.cleanDict(field)
+
+                if (cleaned_field): cleaned_fields.append((k, cleaned_field)) 
+
+        return cleaned_fields
 
     def embedView(self, pagenumber = 0):
         
