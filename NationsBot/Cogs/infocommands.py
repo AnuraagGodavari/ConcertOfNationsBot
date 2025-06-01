@@ -87,12 +87,17 @@ class InfoCommands(commands.Cog):
                 ("Revenue", ops.combineDicts(nation.get_TurnRevenue(savegame, onlyestimate = True), {"Money": nation.get_taxincome(gamerule)})),
                 ("Bureaucracy", {f"{category}": f"{cap[0]}/{cap[1]}" for category, cap in nation.bureaucracy.items()}),
                 ("Modifiers", nation.modifiers)
+            ],
+            buttons = [
+                CommandButton(ctx, self.client, "Territories", 1, "territories", [nation.role_id]),
+                CommandButton(ctx, self.client, "Trade", 1, "trade"),
+                CommandButton(ctx, self.client, "Forces", 1, "forces"),
             ]
             )
 
         logInfo(f"Created Nation info display")
 
-        await ctx.send(embed = menu.toEmbed())
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
     @commands.command()
     async def nations(self, ctx):

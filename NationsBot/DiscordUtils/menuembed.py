@@ -12,11 +12,39 @@ import GameUtils.operations as ops
 """ A dictionary of depth 1 where keys are player IDs and values are menu objects """
 menucache = dict()
 
-class PaginationView(discord.ui.View):
 
-    def __init__(self, parentmenu, page):
+class CommandButton(discord.ui.Button):
+
+    def __init__(self, ctx, client, label, row, command, args = None):
+        super().__init__(style=discord.ButtonStyle.primary, label=label, row=row)
+        self.client = client
+        self.ctx = ctx
+        self.command = command
+        self.args = args or tuple()
+    
+    async def callback(self, interaction: discord.Interaction):
+        
+        assert self.view is not None
+
+        await self.ctx.invoke(self.client.get_command(self.command), *self.args)
+
+        await interaction.response.defer()
+
+
+class MenuView(discord.ui.View):
+
+    def __init__(self, parentmenu, buttons = None):
         super().__init__()
         self.parentmenu = parentmenu
+
+        for button in buttons:
+            self.add_item(button)
+
+
+class PagedMenuView(MenuView):
+
+    def __init__(self, parentmenu, buttons = None, page = None):
+        super().__init__(parentmenu, buttons)
         self.page = page
 
     @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.green)
@@ -64,7 +92,7 @@ class MenuEmbed:
             ]
     """
 
-    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25, format_text = True):
+    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25, format_text = True, buttons = None):
         self.title = title
         self.description = description
         self.userid = userid
@@ -75,6 +103,7 @@ class MenuEmbed:
         self.isPaged = isPaged
         self.pagesize = max(1, min(pagesize, 25))
         self.format_text = format_text
+        self.buttons = buttons or list()
 
     def adjust_pagenumber(self, pagenumber):
         """ Adjust page number so it is between 0 and the last possible page number before overflow """
@@ -186,13 +215,15 @@ class MenuEmbed:
 
     def embedView(self, pagenumber = 0):
         
-        if not (self.isPaged):
-            return None
+        if (self.isPaged):
+            pagenumber = self.adjust_pagenumber(pagenumber)
+            return PagedMenuView(self, buttons = self.buttons, page = pagenumber)
+        
+        elif (self.buttons):
+            pagenumber = self.adjust_pagenumber(pagenumber)
+            return MenuView(self, buttons = self.buttons)
 
-        pagenumber = self.adjust_pagenumber(pagenumber)
-
-        return PaginationView(self, pagenumber)
-
+        return None
 
 def assignMenu(playerid, menu):
     menucache[str(playerid)] = menu
