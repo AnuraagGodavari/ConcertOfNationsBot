@@ -90,8 +90,8 @@ class InfoCommands(commands.Cog):
             ],
             buttons = [
                 CommandButton(ctx, self.client, "Territories", 1, "territories", [nation.role_id]),
-                CommandButton(ctx, self.client, "Trade", 1, "trade"),
-                CommandButton(ctx, self.client, "Forces", 1, "forces"),
+                CommandButton(ctx, self.client, "Trade", 1, "trade", [nation.role_id]),
+                CommandButton(ctx, self.client, "Forces", 1, "forces", [nation.role_id]),
             ]
             )
 
