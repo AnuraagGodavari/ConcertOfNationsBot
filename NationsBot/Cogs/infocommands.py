@@ -321,6 +321,10 @@ class InfoCommands(commands.Cog):
                 ) 
                 for terr in nation.territories.keys()
             ],
+            buttons = [
+                CommandButton(ctx, self.client, f"{world[terr].name}", 1, "territory", [world[terr].id])
+                for terr in nation.territories.keys()
+            ],
             pagesize = 3,
             sortable = True,
             isPaged = True

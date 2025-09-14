@@ -44,7 +44,9 @@ class MenuView(discord.ui.View):
 class PagedMenuView(MenuView):
 
     def __init__(self, parentmenu, buttons = None, page = None):
-        super().__init__(parentmenu, buttons)
+        pagestart = page * parentmenu.pagesize
+        pageend = min(len(parentmenu.fields), (page + 1) * parentmenu.pagesize)
+        super().__init__(parentmenu, buttons[pagestart:pageend])
         self.page = page
 
     @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.green)
