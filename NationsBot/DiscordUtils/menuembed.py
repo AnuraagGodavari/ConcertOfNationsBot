@@ -24,6 +24,9 @@ class CommandButton(discord.ui.Button):
     
     async def callback(self, interaction: discord.Interaction):
         
+        if (interaction.user.id != self.ctx.author.id):
+            return
+        
         assert self.view is not None
 
         await self.ctx.invoke(self.client.get_command(self.command), *self.args)
