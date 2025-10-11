@@ -92,6 +92,7 @@ class InfoCommands(commands.Cog):
                 CommandButton(ctx, self.client, "Territories", 1, "territories", [nation.role_id]),
                 CommandButton(ctx, self.client, "Trade", 1, "trade", [nation.role_id]),
                 CommandButton(ctx, self.client, "Forces", 1, "forces", [nation.role_id]),
+                CommandButton(ctx, self.client, "Population", 1, "population", [nation.role_id]),
             ]
             )
 
@@ -128,12 +129,16 @@ class InfoCommands(commands.Cog):
                 (f"{nation['name']}", f"<@{nation['player_discord_id']}>")
                 for nation in nations
             ],
+            buttons = [
+                CommandButton(ctx, self.client, f"{nation['name']}", 1, "nationinfo", [nation['role_discord_id']])
+                for nation in nations
+            ],
             format_text = False
             )
 
         logInfo(f"Created Nation info display")
 
-        await ctx.send(embed = menu.toEmbed(), allowed_mentions = discord.AllowedMentions(users = False))
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView(), allowed_mentions = discord.AllowedMentions(users = False))
 
 
     # Military Information
@@ -176,6 +181,10 @@ class InfoCommands(commands.Cog):
                     }
                 ) 
                 for forcename, force in nation.military.items()
+            ],
+            buttons = [
+                CommandButton(ctx, self.client, forcename, 1, "force", [forcename])
+                for forcename in nation.military.keys()
             ],
             pagesize = 9,
             sortable = True,
@@ -365,16 +374,16 @@ class InfoCommands(commands.Cog):
         ]
 
         #Territory info from the game
-        terr_owner = savegame.find_terrOwner(world_terrInfo.name)
+        terr_owner = savegame.find_terrOwner(world_terrInfo.id)
         if terr_owner:
 
-            nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terrInfo.name, savegame)
+            nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terrInfo.id, savegame)
             
             fields += [
                 ("Owner", terr_owner),
                 ("Buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
                 ("Revenue", territories.newturnresources(nation_terrInfo, savegame) or None),
-                ("Population", territories.get_totalpopulation(savegame.nations[terr_owner], world_terrInfo.name)),
+                ("Population", territories.get_totalpopulation(savegame.nations[terr_owner], world_terrInfo.id)),
                 ("Manpower", nation_terrInfo["Savegame"]["Manpower"]),
                 ("Nodes", {resource: f"{val[0]}/{val[1]}" for resource, val in nation_terrInfo["Savegame"]["Nodes"].items()})
             ]
@@ -390,14 +399,18 @@ class InfoCommands(commands.Cog):
             f"[{world_terrInfo.id}] {world_terrInfo.name}", 
             "_For building information, use the command n.territory-buildings <territory name or id>_", 
             ctx.author.id,
-            fields = fields
+            fields = fields,
+            buttons = [
+                CommandButton(ctx, self.client, "Buildings", 1, "territory-buildings", [terrID]),
+                CommandButton(ctx, self.client, "Population", 1, "population", [terrID]),
+            ],
             )
 
         assignMenu(ctx.author.id, menu)
 
         logInfo(f"Created territory {world_terrInfo.id} menu and assigned it to player {ctx.author.id}")
 
-        await ctx.send(embed = menu.toEmbed())
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
     @commands.command(aliases=['territorybuildings', 'territory-buildings'])
     async def territory_buildings(self, ctx, terrID):
@@ -424,11 +437,12 @@ class InfoCommands(commands.Cog):
             raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
 
         #Territory info from the game
-        terr_owner = savegame.find_terrOwner(world_terr.name)
+        terr_owner = savegame.find_terrOwner(world_terr.id)
+        print(terr_owner)
         if not terr_owner:
             raise InputError(f"Territory \"{terrID}\" is unowned and has no buildings")
 
-        nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terr.name, savegame)
+        nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terr.id, savegame)
 
         menu = MenuEmbed(
             f"Buildings in {world_terr.name}", 
