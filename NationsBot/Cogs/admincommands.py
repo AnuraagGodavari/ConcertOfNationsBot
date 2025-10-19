@@ -1126,7 +1126,7 @@ class AdminCommands(commands.Cog):
             if not world_terr:
                 raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
 
-            territories.append(world_terr.name)
+            territories.append(world_terr.id)
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 
