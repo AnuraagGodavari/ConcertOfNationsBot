@@ -25,6 +25,36 @@ class BuildingCommands(commands.Cog):
     
     def __init__(self, client):
         self.client = client
+
+    @commands.command()
+    async def buildings(self, ctx):
+        """ 
+        Show all of the available buildings in the given server's game. 
+        """
+        logInfo(f"buildings({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        menu = MenuEmbed(
+            f"Buildings", 
+            f"_Information about all of the buildings in this game's ruleset._\n_Valid status regular expressions: {buildings.valid_statuspatterns}_", 
+            ctx.author.id,
+            fields = [
+                (buildingName, buildingInfo)
+                for buildingName, buildingInfo in get_allbuildings(savegame).items()
+            ],
+            pagesize = 3,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
         
     @commands.command(aliases = ["buybuilding", "buy-building"])
     async def buy_building(self, ctx, terrID, buildingName):
