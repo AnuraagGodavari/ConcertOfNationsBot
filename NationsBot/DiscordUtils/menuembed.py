@@ -15,12 +15,14 @@ menucache = dict()
 
 class CommandButton(discord.ui.Button):
 
-    def __init__(self, ctx, client, label, row, command, args = None):
+    def __init__(self, ctx, client, label, row, command, args = None, preClick = None, preClickArgs = None):
         super().__init__(style=discord.ButtonStyle.primary, label=label, row=row)
         self.client = client
         self.ctx = ctx
         self.command = command
         self.args = args or tuple()
+        self.preClick = preClick or None
+        self.preClickArgs = preClickArgs or None
     
     async def callback(self, interaction: discord.Interaction):
         
@@ -28,6 +30,9 @@ class CommandButton(discord.ui.Button):
             return
         
         assert self.view is not None
+
+        if (self.preClick):
+            self.preClick(*self.preClickArgs)
 
         await self.ctx.invoke(self.client.get_command(self.command), *self.args)
 

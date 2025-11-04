@@ -22,7 +22,7 @@ import ConcertOfNationsEngine.territories as territories
 
 #The cog itself
 class InfoCommands(commands.Cog):
-    """ Commands that deliver information to a player about the gamestate or the game rules """
+    """ Commands that deliver information to a player about the game they're currently in"""
     
     def __init__(self, client):
         self.client = client
@@ -66,14 +66,14 @@ class InfoCommands(commands.Cog):
 
         gamerule = savegame.getGamerule()
 
-        if (not roleid):
+        playerinfo = get_player_byGame(savegame, ctx.author.id)
 
-            playerinfo = get_player_byGame(savegame, ctx.author.id)
+        if (not roleid):
 
             if not (playerinfo):
                 raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
 
-            roleid = playerinfo['role_discord_id']
+            roleid = playerinfo["role_discord_id"]
             logInfo(f"Got default role id {roleid} for this player")
 
         nation = get_NationFromRole(ctx, roleid, savegame)
@@ -92,9 +92,16 @@ class InfoCommands(commands.Cog):
                 CommandButton(ctx, self.client, "Territories", 1, "territories", [nation.role_id]),
                 CommandButton(ctx, self.client, "Trade", 1, "trade", [nation.role_id]),
                 CommandButton(ctx, self.client, "Forces", 1, "forces", [nation.role_id]),
-                CommandButton(ctx, self.client, "Population", 1, "population", [nation.role_id]),
+                CommandButton(ctx, self.client, "Population", 1, "population", [nation.role_id])
             ]
             )
+
+        if (playerinfo):
+
+            if (get_RoleID(roleid) == playerinfo["role_discord_id"]): menu.buttons += [
+                CommandButton(ctx, self.client, "Buildings Shop", 2, "buildings_shop"),
+                CommandButton(ctx, self.client, "[TBD] Units Shop", 2, "ping")
+            ]
 
         logInfo(f"Created Nation info display")
 

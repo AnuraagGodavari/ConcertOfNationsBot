@@ -7,22 +7,103 @@ from discord.utils import get
 from common import *
 from database import *
 from logger import *
+from constants import *
 
 from DiscordUtils.menuembed import *
 from DiscordUtils.getgameinfo import *
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
+import ConcertOfNationsEngine.buildings
 
 from GameUtils.filehandling import *
+import GameUtils.playerutils as playerutils
 
 #The cog itself
-class MappingCommands(commands.Cog):
+class MapCommands(commands.Cog):
     """ Commands for seeing maps of the world and interacting with territories"""
     
     def __init__(self, client):
         self.client = client
         
+
+    # Util Functions
+
+    def territoriesMenu(self, ctx, roleid, shop = False):
+        """
+        Create a menu for territories by nation
+        Args:
+            roleid: The nation role. By default it's the nation belonging to the user.
+            shop: Is a territory being selected for shopping? By default, False.
+        """
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        if (not roleid):
+
+            playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+            if not (playerinfo):
+                raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
+
+            roleid = playerinfo['role_discord_id']
+            logInfo(f"Got default role id {roleid} for this player")
+
+        nation = get_NationFromRole(ctx, roleid, savegame)
+        
+
+        world = savegame.getWorld()
+        if not (world):
+            raise InputError("Savegame's world could not be retrieved")
+
+        #Handles getting the world map if one exists that represents the current gamestate, or creating a new one otherwise.
+        savegame.world_toImage(mapScale = (100, 100))
+        worldMapInfo = dbget_gameWorldMap(world, savegame, savegame.turn)
+
+        logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
+
+        menu = MenuEmbed(
+            f"{nation.name} Territories", 
+            "_Territories are displayed by their IDs. Use the command \"territory <id or name>\" to see more information about a territory!_", 
+            ctx.author.id,
+            imgurl = worldMapInfo['link'],
+            fields = [
+                (f"Territory {world[terr].id}", {
+                    "Name": world[terr].name, 
+                    "Coordinates": {'x': world[terr].pos[0], 'y': world[terr].pos[1]},
+                    "Natural Resources": world[terr].resources,
+                    "Buildings": len(nation.territories[terr]["Buildings"])
+                    }
+                ) 
+                for terr in nation.territories.keys()
+            ],
+            pagesize = 3,
+            sortable = True,
+            isPaged = True
+            )
+
+        buildingInCart = playerutils.getKeyValue(ctx.guild.id, ctx.author.id, BuildingCacheEnums.BUILDING_IN_CART)
+
+        if (shop and buildingInCart):
+            menu.buttons = [
+                CommandButton(ctx, self.client, f"{world[terr].name}", 1, "buy_building", [world[terr].id, buildingInCart])
+                for terr in nation.territories.keys()
+            ]
+
+        else:
+            menu.buttons = [
+                CommandButton(ctx, self.client, f"{world[terr].name}", 1, "territory", [world[terr].id])
+                for terr in nation.territories.keys()
+            ]
+
+        return menu
+        
+    def selectTerritory(self, ctx, terrID):
+        playerutils.addKeyValue(ctx.guild.id, ctx.author.id, MapCacheEnums.TERRITORY_SELECTED, terrID)
+
+
     @commands.command()
     async def worldmap(self, ctx):
         """
@@ -129,7 +210,7 @@ class MappingCommands(commands.Cog):
         save_saveGame(savegame)
 
 
-    #Territory Info
+    #Territories
 
     @commands.command()
     async def territories(self, ctx, roleid = None):
@@ -140,56 +221,24 @@ class MappingCommands(commands.Cog):
         """
         logInfo(f"territories({ctx.guild.id}, {roleid})")
 
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        if (not roleid):
-
-            playerinfo = get_player_byGame(savegame, ctx.author.id)
-
-            if not (playerinfo):
-                raise InputError(f"Could not get a nation for player <@{ctx.author.id}>")
-
-            roleid = playerinfo['role_discord_id']
-            logInfo(f"Got default role id {roleid} for this player")
-
-        nation = get_NationFromRole(ctx, roleid, savegame)
+        menu = self.territoriesMenu(ctx, roleid)
         
+        assignMenu(ctx.author.id, menu)
 
-        world = savegame.getWorld()
-        if not (world):
-            raise InputError("Savegame's world could not be retrieved")
+        logInfo(f"Created territories menu and assigned it to player {ctx.author.id}")
 
-        #Handles getting the world map if one exists that represents the current gamestate, or creating a new one otherwise.
-        savegame.world_toImage(mapScale = (100, 100))
-        worldMapInfo = dbget_gameWorldMap(world, savegame, savegame.turn)
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
-        logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
+    @commands.command(aliases=['selectterritory', 'select-territory'])
+    async def select_territory(self, ctx, roleid = None): 
+        """ 
+        Select one of the territories owned by a nation, either that of the author or one that is specified.
+        Args:
+            roleid: The nation role. By default it's the nation belonging to the user.
+        """
+        logInfo(f"territories({ctx.guild.id}, {roleid})")
 
-        menu = MenuEmbed(
-            f"{nation.name} Territories", 
-            "_Territories are displayed by their IDs. Use the command \"territory <id or name>\" to see more information about a territory!_", 
-            ctx.author.id,
-            imgurl = worldMapInfo['link'],
-            fields = [
-                (f"Territory {world[terr].id}", {
-                    "Name": world[terr].name, 
-                    "Coordinates": {'x': world[terr].pos[0], 'y': world[terr].pos[1]},
-                    "Natural Resources": world[terr].resources,
-                    "Buildings": len(nation.territories[terr]["Buildings"])
-                    }
-                ) 
-                for terr in nation.territories.keys()
-            ],
-            buttons = [
-                CommandButton(ctx, self.client, f"{world[terr].name}", 1, "territory", [world[terr].id])
-                for terr in nation.territories.keys()
-            ],
-            pagesize = 3,
-            sortable = True,
-            isPaged = True
-            )
+        menu = self.territoriesMenu(ctx, roleid, True)
 
         assignMenu(ctx.author.id, menu)
 
@@ -255,9 +304,24 @@ class MappingCommands(commands.Cog):
             buttons = [
                 CommandButton(ctx, self.client, "Buildings", 1, "territory-buildings", [terrID]),
                 CommandButton(ctx, self.client, "Population", 1, "population", [terrID]),
-            ],
+                CommandButton(
+                    ctx, 
+                    self.client, 
+                    "Buy a building", 
+                    2, 
+                    "buildings_shop",
+                    preClick = self.selectTerritory,
+                    preClickArgs = [ctx, terrID]
+                ),
+                CommandButton(
+                    ctx, 
+                    self.client, 
+                    "[TBD] Buy a unit", 
+                    2, 
+                    "ping"
+                ),
+            ]
             )
-
         assignMenu(ctx.author.id, menu)
 
         logInfo(f"Created territory {world_terrInfo.id} menu and assigned it to player {ctx.author.id}")
@@ -302,7 +366,7 @@ class MappingCommands(commands.Cog):
             ctx.author.id,
             fields = [
                 (buildingName, 
-                ops.combineDicts({"Number": len(buildingStatus), "All Statuses": buildingStatus}, get_blueprint(buildingName, savegame))
+                ops.combineDicts({"Number": len(buildingStatus), "All Statuses": buildingStatus}, buildings.get_blueprint(buildingName, savegame))
                 )
                 for buildingName, buildingStatus in nation_terrInfo["Savegame"]["Buildings"].items()
             ],
@@ -318,4 +382,4 @@ class MappingCommands(commands.Cog):
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
 async def setup(client):
-    await client.add_cog(MappingCommands(client))
+    await client.add_cog(MapCommands(client))
