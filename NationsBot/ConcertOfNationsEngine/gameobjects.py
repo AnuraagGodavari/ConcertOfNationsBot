@@ -516,7 +516,7 @@ class Nation:
 
             if ("Territory" in prerequisites["Buildings"]):
 
-                territory = self.territories[terrID]
+                territory = self.get_territory(terrID)
 
                 allbuildings = [
                     building for building in territory["Buildings"].keys()
