@@ -618,6 +618,8 @@ class Nation:
     def addBuilding(self, buildingName, terrID, savegame):
         """ Add a building to a territory and subtract the resource cost """
 
+        terrID = str(terrID)
+
         logInfo(f"Nation {self.name} purchasing {buildingName} for {terrID}")
 
         blueprint = buildings.get_blueprint(buildingName, savegame)
