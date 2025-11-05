@@ -274,8 +274,14 @@ class MapCommands(commands.Cog):
             ("Mineable Resources", world_terrInfo.resources)
         ]
 
+        buttons = [
+            CommandButton(ctx, self.client, "Buildings", 1, "territory-buildings", [terrID]),
+            CommandButton(ctx, self.client, "Population", 1, "population", [terrID])
+        ]
+
         #Territory info from the game
         terr_owner = savegame.find_terrOwner(world_terrInfo.id)
+
         if terr_owner:
 
             nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terrInfo.id, savegame)
@@ -289,6 +295,31 @@ class MapCommands(commands.Cog):
                 ("Nodes", {resource: f"{val[0]}/{val[1]}" for resource, val in nation_terrInfo["Savegame"]["Nodes"].items()})
             ]
 
+            playerinfo = get_player_byGame(savegame, ctx.author.id)
+
+            if (playerinfo):
+
+                if (savegame.nations[terr_owner].role_id == playerinfo["role_discord_id"]):
+
+                    buttons += [
+                        CommandButton(
+                            ctx, 
+                            self.client, 
+                            "Buy a building", 
+                            2, 
+                            "buildings_shop",
+                            preClick = self.selectTerritory,
+                            preClickArgs = [ctx, terrID]
+                        ),
+                        CommandButton(
+                            ctx, 
+                            self.client, 
+                            "[TBD] Buy a unit", 
+                            2, 
+                            "ping"
+                        )
+                    ]
+
         else:
 
             fields += [
@@ -301,27 +332,10 @@ class MapCommands(commands.Cog):
             "_For building information, use the command n.territory-buildings <territory name or id>_", 
             ctx.author.id,
             fields = fields,
-            buttons = [
-                CommandButton(ctx, self.client, "Buildings", 1, "territory-buildings", [terrID]),
-                CommandButton(ctx, self.client, "Population", 1, "population", [terrID]),
-                CommandButton(
-                    ctx, 
-                    self.client, 
-                    "Buy a building", 
-                    2, 
-                    "buildings_shop",
-                    preClick = self.selectTerritory,
-                    preClickArgs = [ctx, terrID]
-                ),
-                CommandButton(
-                    ctx, 
-                    self.client, 
-                    "[TBD] Buy a unit", 
-                    2, 
-                    "ping"
-                ),
-            ]
-            )
+            buttons = buttons
+        )
+
+
         assignMenu(ctx.author.id, menu)
 
         logInfo(f"Created territory {world_terrInfo.id} menu and assigned it to player {ctx.author.id}")
