@@ -219,7 +219,8 @@ class Savegame:
         Returns: The name of the owner nation or False.
         """
         for nation in self.nations.values():
-            if terrID in nation.territories.keys(): return nation.name
+            terr = nation.get_territory(terrID)
+            if terr: return nation.name
 
         return False
 
@@ -462,12 +463,15 @@ class Nation:
     def get_territory(self, terrID):
         """
         Get the nation-related information about a territory this nation owns
+
+        Args:
+            terrID: The numeric value of the territory
         """
 
-        if not (terrID in self.territories.keys()):
+        if not (str(terrID) in self.territories.keys()):
             return False
 
-        return self.territories[terrID]
+        return self.territories[str(terrID)]
 
     def getTerritoryInfo(self, terrID, savegame):
         """Get a reference to a territory as stored in this savegame and the associated world, as well as all objects within it."""
@@ -512,7 +516,7 @@ class Nation:
 
             if ("Territory" in prerequisites["Buildings"]):
 
-                territory = self.territories[terrID]
+                territory = self.get_territory(terrID)
 
                 allbuildings = [
                     building for building in territory["Buildings"].keys()
@@ -613,6 +617,8 @@ class Nation:
 
     def addBuilding(self, buildingName, terrID, savegame):
         """ Add a building to a territory and subtract the resource cost """
+
+        terrID = str(terrID)
 
         logInfo(f"Nation {self.name} purchasing {buildingName} for {terrID}")
 

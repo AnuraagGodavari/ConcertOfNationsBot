@@ -7,8 +7,10 @@ from discord.utils import get
 from common import *
 from database import *
 from logger import *
+from constants import *
 
 from GameUtils import operations as ops
+import GameUtils.playerutils as playerutils
 
 from DiscordUtils.menuembed import *
 from DiscordUtils.getgameinfo import *
@@ -18,14 +20,96 @@ from ConcertOfNationsEngine.concertofnations_exceptions import *
 import ConcertOfNationsEngine.buildings
 import ConcertOfNationsEngine.territories as territories
 
-
 #The cog itself
 class BuildingCommands(commands.Cog):
     """ Commands for players to manage buildings they own """
     
     def __init__(self, client):
         self.client = client
+
+    
+    # Util functions
+    def buildingsMenu(self, ctx, shop = False):
+        """
+        Return a menu showing all buildings in the context's savegame, either with or without 'buy' buttons
+        """
         
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        all_buildings = buildings.get_allbuildings(savegame)
+
+        menu = MenuEmbed(
+            f"Buildings", 
+            f"_Information about all of the buildings in this game's ruleset._\n_Valid status regular expressions: {buildings.valid_statuspatterns}_", 
+            ctx.author.id,
+            fields = [
+                (buildingName, buildingInfo)
+                for buildingName, buildingInfo in all_buildings.items()
+            ],
+            pagesize = 3,
+            sortable = True,
+            isPaged = True
+            )
+
+        territorySelected = playerutils.getKeyValue(ctx.guild.id, ctx.author.id, MapCacheEnums.TERRITORY_SELECTED)
+
+        if (shop and territorySelected):
+            menu.buttons = [
+                CommandButton(ctx, self.client, buildingName, 1, "buy_building", [territorySelected, buildingName])
+                for buildingName in all_buildings.keys()
+            ]
+
+        elif (shop):
+            menu.buttons = [
+                CommandButton(ctx, 
+                    self.client, 
+                    f"Build {buildingName}", 
+                    2, 
+                    "select_territory",
+                    preClick = self.putBuildingInCart,
+                    preClickArgs = [ctx, buildingName]
+                    )
+                for buildingName in all_buildings.keys()
+            ]
+
+        return menu
+
+    def putBuildingInCart(self, ctx, buildingName):
+        playerutils.addKeyValue(ctx.guild.id, ctx.author.id, BuildingCacheEnums.BUILDING_IN_CART, buildingName)
+
+
+    @commands.command()
+    async def buildings(self, ctx):
+        """ 
+        Show all of the available buildings in the given server's game. 
+        """
+        logInfo(f"buildings({ctx.guild.id})")
+
+        savegame = get_SavegameFromCtx(ctx)
+        if not (savegame): 
+            return #Error will already have been handled
+
+        menu = MenuEmbed(
+            f"Buildings", 
+            f"_Information about all of the buildings in this game's ruleset._\n_Valid status regular expressions: {buildings.valid_statuspatterns}_", 
+            ctx.author.id,
+            fields = [
+                (buildingName, buildingInfo)
+                for buildingName, buildingInfo in get_allbuildings(savegame).items()
+            ],
+            pagesize = 3,
+            sortable = True,
+            isPaged = True
+            )
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
     @commands.command(aliases = ["buybuilding", "buy-building"])
     async def buy_building(self, ctx, terrID, buildingName):
         """ 
@@ -194,6 +278,41 @@ class BuildingCommands(commands.Cog):
         await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
 
         save_saveGame(savegame)
+
+
+    # Building Information
+
+    @commands.command()
+    async def buildings(self, ctx):
+        """ 
+        Show all of the available buildings in the given server's game. 
+        """
+        logInfo(f"buildings({ctx.guild.id})")
+
+        menu = self.buildingsMenu(ctx, shop = False)
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+    
+    @commands.command(aliases = ["buildingsshop", "buildings-shop"])
+    async def buildings_shop(self, ctx):
+        """ 
+        Show all of the available buildings in the given server's game, with buttons that allow players to choose a building to buy. 
+        """
+        logInfo(f"buildings({ctx.guild.id})")
+
+        menu = self.buildingsMenu(ctx, shop = True)
+
+        assignMenu(ctx.author.id, menu)
+
+        logInfo(f"Created buildings menu and assigned it to player {ctx.author.id}")
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
 
 
 async def setup(client):

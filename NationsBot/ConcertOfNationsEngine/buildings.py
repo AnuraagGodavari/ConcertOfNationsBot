@@ -98,7 +98,7 @@ def get_alleffects(buildingName, savegame):
 
     if not (blueprint): return False
 
-    if not ("Effects" in blueprint.keys()): return False
+    if not ("Effects" in blueprint.keys()): return dict()
 
     return blueprint["Effects"]
 

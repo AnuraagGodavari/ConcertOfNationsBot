@@ -670,7 +670,7 @@ class MilitaryCommands(commands.Cog):
             if not world_terr:
                 raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
 
-            territories.append(world_terr.name)
+            territories.append(world_terr.id)
 
         #Validate that the player owns these forces
         playerinfo = get_player_byGame(savegame, ctx.author.id)

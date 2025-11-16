@@ -68,19 +68,23 @@ class AdminCommands(commands.Cog):
 
         #Validate that building can be built
 
+        if not (buildingName in get_allbuildings(savegame)):
+            raise InputError(f"Building {buildingName} does not exist")
+
         blueprint = buildings.get_blueprint(buildingName, savegame)
 
         territory = nation.getTerritoryInfo(terrID, savegame)
 
-        if not (nation.canHoldBuilding(savegame, buildingName, blueprint, territory)):
+        if not (nation.canHoldBuilding(buildingName, blueprint, territory)):
 
             max_num = 1
             if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
 
             raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
 
-        if not (buildingName in get_allbuildings(savegame)):
-            raise InputError(f"Building {buildingName} does not exist")
+        if not (nation.enoughNodesForBuilding(blueprint, territory)):
+
+            raise InputError(f"Territory {territoryName} does not have the required nodes for building {buildingName}")
 
         territories.add_building(nation, terrID, buildingName, "Active", blueprint)
 
@@ -1126,7 +1130,7 @@ class AdminCommands(commands.Cog):
             if not world_terr:
                 raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
 
-            territories.append(world_terr.name)
+            territories.append(world_terr.id)
 
         nation = get_NationFromRole(ctx, roleid, savegame)
 

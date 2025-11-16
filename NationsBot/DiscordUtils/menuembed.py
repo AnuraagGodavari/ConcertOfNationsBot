@@ -7,15 +7,54 @@ from common import *
 from logger import *
 
 from ConcertOfNationsEngine.concertofnations_exceptions import *
+import GameUtils.operations as ops
 
 """ A dictionary of depth 1 where keys are player IDs and values are menu objects """
 menucache = dict()
 
-class PaginationView(discord.ui.View):
 
-    def __init__(self, parentmenu, page):
+class CommandButton(discord.ui.Button):
+
+    def __init__(self, ctx, client, label, row, command, args = None, preClick = None, preClickArgs = None):
+        super().__init__(style=discord.ButtonStyle.primary, label=label, row=row)
+        self.client = client
+        self.ctx = ctx
+        self.command = command
+        self.args = args or tuple()
+        self.preClick = preClick or None
+        self.preClickArgs = preClickArgs or None
+    
+    async def callback(self, interaction: discord.Interaction):
+        
+        if (interaction.user.id != self.ctx.author.id):
+            return
+        
+        assert self.view is not None
+
+        if (self.preClick):
+            self.preClick(*self.preClickArgs)
+
+        await self.ctx.invoke(self.client.get_command(self.command), *self.args)
+
+        await interaction.response.defer()
+
+
+class MenuView(discord.ui.View):
+
+    def __init__(self, parentmenu, buttons = None):
         super().__init__()
         self.parentmenu = parentmenu
+
+        for button in buttons:
+            self.add_item(button)
+
+
+class PagedMenuView(MenuView):
+
+    def __init__(self, parentmenu, buttons = None, page = None):
+        pagestart = page * parentmenu.pagesize
+        pageend = min(len(parentmenu.fields), (page + 1) * parentmenu.pagesize)
+        super().__init__(parentmenu, buttons[pagestart:pageend])
         self.page = page
 
     @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.green)
@@ -63,7 +102,7 @@ class MenuEmbed:
             ]
     """
 
-    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25, format_text = True):
+    def __init__(self, title, description, userid, imgfile = None, imgurl = None, sortable = False, fields = None, isPaged = False, pagesize = 25, format_text = True, buttons = None):
         self.title = title
         self.description = description
         self.userid = userid
@@ -74,6 +113,7 @@ class MenuEmbed:
         self.isPaged = isPaged
         self.pagesize = max(1, min(pagesize, 25))
         self.format_text = format_text
+        self.buttons = buttons or list()
 
     def adjust_pagenumber(self, pagenumber):
         """ Adjust page number so it is between 0 and the last possible page number before overflow """
@@ -115,6 +155,8 @@ class MenuEmbed:
 
         pagestart = pagenumber * self.pagesize
         pageend = min(len(self.fields), (pagenumber + 1) * self.pagesize)
+        
+        paginatedFields = self.removeEmptyFromFields(self.fields[pagestart:pageend])
         
         paginatedFields = self.fields[pagestart:pageend]
 
@@ -164,15 +206,34 @@ class MenuEmbed:
 
         return embed
 
+    def removeEmptyFromFields(self, fields):
+        
+        cleaned_fields = []
+
+        for field_tuple in fields:
+
+            k = field_tuple[0]
+            field = field_tuple[1]
+                
+            if (type(field) == dict):
+
+                cleaned_field = ops.cleanDict(field)
+
+                if (cleaned_field): cleaned_fields.append((k, cleaned_field)) 
+
+        return cleaned_fields
+
     def embedView(self, pagenumber = 0):
         
-        if not (self.isPaged):
-            return None
+        if (self.isPaged):
+            pagenumber = self.adjust_pagenumber(pagenumber)
+            return PagedMenuView(self, buttons = self.buttons, page = pagenumber)
+        
+        elif (self.buttons):
+            pagenumber = self.adjust_pagenumber(pagenumber)
+            return MenuView(self, buttons = self.buttons)
 
-        pagenumber = self.adjust_pagenumber(pagenumber)
-
-        return PaginationView(self, pagenumber)
-
+        return None
 
 def assignMenu(playerid, menu):
     menucache[str(playerid)] = menu
