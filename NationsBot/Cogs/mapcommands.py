@@ -361,7 +361,6 @@ class MapCommands(commands.Cog):
 
         #Territory info from the game
         terr_owner = savegame.find_terrOwner(world_terr.id)
-        print(terr_owner)
         if not terr_owner:
             raise InputError(f"Territory \"{terrID}\" is unowned and has no buildings")
 

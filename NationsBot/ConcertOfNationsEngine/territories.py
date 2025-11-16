@@ -26,8 +26,6 @@ def hasbuilding(nation, terrID, buildingName):
 
 def add_building(nation, terrID, buildingName, status, blueprint):
 
-    terrID = str(terrID)
-
     territory = nation.get_territory(terrID)
 
     if (not hasbuilding(nation, terrID, buildingName)):

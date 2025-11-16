@@ -569,6 +569,7 @@ class AdminCommands(commands.Cog):
             world_terr = world[terrID]
 
             territoryName = world_terr.name
+            terrID = world_terr.id
 
             removed_terr = savegame.remove_territory(terrID, nation)
 
