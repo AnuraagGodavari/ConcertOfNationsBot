@@ -99,8 +99,7 @@ class InfoCommands(commands.Cog):
         if (playerinfo):
 
             if (get_RoleID(roleid) == playerinfo["role_discord_id"]): menu.buttons += [
-                CommandButton(ctx, self.client, "Buildings Shop", 2, "buildings_shop"),
-                CommandButton(ctx, self.client, "[TBD] Units Shop", 2, "ping")
+                CommandButton(ctx, self.client, "Buildings Shop", 2, "buildings_shop")
             ]
 
         logInfo(f"Created Nation info display")

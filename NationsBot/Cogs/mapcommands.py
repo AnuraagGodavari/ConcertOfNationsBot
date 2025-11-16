@@ -310,13 +310,6 @@ class MapCommands(commands.Cog):
                             "buildings_shop",
                             preClick = self.selectTerritory,
                             preClickArgs = [ctx, terrID]
-                        ),
-                        CommandButton(
-                            ctx, 
-                            self.client, 
-                            "[TBD] Buy a unit", 
-                            2, 
-                            "ping"
                         )
                     ]
 
