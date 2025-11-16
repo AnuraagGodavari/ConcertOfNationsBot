@@ -232,7 +232,7 @@ class Savegame:
             raise InputError(f"Territory {terrID} does not exist")
             return False
 
-        terrID = str(worldTerr.id)
+        terrID = worldTerr.id
 
         #Check territory owner
         prevOwner = self.find_terrOwner(terrID)
@@ -364,7 +364,13 @@ class Nation:
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
+
+        territories = {
+            int(terrID): territory
+            for terrID, territory in territories.items()
+        }
         self.territories = territories or dict()
+
         self.military = military or dict()
 
         self.bureaucracy = bureaucracy or dict()
@@ -468,10 +474,10 @@ class Nation:
             terrID: The numeric value of the territory
         """
 
-        if not (str(terrID) in self.territories.keys()):
+        if not (int(terrID) in self.territories.keys()):
             return False
 
-        return self.territories[str(terrID)]
+        return self.territories[int(terrID)]
 
     def getTerritoryInfo(self, terrID, savegame):
         """Get a reference to a territory as stored in this savegame and the associated world, as well as all objects within it."""
@@ -617,8 +623,6 @@ class Nation:
 
     def addBuilding(self, buildingName, terrID, savegame):
         """ Add a building to a territory and subtract the resource cost """
-
-        terrID = str(terrID)
 
         logInfo(f"Nation {self.name} purchasing {buildingName} for {terrID}")
 

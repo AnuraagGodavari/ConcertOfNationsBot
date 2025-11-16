@@ -59,7 +59,7 @@ class World:
 
     def calculateAllNeighbors(self, neighborRules):
         """
-        Calculates which territories are connecte to which others based on a ruleset.
+        Calculates which territories are connected to which others based on a ruleset.
 
         Args:
             neighborRules (list): A list of rules, represented as dictionaries following the format:
