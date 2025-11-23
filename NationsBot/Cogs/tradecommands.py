@@ -65,7 +65,7 @@ class TradeCommands(commands.Cog):
         """ 
         Show all of a nation's ongoing trade.
         Args:
-            roleid: The nation role. By default it's the nation belonging to the user.
+            roleid (Optional): The nation role. By default it's the nation belonging to the user.
         """
         logInfo(f"trade({ctx.guild.id})")
 
@@ -129,6 +129,10 @@ class TradeCommands(commands.Cog):
     async def offer_trade(self, ctx, target_roleid, *args):
         """
         Offer trade to another nation. Positive numbers will be your exports to them, and negative numbers will be your imports from them.
+
+        Example: To offer 10 Iron in exchange for your receiving 10 Money to Sealand, type:
+        > n.offer_trade @Sealand Iron 10 Money -10
+        
         Args:
             roleid: The target nation role.
             *args (tuple): A list of resources and numbers. Example:
@@ -166,6 +170,10 @@ class TradeCommands(commands.Cog):
     async def accept_trade(self, ctx, target_roleid):
         """
         Accept another nation's trade offer.
+
+        Example: To accept Sealand's current trade offer, type:
+        > n.accept_trade @Sealand
+
         Args:
             roleid: The target nation role.
         """
@@ -204,6 +212,10 @@ class TradeCommands(commands.Cog):
     async def reject_trade(self, ctx, target_roleid):
         """
         Reject another nation's trade offer.
+
+        Example: To reject Sealand's current trade offer, type:
+        > n.reject_trade @Sealand
+
         Args:
             roleid: The target nation role.
         """
@@ -242,6 +254,10 @@ class TradeCommands(commands.Cog):
     async def cancel_trade_offer(self, ctx, target_roleid):
         """
         Cancel your trade offer to another nation.
+
+        Example: To cancel your current unaccepted trade offer to Sealand, type:
+        > n.cancel_trade @Sealand
+
         Args:
             roleid: The target nation role.
         """
@@ -280,6 +296,10 @@ class TradeCommands(commands.Cog):
     async def cancel_trade(self, ctx, roleid):
         """
         Cancel ongoing trade with another nation.
+
+        Example: To cancel your currently ongoing trade with Sealand, type:
+        > n.cancel_trade @Sealand
+
         Args:
             roleid: The target nation role.
         """

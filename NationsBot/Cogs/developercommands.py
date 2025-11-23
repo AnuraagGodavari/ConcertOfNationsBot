@@ -29,7 +29,7 @@ class DeveloperCommands(commands.Cog):
     @commands.command()
     async def worlds(self, ctx):
         """ 
-        Get a menu of all the available world json files
+        Get a menu of all the available world json files.
         """
         logInfo(f"worlds({ctx.guild.id})")
 
@@ -60,7 +60,7 @@ class DeveloperCommands(commands.Cog):
     @commands.command()
     async def gamerules(self, ctx):
         """ 
-        Get a menu of all the available gamerule json files
+        Get a menu of all the available gamerule json files.
         """
         logInfo(f"gamerules({ctx.guild.id})")
 
@@ -91,7 +91,11 @@ class DeveloperCommands(commands.Cog):
     @commands.command(aliases = ["getworld", "get-world", "getWorldmap"])
     async def get_world(self, ctx, world_name):
         """ 
-        Retrieve a world json file 
+        Retrieve a world json file.
+
+        Example: To get the world file for "Bikini Bottom", type:
+        > n.get_world "Bikini Bottom"
+
         Args:
             world_name: The name of the world
         """
@@ -120,6 +124,10 @@ class DeveloperCommands(commands.Cog):
     async def get_gamerule(self, ctx, gamerule_name):
         """ 
         Retrieve a gamerule json file 
+
+        Example: To get the gamerule file for "Bikini Bottom", type:
+        > n.get_gamerule "Bikini Bottom"
+
         Args:
             gamerule_name: The name of the gamerule (without the .json file extension)
         """
@@ -138,6 +146,11 @@ class DeveloperCommands(commands.Cog):
     async def modify_world(self, ctx, world_name): 
         """
         Upload a modified world json file to change the file being used by the bot
+
+        Example: To modify the world file for "Bikini Bottom", type:
+        > n.modify_world "Bikini Bottom"
+        ...and attach the new file.
+
         Args:
             world_name: The name of the world (without the .json file extension)
         """
@@ -172,6 +185,11 @@ class DeveloperCommands(commands.Cog):
     async def modify_gamerule(self, ctx, gamerule_name): 
         """
         Upload a modified gamerule json file to change the file being used by the bot
+
+        Example: To modify the gamerule file for "Bikini Bottom", type:
+        > n.modify_gamerule "Bikini Bottom"
+        ...and attach the new file.
+
         Args:
             gamerule_name: The name of the gamerule (without the .json file extension)
         """

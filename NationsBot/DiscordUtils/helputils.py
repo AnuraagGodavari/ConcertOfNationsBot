@@ -15,6 +15,29 @@ class HelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
 
+
+    async def command_callback(self, ctx = None, command = None):
+        """
+        Overloading this function from the original class. Not recommended!
+        Doing it here to circumvent limitations when doing button callbacks.
+        """
+
+        try: return await super().command_callback(self, ctx, command)
+        except: pass
+
+        self.context = ctx
+
+        bot = ctx.bot
+
+        if command is None:
+            mapping = self.get_bot_mapping()
+            return await self.send_bot_help(mapping)
+
+        # Check if it's a cog
+        cog = bot.get_cog(command)
+        if cog is not None:
+            return await self.send_cog_help(cog)
+
     #Default help command without any expected optional arguments
     async def send_bot_help(self, mapping):
 
@@ -57,7 +80,7 @@ class HelpCommand(commands.HelpCommand):
                 inspect.getdoc(command.callback))
                 for command in cog.get_commands()
             ],
-            pagesize = 9,
+            pagesize = 3,
             isPaged = True,
             format_text = False
             )

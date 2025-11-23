@@ -37,6 +37,10 @@ class AdminCommands(commands.Cog):
     async def give_building(self, ctx, terrID, buildingName, **args):
         """ 
         Spawn a building in a territory.
+
+        Example: To spawn a Small Farm in territory 0, type:
+        > n.give_building 0 "Small Farm"
+
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to build
@@ -99,6 +103,10 @@ class AdminCommands(commands.Cog):
     async def change_buildingstatus(self, ctx, terrID, buildingName, buildingIndex, newstatus):
         """ 
         Manually change the status of any building 
+
+        Example: To make the first Small Farm in territory 0 finish constructing in January 1939, type:
+        > n.change_buildingstatus 0 "Small Farm" 0 "Constructing:01/1939
+
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to build
@@ -154,6 +162,10 @@ class AdminCommands(commands.Cog):
     async def take_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Manually remove a building from any territory 
+
+        Example: To remove the first Small Farm in territory 0, type:
+        > n.remove_building 0 "Small Farm" 0
+
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to remove
@@ -213,6 +225,10 @@ class AdminCommands(commands.Cog):
     async def change_population(self, ctx, terrID, size, occupation, *identifiers):
         """ 
         Change the size of an existing population or add a new one 
+
+        Example: To change the population of Sealander Fishermen in territory 0 to 100,000, type:
+        > n.change_population 0 100000 Fisherman Sealander
+
         Args:
             terrID: The name or numeric ID of the territory
             size: A non-negative integer value for the new population size
@@ -291,7 +307,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def change_population_growth(self, ctx, terrID, growthrate: int | float, occupation, *identifiers):
         """ 
-        Manually change the growth rate modifier of an existing population. 
+        Manually change the growth rate modifier of an existing population.  
+
+        Example: To change the population growth of Sealander Fishermen in territory 0 to grow by 10%, type:
+        > n.change_population 0 1.1 Fisherman Sealander
+
         Args:
             terrID: The name or numeric ID of the territory
             growthrate: A new number representing the new growth rate.
@@ -351,7 +371,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def change_manpower(self, ctx, terrID, amount):
         """ 
-        Manually raise manpower in a given territory. 
+        Manually raise manpower in a given territory.  
+
+        Example: To raise 1000 manpower in territory 0, type:
+        > n.change_population 0 1000
+
         Args:
             terrID: The name or numeric ID of the territory
             amount: An integer amount of manpower for the territory. This is the amount you want it to change.
@@ -424,7 +448,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def edit_manpower(self, ctx, terrID, amount):
         """ 
-        Edit the raw manpower number in any given territory. 
+        Edit the raw manpower number in any given territory.  
+
+        Example: To change the manpower in territory 0 to 1000, type:
+        > n.change_population 0 1000
+
         Args:
             terrID: The name or numeric ID of the territory
             amount: An integer amount for the new value of manpower for the territory.
@@ -500,7 +528,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def give_territory(self, ctx, roleid, *terrIDs):
         """
-        Give a territory to a nation and take it away from its previous owner, if any.
+        Give a territory to a nation and take it away from its previous owner, if any. 
+
+        Example: To give territories 0-2 to Sealand, type:
+        > n.give_territory @Sealand 0 1 2
+
         Args:
             roleid: The nation role.
             *terrIDs: Any number of valid territory names or numerical ids.
@@ -529,6 +561,10 @@ class AdminCommands(commands.Cog):
     async def remove_territory(self, ctx, roleid, *terrIDs):
         """
         Remove a territory from a nation.
+
+        Example: To take away territories 0-2 from Sealand, type:
+        > n.remove_territory @Sealand 0 1 2
+
         Args:
             roleid: The nation role.
             *terrIDs: Any number of valid territory names or numerical ids.
@@ -593,6 +629,10 @@ class AdminCommands(commands.Cog):
     async def give_resources(self, ctx, roleid, *args):
         """
         Give a specified amount of any resources to a specified nation.
+
+        Example: To give 10 Food and 20 Money to Sealand, type:
+        > n.give_resources @Sealand Food 10 Money 20
+
         
         Args:
             roleid: The nation role.
@@ -643,6 +683,10 @@ class AdminCommands(commands.Cog):
     async def change_capacity(self, ctx, roleid, category, amount):
         """ 
         Change the bureaucratic capacity for any category of a specific nation's bureaucracy 
+
+        Example: To change Sealand's Military bureaucratic capacity to 10, type:
+        > n.change_capacity @Sealand Military 10
+
         Args:
             roleid: The nation role.
             category: The bureaucratic category.
@@ -676,6 +720,10 @@ class AdminCommands(commands.Cog):
     async def change_tax(self, ctx, roleid, amount):
         """ 
         Change a nation's national tax modifier 
+
+        Example: To change Sealand's tax modifier to 10%, type:
+        > n.change_tax @Sealand 0.1
+
         Args:
             roleid: The nation role.
             amount: A decimal value representing the new tax rate.
@@ -707,6 +755,10 @@ class AdminCommands(commands.Cog):
     async def admin_give_unit(self, ctx, roleid, terrID, unitType, amount):
         """ 
         Manually spawn a unit to a given nation with no cost. 
+
+        Example: To spawn 1000 Light Infantry for Sealand in territory 0, type:
+        > n.admin_give_unit @Sealand 0 "Light Infantry" 0
+
         Args:
             terrID: The name or numeric ID of the territory
             roleid: The nation role.
@@ -764,7 +816,11 @@ class AdminCommands(commands.Cog):
     async def change_forcestatus(self, ctx, roleid, forceName, newstatus):
         """ 
         Manually change the status of any force and all units within it
-         Args:
+
+        Example: To make Sealand's "Fighting Sharks" force finish constructing in January 1939, type:
+        > n.change_forcestatus @Sealand "Fighting Sharks" "Constructing:01/1939"
+
+        Args:
             roleid: The nation role.
             forceName: The name of the force.
             newstatus: A new status. This can be: Active, Inactive, Battling or Constructing:<m>/<y>
@@ -796,6 +852,10 @@ class AdminCommands(commands.Cog):
     async def admin_rename_force(self, ctx, roleid, old_forcename, new_forcename):
         """ 
         Rename a military force
+
+        Example: To rename Sealand's "Fighting Sharks" force to "Fighting Megolodons," type:
+        > n.admin_rename_force @Sealand "Fighting Sharks" "Fighting Megolodons"
+
         Args:
             roleid: The nation role.
             old_forcename: The current name of the force
@@ -830,7 +890,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def admin_rename_unit(self, ctx, roleid, base_forcename, old_unitname, new_unitname):
         """ 
-        Rename a unit within a military force
+        Rename a unit within a military force.
+
+        Example: To rename the unit "100th Sharks" in Sealand's force "Fighting Sharks" to the "101st Sharks", type:
+        > n.admin_rename_unit @Sealand "Fighting Sharks" "100th Sharks" "101st Sharks"
+        
         Args:
             roleid: The nation role.
             old_unitname: The current name of the force
@@ -872,6 +936,10 @@ class AdminCommands(commands.Cog):
     async def admin_combine_forces(self, ctx, roleid, base_forcename, *additional_forcenames):
         """ 
         Combine multiple forces of any given nation. 
+
+        Example: To merge Sealand's "Raging Dolphins" into the "Fighting Sharks", type:
+        > n.admin_combine_forces @Sealand "Fighting Sharks" "Raging Dolphins"
+
         Args:
             roleid: The nation role.
             terrID: The name or numeric ID of the territory
@@ -914,6 +982,9 @@ class AdminCommands(commands.Cog):
     async def admin_combine_units(self, ctx, roleid, base_forcename, base_unitname, *additional_unitnames):
         """ 
         Combine multiple units of any given nation. 
+
+        Example: To merge the "101st Sharks" into the "100th Sharks" within Sealand's "Fighting Sharks" force, type:
+        > n.admin_combine_units @Sealand "Fighting Sharks" "100th Sharks", "101st Sharks"
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -958,6 +1029,10 @@ class AdminCommands(commands.Cog):
     async def admin_split_unit(self, ctx, roleid, base_forcename, base_unitname, *new_unitsizes):
         """ 
         Split a unit of any given nation into multiple new ones.
+
+        Example: To detach a unit of 100 and another of 200 from the unit "101st Sharks" in Sealand's "Fighting Sharks" force, type:
+        > n.admin_split_unit @Sealand "Fighting Sharks" "101st Sharks" 100 200
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -1005,6 +1080,10 @@ class AdminCommands(commands.Cog):
     async def admin_split_force(self, ctx, roleid, base_forcename, *units_toSplit):
         """ 
         Split a force belonging to any given nation, transferring several units to the new force 
+
+        Example: To split the "100th Sharks" and "101st Sharks" from Sealand's "Fighting Sharks" into a seperate force, type:
+        > n.admin_split_force @Sealand "Fighting Sharks" "100th Sharks" "101st Sharks"
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -1040,6 +1119,10 @@ class AdminCommands(commands.Cog):
     async def admin_disband_units(self, ctx, roleid, base_forcename, *units_toDisband):
         """ 
         Disband units in a given force belonging to a specific nation, returning their manpower to their home provinces. 
+
+        Example: To disband the "100th Sharks" and "101st Sharks" from Sealand's "Fighting Sharks", type:
+        > n.admin_disband_units @Sealand "Fighting Sharks" "100th Sharks" "101st Sharks"
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -1079,6 +1162,10 @@ class AdminCommands(commands.Cog):
     async def admin_disband_force(self, ctx, roleid, base_forcename):
         """ 
         Disband a given force, returning its units' manpowers to their home provinces. 
+
+        Example: To disband Sealand's "Fighting Sharks", type:
+        > n.admin_disband_force @Sealand "Fighting Sharks"
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to disband.
@@ -1106,6 +1193,10 @@ class AdminCommands(commands.Cog):
     async def admin_move_force(self, ctx, roleid, base_forcename, *terrIDs):
         """ 
         As an admin, order a given force to start moving to a series of territories
+
+        Example: To order Sealand's "Fighting Sharks" to territory 0, then 10, type:
+        > n.admin_move_force @Sealand "Fighting Sharks" 0 10
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to move.
@@ -1153,6 +1244,10 @@ class AdminCommands(commands.Cog):
     async def admin_change_force_location(self, ctx, roleid, base_forcename, terrID):
         """ 
         As an admin, teleport a force to a new territory.
+
+        Example: To teleport Sealand's "Fighting Sharks" to territory 10, type:
+        > n.admin_change_force_location @Sealand "Fighting Sharks" 10
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -1197,6 +1292,10 @@ class AdminCommands(commands.Cog):
     async def set_battle(self, ctx, roleid0, forcename0, roleid1, forcename1):
         """ 
         As an admin, start a battle between two enemy forces in the same location. 
+
+        Example: To start a battle between Sealand's "Fighting Sharks" and Libertalia's "Pirate Squadron", type:
+        > n.set_battle @Sealand "Fighting Sharks" @Libertalia "Pirate Squadron"
+
         Args:
             roleid0: The nation role.
             forceName0: The name of the force belonging to roleid0.
@@ -1241,7 +1340,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def exit_battle(self, ctx, roleid, base_forcename):
         """ 
-        As an admin, cause a force to exit a battle and if it has an enemy battling it directly, cause the enemy to also exit the battle. 
+        As an admin, cause a force to exit a battle and if it has an enemy battling it directly, cause the enemy to also exit the battle.  
+
+        Example: To withdraw Sealand's "Fighting Sharks" from its current battle, type:
+        > n.exit_battle @Sealand "Fighting Sharks"
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to exit.
@@ -1275,7 +1378,11 @@ class AdminCommands(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def admin_set_relationship(self, ctx, relation, *roleids):
         """
-        Declare the relations of several nations with each other
+        Declare the relations of several nations with each other 
+
+        Example: To make Sealand and Libertalia enemies at war, type:
+        > n.admin_set_relationship War @Sealand @Libertalia
+
         Args:
             relation: The new relation you want between these powers.
             *roleids: The nation roles.
@@ -1309,6 +1416,11 @@ class AdminCommands(commands.Cog):
     async def define_trade(self, ctx, roleid01 = None, roleid02 = None, *args):
         """
         As an admin, manually define the trade between two nations. Positive numbers are exported from the first nation to the second, and negative numbers are vice versa.
+
+        Example: To make Sealand export 10 Food to Libertalia and import 10 Cutlasses, type:
+        > n.define_trade @Sealand @Libertalia 10 Food -10 Cutlasses
+
+
         Args:
             roleid01, roleid02: The nation roles.
             *args (tuple): A list of resources and numbers. Example:
@@ -1354,6 +1466,9 @@ class AdminCommands(commands.Cog):
     async def remove_trade(self, ctx, roleid01 = None, roleid02 = None):
         """
         As an admin, manually remove the trade between two nations.
+
+        Example: To remove Sealand's trade with Libertalia, type:
+        > n.remove_trade @Sealand @Libertalia
         Args:
             roleid01, roleid02: The nation roles.
             *args (tuple): A list of resources and numbers. Example:
@@ -1562,6 +1677,9 @@ class AdminCommands(commands.Cog):
     async def init_game(self, ctx, name, datestr):
         """
         Called in a server without an attached game to initialize a game
+
+        Example: To start a game called "My Game" with a start date of January 1939 in the current server, type:
+        > n.init_game "My Game" 01/1939
         Args:
             name: A unique name for this game.
             datestr: The start date expressed as <m>/<y>.

@@ -33,7 +33,7 @@ class MapCommands(commands.Cog):
         """
         Create a menu for territories by nation
         Args:
-            roleid: The nation role. By default it's the nation belonging to the user.
+            roleid (Optional): The nation role. By default it's the nation belonging to the user.
             shop: Is a territory being selected for shopping? By default, False.
         """
 
@@ -217,7 +217,7 @@ class MapCommands(commands.Cog):
         """ 
         Show all of the territories owned by a nation, either that of the author or one that is specified.
         Args:
-            roleid: The nation role. By default it's the nation belonging to the user.
+            roleid (Optional): The nation role. By default it's the nation belonging to the user.
         """
         logInfo(f"territories({ctx.guild.id}, {roleid})")
 
@@ -234,7 +234,7 @@ class MapCommands(commands.Cog):
         """ 
         Select one of the territories owned by a nation, either that of the author or one that is specified.
         Args:
-            roleid: The nation role. By default it's the nation belonging to the user.
+            roleid (Optional): The nation role. By default it's the nation belonging to the user.
         """
         logInfo(f"territories({ctx.guild.id}, {roleid})")
 
@@ -250,6 +250,10 @@ class MapCommands(commands.Cog):
     async def territory(self, ctx, terrID):
         """
         Look at the details of a territory.
+
+        Example: To look at territory 0, type:
+        > n.territory 0
+        
         Args:
             terrID: The name or numeric ID of the territory.
         """
@@ -339,6 +343,10 @@ class MapCommands(commands.Cog):
     async def territory_buildings(self, ctx, terrID):
         """ 
         Show all of the available buildings in a given territory. 
+
+        Example: To look at he buildings in territory 0, type:
+        > n.territory_buildings 0
+        
         Args:
             terrID: The name or numeric ID of the territory
         """
