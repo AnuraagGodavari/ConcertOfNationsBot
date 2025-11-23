@@ -28,6 +28,10 @@ class MenuCommands(commands.Cog):
     async def sort(self, ctx, *sortargs):
         """ 
         Retrieve the previous menu if it is sortable and create an embed where its contents are sorted with sort args. 
+
+        Example: In a menu of cars with the field "Model", sort by models by typing:
+        > n.sort Model
+
         Args:
             *sortargs: The fields which the menu should sort by.
         """

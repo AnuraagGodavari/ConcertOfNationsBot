@@ -28,6 +28,10 @@ class MilitaryCommands(commands.Cog):
     async def raise_manpower(self, ctx, terrID, amount):
         """ 
         Raise manpower in a given territory. 
+
+        Example: To raise 1000 manpower in territory 0, type:
+        > n.raise_manpower 0 1000
+
         Args:
             terrID: The name or numeric ID of the territory
             amount: An integer amount of manpower to raise. This is the amount you want it to change.
@@ -88,6 +92,10 @@ class MilitaryCommands(commands.Cog):
     async def disband_manpower(self, ctx, terrID, amount):
         """ 
         Disband manpower in a given territory. 
+
+        Example: To disband 1000 manpower in territory 0, type:
+        > n.disband_manpower 0 1000
+
         Args:
             terrID: The name or numeric ID of the territory
             amount: An integer amount of manpower to disband. This is the amount you want it to change.
@@ -152,7 +160,11 @@ class MilitaryCommands(commands.Cog):
     @commands.command(aliases=['renameForce', 'rename-force', 'renameforce'])
     async def rename_force(self, ctx, old_forcename, new_forcename):
         """ 
-        Rename a military force
+        Rename a military force.
+
+        Example: To rename the "Fighting Sharks" to the "Fighting Megolodons", type:
+        > n.rename_force "Fighting Sharks" "Fighting Megolodons"
+
         Args:
             old_forcename: The current name of the force
             new_forcename: The new name you want the force to have.
@@ -192,7 +204,11 @@ class MilitaryCommands(commands.Cog):
     @commands.command(aliases=['renameUnit', 'rename-unit', 'renameunit'])
     async def rename_unit(self, ctx, base_forcename, old_unitname, new_unitname):
         """ 
-        Rename a unit within a military force
+        Rename a unit within a military force.
+
+        Example: To rename the unit "100th Sharks" in the force "Fighting Sharks" to the "101st Sharks", type:
+        > n.rename_unit "Fighting Sharks" "100th Sharks" "101st Sharks"
+
         Args:
             old_unitname: The current name of the force
             new_unitname: The new name you want the force to have.
@@ -242,6 +258,10 @@ class MilitaryCommands(commands.Cog):
     async def build_unit(self, ctx, terrID, unitType, amount):
         """ 
         Build a unit in a given territory. 
+
+        Example: To build 1000 Light Infantry in territory 0, type:
+        > n.build_unit 0 "Light Infantry" 1000
+
         Args:
             terrID: The name or numeric ID of the territory
             unitType: The type of unit this should be.
@@ -302,10 +322,14 @@ class MilitaryCommands(commands.Cog):
     async def build_vehicle(self, ctx, terrID, vehicleType, amount = 1):
         """ 
         Build a vehicle in a given territory. 
+
+        Example: To build 10 Light Ships in territory 0, type:
+        > n.build_vehicle 0 "Light Ship" 1000
+
         Args:
             terrID: The name or numeric ID of the territory
             vehicleType: The type of vehicle this should be.
-            amount: A positive integer value representing the number of this vehicle to create.
+            amount: A positive integer value representing the number of this vehicle to create. Default is 1
         """
         
         logInfo(f"build_vehicle({ctx.guild.id}, {terrID}, {vehicleType}, {amount})")
@@ -363,6 +387,10 @@ class MilitaryCommands(commands.Cog):
     async def combine_forces(self, ctx, base_forcename, *additional_forcenames):
         """ 
         Combine multiple forces of a given nation. 
+
+        Example: To merge the "Raging Dolphins" into the "Fighting Sharks", type:
+        > n.combine_forces "Fighting Sharks" "Raging Dolphins"
+
         Args:
             terrID: The name or numeric ID of the territory
             base_forceName: The name of the force you want the other forces to join.
@@ -409,6 +437,10 @@ class MilitaryCommands(commands.Cog):
     async def combine_units(self, ctx, base_forcename, base_unitname, *additional_unitnames):
         """ 
         Combine multiple units of a given nation. 
+
+        Example: To merge the "101st Sharks" into the "100th Sharks" within the "Fighting Sharks" force, type:
+        > n.combine_units "Fighting Sharks" "100th Sharks", "101st Sharks"
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -462,6 +494,10 @@ class MilitaryCommands(commands.Cog):
     async def split_unit(self, ctx, base_forcename, base_unitname, *new_unitsizes):
         """ 
         Split a unit of a given nation into multiple new ones. 
+
+        Example: To detach a unit of 100 and another of 200 from the unit "101st Sharks" in the "Fighting Sharks" force, type:
+        > n.split_unit "Fighting Sharks" "101st Sharks" 100 200
+
         Args:
             base_forceName: The name of the force you want to edit.
             base_unitname: The unit you want to split.
@@ -519,6 +555,10 @@ class MilitaryCommands(commands.Cog):
     async def split_force(self, ctx, base_forcename, *units_toSplit):
         """ 
         Split a force belonging to a nation, transferring several units to the new force 
+
+        Example: To split the "100th Sharks" and "101st Sharks" from the "Fighting Sharks" into a seperate force, type:
+        > n.split_force "Fighting Sharks" "100th Sharks" "101st Sharks"
+
         Args:
             base_forceName: The name of the force you want to edit.
             *units_toSplit: The units you want to split off into a new force.
@@ -561,6 +601,10 @@ class MilitaryCommands(commands.Cog):
     async def disband_units(self, ctx, base_forcename, *units_toDisband):
         """ 
         Disband units in a given force, returning their manpower to their home provinces. 
+
+        Example: To disband the "100th Sharks" and "101st Sharks" from the "Fighting Sharks", type:
+        > n.disband_units "Fighting Sharks" "100th Sharks" "101st Sharks"
+
         Args:
             roleid: The nation role.
             base_forceName: The name of the force you want to edit.
@@ -607,6 +651,10 @@ class MilitaryCommands(commands.Cog):
     async def disband_force(self, ctx, base_forcename):
         """ 
         Disband a given force, returning its units' manpowers to their home provinces. 
+
+        Example: To disband the "Fighting Sharks", type:
+        > n.disband_force "Fighting Sharks"
+
         Args:
             base_forceName: The name of the force you want to disband.
         """
@@ -639,7 +687,11 @@ class MilitaryCommands(commands.Cog):
     @commands.command(aliases=['moveforce', 'move-force', 'moveForce'])
     async def move_force(self, ctx, base_forcename, *terrIDs):
         """ 
-        Order a given force to start moving to a series of territories 
+        Order a given force to start moving to a series of territories.
+
+        Example: To order the "Fighting Sharks" to territory 0, then 10, type:
+        > n.move_force "Fighting Sharks" 0 10
+
         Args:
             base_forceName: The name of the force you want to move.
             *terrIDs: The territories that you want the forcename you want to move to, in order.

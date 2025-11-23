@@ -99,7 +99,12 @@ class InfoCommands(commands.Cog):
         if (playerinfo):
 
             if (get_RoleID(roleid) == playerinfo["role_discord_id"]): menu.buttons += [
-                CommandButton(ctx, self.client, "Buildings Shop", 2, "buildings_shop")
+                CommandButton(ctx, self.client, "Info Commands", 2, "help", ["InfoCommands"]),
+                CommandButton(ctx, self.client, "Map Commands", 2, "help", ["MapCommands"]),
+                CommandButton(ctx, self.client, "Military Commands", 2, "help", ["MilitaryCommands"]),
+                CommandButton(ctx, self.client, "Building Commands", 2, "help", ["BuildingCommands"]),
+                CommandButton(ctx, self.client, "Trade Commands", 2, "help", ["TradeCommands"]),
+                CommandButton(ctx, self.client, "Buildings Shop", 3, "buildings_shop")
             ]
 
         logInfo(f"Created Nation info display")
@@ -154,7 +159,7 @@ class InfoCommands(commands.Cog):
         """ 
         Show all of the forces controlled by a nation, either that of the author or one that is specified. 
         Args:
-            roleid: The nation role. By default it's the nation belonging to the user.
+            roleid (Optional): The nation role. By default it's the nation belonging to the user.
         """
         logInfo(f"forces({ctx.guild.id}, {roleid})")
 
@@ -207,6 +212,10 @@ class InfoCommands(commands.Cog):
     async def force(self, ctx, forcename):
         """ 
         Show a specific force controlled by any nation in the game. 
+
+        Example: To view the Fighting Sharks, owned by the nation of Sealand, type:
+        > n.force \"Fighting Sharks\"
+
         Args:
             forcename: A specific force's name belonging to any nation
         """
@@ -357,6 +366,13 @@ class InfoCommands(commands.Cog):
     async def population(self, ctx, optionalID = None):
         """ 
         Show all of the populations in a nation or a territory
+
+        Example: To view all of the populations in territory 0, type:
+        > n.population 0
+
+        Example: To view all of the populations in Sealand, type:
+        > n.population @Sealand
+
         Args:
             optionalID: Either a nation role or a name or numeric ID of a territory.
         """

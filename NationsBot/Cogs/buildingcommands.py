@@ -113,7 +113,11 @@ class BuildingCommands(commands.Cog):
     @commands.command(aliases = ["buybuilding", "buy-building"])
     async def buy_building(self, ctx, terrID, buildingName):
         """ 
-        As a nation, this is an order to expend resources to purchase a building 
+        As a nation, this is an order to expend resources to purchase a building.
+
+        Example: To buy a Small Farm in territory 0, type:
+        > n.buy_building 0 \"Small Farm\"
+
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to build
@@ -167,6 +171,10 @@ class BuildingCommands(commands.Cog):
     async def toggle_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Switch a building's status between Active and Inactive
+
+        Example: To toggle the first Small Farm in territory 0 active or inactive, type:
+        > n.toggle_building 0 \"Small Farm" 0
+
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to toggle
@@ -222,6 +230,10 @@ class BuildingCommands(commands.Cog):
     async def destroy_building(self, ctx, terrID, buildingName, buildingIndex):
         """ 
         Remove a building from a territory owned by the user 
+
+        Example: To delete the first Small Farm in territory 0, type:
+        > n.destroy_building 0 \"Small Farm" 0
+
         Args:
             terrID: The name or numeric ID of the territory
             buildingName: The name of the building you wish to remove
