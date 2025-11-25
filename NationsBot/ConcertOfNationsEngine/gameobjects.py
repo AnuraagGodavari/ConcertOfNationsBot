@@ -364,12 +364,12 @@ class Nation:
         self.name = name
         self.mapcolor = mapcolor
         self.resources = resources or dict()
-
-        territories = {
-            int(terrID): territory
-            for terrID, territory in territories.items()
-        }
         self.territories = territories or dict()
+
+        self.territories = {
+            int(terrID): territory
+            for terrID, territory in self.territories.items()
+        }
 
         self.military = military or dict()
 
