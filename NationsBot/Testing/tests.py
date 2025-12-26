@@ -34,6 +34,17 @@ def generateTestWorld(gamerule, length, height, space, pos_rand = (0,0)):
             ) 
         for y in range(0, length, space) for x in range(0, height, space) 
     ]
+    
+    world.addNewTerritory(
+        ''.join([chr(randint(97, 122)) for i in range(5)]), 
+        world[0].pos, 
+        details = {"Terrain": "Plains"},
+        resources = {resource: 1 for resource in gamerule["Resources"]},
+        nodes = {resource: 10 for resource in gamerule["Resources"]},
+        parent = 0
+        )
+
+    world[0].subterritories.append(world[-1].id)
 
     '''
     for i in range(32):
@@ -107,7 +118,11 @@ def generateGame(gamerule, world, conf):
             world.territories[6].id:
             {
                 
-            } 
+            },  
+            world.territories[-1].id:
+            {
+                
+            }
             }
         ))
 

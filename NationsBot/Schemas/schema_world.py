@@ -32,7 +32,7 @@ def validate_territories(terr, path, world = None, **kwargs):
     """
 
     #validate terr
-    schema.schema_validate(schema_territory, terr, path, world = world, **kwargs)
+    schema.schema_validate(schema_territory, terr, path, world = world, terrID = terr["id"], **kwargs)
 
     if (world["territories"][terr["id"]] != terr):
         raise InputError(f"{path}: Territory id must be equal to its index in world.territories")
@@ -75,6 +75,32 @@ def validate_territory_edges(edges, path, world = None, **kwargs):
         if not (isinstance(dist, (int, float, complex))):
             raise InputError(f"{path}: Edges must be numbers")
 
+def validate_territory_subterritories(subterritories, path, world = None, terrID = None, **kwargs):
+    """
+    Territory subterritories must be a list of territory ids not equal to this one.
+    """
+    
+    if not (isinstance(subterritories, list)):
+        raise InputError(f"{path}: A territory's subterritories must be in a list/array.")
+
+    all_territories = [territory["id"] for territory in world["territories"]]
+
+    for subterrID in subterritories:
+
+        if (subterrID == terrID):
+            raise InputError(f"{path}: {subterrID} in subterritories must be a number equal to another territory's id.")
+
+        if (subterrID not in all_territories):
+            raise InputError(f"{path}: {subterrID} in subterritories must be a number equal to another territory's id.")
+
+        subterritory = world["territories"][subterrID]
+
+        if (subterritory["parent"] != terrID):
+            raise InputError(f"{path}: Territory {subterrID} is listed as a subterritory of this one, but its parent does not equal this territory's id.")
+
+        if (subterritory["pos"] != world["territories"][terrID]["pos"]):
+            raise InputError(f"{path}: Subterritory {subterrID}'s pos is different from this territory's pos.")
+
 
 # Territory details validations
 
@@ -104,7 +130,8 @@ schema_territory = {
         "Terrain": schema.SchemaProperties(validator = validate_terrain)
     },
     "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
-    "nodes": schema.SchemaProperties(validator = schema_gamerule.validate_resources)
+    "nodes": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
+    "subterritories": schema.SchemaProperties(validator = validate_territory_subterritories)
 }
 
 schema_world = {
