@@ -103,6 +103,8 @@ class World:
             colorRules(dict): Dictionary where the keys are territories and values are the color they should be on the image, represented as an rgb tuple.
         """
         
+        mapped_terrs = [terr for terr in self.territories if not(terr.parent)]
+        
         #Represents the extra space between min/max X/Y and the borders of the image.
         coordOffset = (75, 75)
         mapScale = mapScale or (1, 1)
@@ -121,12 +123,12 @@ class World:
         edge_courierFont = ImageFont.truetype(f"{fontsDir}/courier.ttf", edge_fontsize)
 
         #Initialize min and max X and Y values to the X and Y coords of the first territory in the dict of territories
-        firstT = next(iter(self.territories))
+        firstT = next(iter(mapped_terrs))
         minX, maxX, minY, maxY = firstT.pos[0], firstT.pos[0], firstT.pos[1], firstT.pos[1]
         minEdge = float('inf')
         maxEdge = -1
         
-        for t in self.territories:
+        for t in mapped_terrs:
             minX = min(minX, t.pos[0])
             maxX = max(maxX, t.pos[0])
             minY = min(minY, t.pos[1])
@@ -155,14 +157,14 @@ class World:
         imgDraw = ImageDraw.Draw(out_img)
 
         #Draw territories on the map
-        for terr in self.territories:
+        for terr in mapped_terrs:
 
             #Draw territory edges and distances on the map
             for neighborID in terr.edges.keys():
 
                 neighbor = self.territories[int(neighborID)]
 
-                if neighbor.id > terr.id:
+                if ((neighbor.id > terr.id) and not(neighbor.parent)):
 
                     edge_coords = ( 
                             ( 
