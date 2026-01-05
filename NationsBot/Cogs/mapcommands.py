@@ -64,6 +64,8 @@ class MapCommands(commands.Cog):
 
         logInfo("Got a matching world map for this game.", details = {k: v for k, v in worldMapInfo.items() if k != 'created'})
 
+        menu_territories = nation.territories.keys()
+
         menu = MenuEmbed(
             f"{nation.name} Territories", 
             "_Territories are displayed by their IDs. Use the command \"territory <id or name>\" to see more information about a territory!_", 
@@ -74,10 +76,12 @@ class MapCommands(commands.Cog):
                     "Name": world[terr].name, 
                     "Coordinates": {'x': world[terr].pos[0], 'y': world[terr].pos[1]},
                     "Natural Resources": world[terr].resources,
-                    "Buildings": len(nation.territories[terr]["Buildings"])
+                    "Buildings": len(nation.territories[terr]["Buildings"]),
+                    "Sub-Territories": [world[subterr_id].name for subterr_id in world[terr].subterritories],
+                    **({ "Parent Territory": world[world[terr].parent].name} if world[terr].parent else {}) # Don't show null
                     }
                 ) 
-                for terr in nation.territories.keys()
+                for terr in menu_territories
             ],
             pagesize = 3,
             sortable = True,
@@ -89,13 +93,13 @@ class MapCommands(commands.Cog):
         if (shop and buildingInCart):
             menu.buttons = [
                 CommandButton(ctx, self.client, f"{world[terr].name}", 1, "buy_building", [world[terr].id, buildingInCart])
-                for terr in nation.territories.keys()
+                for terr in menu_territories
             ]
 
         else:
             menu.buttons = [
                 CommandButton(ctx, self.client, f"{world[terr].name}", 1, "territory", [world[terr].id])
-                for terr in nation.territories.keys()
+                for terr in menu_territories
             ]
 
         return menu
@@ -141,6 +145,7 @@ class MapCommands(commands.Cog):
                     }
                 ) 
                 for i, terr in enumerate(world.territories)
+                if not(terr.parent)
             ],
             pagesize = 3,
             sortable = True,
@@ -195,6 +200,7 @@ class MapCommands(commands.Cog):
                     }
                 ) 
                 for i, terr in enumerate(world.territories)
+                if not(terr.parent)
             ],
             pagesize = 3,
             sortable = True,
@@ -238,7 +244,7 @@ class MapCommands(commands.Cog):
         """
         logInfo(f"territories({ctx.guild.id}, {roleid})")
 
-        menu = self.territoriesMenu(ctx, roleid, True)
+        menu = self.territoriesMenu(ctx, roleid, shop = True)
 
         assignMenu(ctx.author.id, menu)
 
@@ -277,10 +283,17 @@ class MapCommands(commands.Cog):
         fields = [
             ("Mineable Resources", world_terrInfo.resources)
         ]
+        if (world_terrInfo.subterritories):
+            fields += [
+                ("Sub-Territories", [world[subterr_id].name for subterr_id in world_terrInfo.subterritories])
+            ]
 
         buttons = [
             CommandButton(ctx, self.client, "Buildings", 1, "territory-buildings", [terrID]),
             CommandButton(ctx, self.client, "Population", 1, "population", [terrID])
+        ] + [
+            CommandButton(ctx, self.client, f"{world[subterr_id].name}", 3, "territory", [subterr_id])
+            for subterr_id in world_terrInfo.subterritories
         ]
 
         #Territory info from the game
@@ -329,7 +342,8 @@ class MapCommands(commands.Cog):
             "_For building information, use the command n.territory-buildings <territory name or id>_", 
             ctx.author.id,
             fields = fields,
-            buttons = buttons
+            buttons = buttons,
+            format_text = True
         )
 
 

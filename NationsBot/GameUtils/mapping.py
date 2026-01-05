@@ -20,7 +20,7 @@ class Territory:
         details (dict): Information used in other files. For example, resources.
     """
 
-    def __init__(self, name, id, pos, edges = None, details = None, resources = None, nodes = None):
+    def __init__(self, name, id, pos, edges = None, details = None, resources = None, nodes = None, subterritories = None, parent = None):
         self.name = name
         self.id = id
         self.pos = pos
@@ -32,6 +32,9 @@ class Territory:
         self.details = details or dict()
         self.resources = resources or dict()
         self.nodes = nodes or dict()
+
+        self.subterritories = subterritories or list()
+        self.parent = parent
 
     def dist(t0, t1):
         return (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5
@@ -53,9 +56,9 @@ class World:
         self.version = version
         self.modified = modified
 
-    def addNewTerritory(self, name, pos, edges = None, details = None, resources = None, nodes = None):
+    def addNewTerritory(self, name, pos, edges = None, details = None, resources = None, nodes = None, subterritories = None, parent = None):
         
-        self.territories.append(Territory(name, len(self.territories), pos, edges, details, resources, nodes))
+        self.territories.append(Territory(name, len(self.territories), pos, edges, details, resources, nodes, subterritories, parent))
 
     def calculateAllNeighbors(self, neighborRules):
         """
@@ -100,6 +103,8 @@ class World:
             colorRules(dict): Dictionary where the keys are territories and values are the color they should be on the image, represented as an rgb tuple.
         """
         
+        mapped_terrs = [terr for terr in self.territories if not(terr.parent)]
+        
         #Represents the extra space between min/max X/Y and the borders of the image.
         coordOffset = (75, 75)
         mapScale = mapScale or (1, 1)
@@ -118,12 +123,12 @@ class World:
         edge_courierFont = ImageFont.truetype(f"{fontsDir}/courier.ttf", edge_fontsize)
 
         #Initialize min and max X and Y values to the X and Y coords of the first territory in the dict of territories
-        firstT = next(iter(self.territories))
+        firstT = next(iter(mapped_terrs))
         minX, maxX, minY, maxY = firstT.pos[0], firstT.pos[0], firstT.pos[1], firstT.pos[1]
         minEdge = float('inf')
         maxEdge = -1
         
-        for t in self.territories:
+        for t in mapped_terrs:
             minX = min(minX, t.pos[0])
             maxX = max(maxX, t.pos[0])
             minY = min(minY, t.pos[1])
@@ -152,14 +157,14 @@ class World:
         imgDraw = ImageDraw.Draw(out_img)
 
         #Draw territories on the map
-        for terr in self.territories:
+        for terr in mapped_terrs:
 
             #Draw territory edges and distances on the map
             for neighborID in terr.edges.keys():
 
                 neighbor = self.territories[int(neighborID)]
 
-                if neighbor.id > terr.id:
+                if ((neighbor.id > terr.id) and not(neighbor.parent)):
 
                     edge_coords = ( 
                             ( 
@@ -339,7 +344,6 @@ class World:
         logInfo("Path could not be created")
         return False
 
-
     def __getitem__(self, items):
         """
         Called by: self[items]
@@ -347,7 +351,7 @@ class World:
 
         if (type(items) == int):
 
-            if ((items >= len(self.territories)) or (items < 0)): return False
+            if ((items >= len(self.territories))): return False
 
             return self.territories[items]
 
