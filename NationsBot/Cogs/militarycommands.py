@@ -307,6 +307,7 @@ class MilitaryCommands(commands.Cog):
         gamerule = savegame.getGamerule()
 
         blueprint = military.get_blueprint(unitType, gamerule)
+        blueprint = military.get_scaled_blueprint(amount, blueprint)
 
         if not (nation.can_build_unit(savegame, terrID, unitType, blueprint, amount)):
             raise InputError(f"Could not build {unitType} for {nation.name} in {territoryName}")
@@ -372,6 +373,7 @@ class MilitaryCommands(commands.Cog):
         gamerule = savegame.getGamerule()
 
         blueprint = military.get_blueprint(vehicleType, gamerule)
+        blueprint = military.get_scaled_blueprint(amount, blueprint)
 
         if not (nation.can_build_vehicle(savegame, terrID, vehicleType, blueprint, amount)):
             raise InputError(f"Could not build {vehicleType} for {nation.name} in {territoryName}")
