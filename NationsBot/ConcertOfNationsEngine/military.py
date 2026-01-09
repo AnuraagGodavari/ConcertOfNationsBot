@@ -518,6 +518,20 @@ def exit_battle(forcename, force, savegame):
 
 # Utils
 
+def scale_dict_with_unit(d, size, numMonths = 1):
+    
+    return {k: round(v * numMonths * 1 * size, 4) for k, v in d.items()} 
+
+def get_scaled_blueprint(size, blueprint):
+    
+    return {
+        **blueprint,
+
+        **({"Costs": scale_dict_with_unit(blueprint["Costs"], size) if "Costs" in blueprint.keys() else {}}),
+        
+         **({"Bureaucratic Cost": scale_dict_with_unit(blueprint["Bureaucratic Cost"], size) if "Bureaucratic Cost" in blueprint.keys() else {}})
+    }
+
 def get_resources(size, blueprint, numMonths = 1):
     
     return {k: round(v * numMonths * -1 * size, 4) for k, v in blueprint["Maintenance"].items()} 
