@@ -72,16 +72,19 @@ class MapCommands(commands.Cog):
             ctx.author.id,
             imgurl = worldMapInfo['link'],
             fields = [
-                (f"Territory {world[terr].id}", {
-                    "Name": world[terr].name, 
-                    "Coordinates": {'x': world[terr].pos[0], 'y': world[terr].pos[1]},
-                    "Natural Resources": world[terr].resources,
-                    "Buildings": len(nation.territories[terr]["Buildings"]),
-                    "Sub-Territories": [world[subterr_id].name for subterr_id in world[terr].subterritories],
-                    **({ "Parent Territory": world[world[terr].parent].name} if world[terr].parent else {}) # Don't show null
+                (f"Territory {world[terrID].id}", {
+                    "Name": world[terrID].name, 
+                    "Coordinates": {'x': world[terrID].pos[0], 'y': world[terrID].pos[1]},
+                    "Natural Resources": world[terrID].resources,
+                    "Buildings": len([
+                        buildingsList 
+                        for buildingsList in nation.territories[terrID]["Buildings"].values()
+                    ]),
+                    "Sub-Territories": [world[subterr_id].name for subterr_id in world[terrID].subterritories],
+                    **({ "Parent Territory": world[world[terrID].parent].name} if world[terrID].parent else {}) # Don't show null
                     }
                 ) 
-                for terr in menu_territories
+                for terrID in menu_territories
             ],
             pagesize = 3,
             sortable = True,
@@ -305,7 +308,11 @@ class MapCommands(commands.Cog):
             
             fields += [
                 ("Owner", terr_owner),
-                ("Buildings", len(nation_terrInfo["Savegame"]["Buildings"].keys())),
+                ("Buildings", len([
+                    buildingStatus 
+                    for buildingsList in nation_terrInfo["Savegame"]["Buildings"].values()
+                    for buildingStatus in buildingsList
+                    ])),
                 ("Revenue", territories.newturnresources(nation_terrInfo, savegame) or None),
                 ("Population", territories.get_totalpopulation(savegame.nations[terr_owner], world_terrInfo.id)),
                 ("Manpower", nation_terrInfo["Savegame"]["Manpower"]),
@@ -388,15 +395,17 @@ class MapCommands(commands.Cog):
 
         nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terr.id, savegame)
 
+        logInfo("territory_buildings", details = nation_terrInfo["Savegame"]["Buildings"])
+
         menu = MenuEmbed(
             f"Buildings in {world_terr.name}", 
             "_Information about all of the buildings in this territory, including all statuses and the blueprint for one of each building._", 
             ctx.author.id,
             fields = [
                 (buildingName, 
-                ops.combineDicts({"Number": len(buildingStatus), "All Statuses": buildingStatus}, buildings.get_blueprint(buildingName, savegame))
+                ops.combineDicts({"Number": len(buildingsList), "All Statuses": buildingsList}, buildings.get_blueprint(buildingName, savegame))
                 )
-                for buildingName, buildingStatus in nation_terrInfo["Savegame"]["Buildings"].items()
+                for buildingName, buildingsList in nation_terrInfo["Savegame"]["Buildings"].items()
             ],
             pagesize = 3,
             sortable = True,

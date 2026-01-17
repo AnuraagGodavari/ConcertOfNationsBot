@@ -70,9 +70,6 @@ def validator_bureaucracy(bureaucracy, path, gamerule = None, **kwargs):
         if (category not in gamerule["Base Bureaucracy"].keys()):
             raise InputError(f"{path}: Key {category} in bureaucracy must be a resource which exists in the gamerule.")
 
-        if not (isinstance(amount, int)):
-            raise InputError(f"{path}: Bureaucracy amounts must be numbers")
-
 def validate_prerequisites_exist(prerequisites, path, gamerule = None, **kwargs):
     """
     A building's prerequisites must exist in the gamerule.
@@ -102,9 +99,9 @@ numval_dict_schemaproperties = schema.SchemaProperties(
 
 
 schema_gamerule_building = {
-    "Costs": schema.SchemaProperties(validator = validate_resources),
+    "Costs": schema.SchemaProperties(validator = validate_resources, is_required = False),
     
-    "Bureaucratic Cost": schema.SchemaProperties(validator = validator_bureaucracy),
+    "Bureaucratic Cost": schema.SchemaProperties(validator = validator_bureaucracy, is_required = False),
     
     "Node Costs": schema.SchemaProperties(validator = validate_resources, is_required = False),
 
@@ -112,23 +109,25 @@ schema_gamerule_building = {
     {
         "Nation":
         {
-            "Bureaucracy": schema.SchemaProperties(validator = validator_bureaucracy),
+            "Bureaucracy": schema.SchemaProperties(validator = validator_bureaucracy, is_required = False),
 
             "National Modifiers":
             {
-                "Tax": schema.SchemaProperties(primitive_type = gamerule_numbertypes)
+                "Tax": schema.SchemaProperties(primitive_type = gamerule_numbertypes, is_required = False)
             }
         },
+
         "Territory":
         {
+            "Nodes": schema.SchemaProperties(validator = validate_resources, is_required = False)
         }
     },
 
-    "Maintenance": schema.SchemaProperties(validator = validate_resources),
+    "Maintenance": schema.SchemaProperties(validator = validate_resources, is_required = False),
 
-    "Mines": schema.SchemaProperties(validator = validate_resources),
+    "Mines": schema.SchemaProperties(validator = validate_resources, is_required = False),
 
-    "Produces": schema.SchemaProperties(validator = validate_resources),
+    "Produces": schema.SchemaProperties(validator = validate_resources, is_required = False),
 
     "Construction Time": schema.SchemaProperties(primitive_type = int),
 
