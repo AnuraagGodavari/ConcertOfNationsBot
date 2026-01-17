@@ -514,7 +514,8 @@ class Nation:
                 allbuildings = [
                     building for territory in self.territories.values()
                      for building in territory["Buildings"].keys() 
-                     if (not(only_active) or (territory["Buildings"][building] == "Active"))]
+                     if (not(only_active) or ("Active" in territory["Buildings"][building]))
+                    ]
 
                 for prerequisite in prerequisites["Buildings"]["Nation"]:
                     if prerequisite not in allbuildings:
@@ -526,7 +527,8 @@ class Nation:
 
                 allbuildings = [
                     building for building in territory["Buildings"].keys()
-                     if (not(only_active) or (territory["Buildings"][building] == "Active"))]
+                     if (not(only_active) or ("Active" in territory["Buildings"][building]))
+                    ]
 
                 for prerequisite in prerequisites["Buildings"]["Territory"]:
                     if prerequisite not in allbuildings:

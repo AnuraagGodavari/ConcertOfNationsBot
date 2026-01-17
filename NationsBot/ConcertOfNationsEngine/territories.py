@@ -129,18 +129,20 @@ def validate_building_requirements(terrID, nation, savegame):
 
     territoryInfo = nation.territories[terrID]
 
-    for buildingName in territoryInfo["Buildings"].keys():
+    for buildingName, buildingList in territoryInfo["Buildings"].items():
 
-        if (territoryInfo["Buildings"][buildingName] != "Active"):
-            continue
+        for buildingIndex in range(len(buildingList)):
 
-        blueprint = buildings.get_blueprint(buildingName, savegame)
-        
-        if not ("Prerequisites" in blueprint.keys()):
-            continue
+            if (buildingList[buildingIndex] != "Active"):
+                continue
 
-        if not(nation.validate_prerequisites(blueprint["Prerequisites"], terrID, only_active = True)):
-            territoryInfo["Buildings"][buildingName] = "Inactive"
+            blueprint = buildings.get_blueprint(buildingName, savegame)
+            
+            if not ("Prerequisites" in blueprint.keys()):
+                continue
+
+            if not(nation.validate_prerequisites(blueprint["Prerequisites"], terrID, only_active = True)):
+               buildingList[buildingIndex] = "Inactive"
 
 
 # Effects
@@ -152,6 +154,14 @@ def add_buildingeffects(territoryInfo, effects, remove_modifiers = False):
 
     if ("Population" in effects.keys()):
         apply_population_modifiers(territoryInfo, effects["Population"], remove_modifiers)
+
+    if ("Nodes" in effects.keys()):
+        for nodeType, nodeVal in effects["Nodes"].items():
+            nodeInfo = territoryInfo["Nodes"][nodeType]
+            territoryInfo["Nodes"][nodeType] = [
+                nodeInfo[0],
+                nodeInfo[1] + (nodeVal * (-1 if remove_modifiers else 1))
+            ]
     
 
 #Manpower management
@@ -302,19 +312,23 @@ def advanceconstruction(territoryInfo, savegame, bureaucracy):
 
     logInfo(f"Advancing construction for buildings in territory {territoryInfo['ID']}")
 
-    for building, oldstatus in territoryInfo["Savegame"]["Buildings"].items():
+    for buildingType, buildingsList in territoryInfo["Savegame"]["Buildings"].items():
 
-        if ("Constructing" not in oldstatus):
-            continue
+        for buildingNum in range(len(buildingsList)):
 
-        if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(oldstatus.split(':')[-1]))):
-            territoryInfo["Savegame"]["Buildings"][building] = "Active"
+            oldstatus = buildingsList[buildingNum]
 
-            for category, cost in buildings.get_blueprint(building, savegame)["Bureaucratic Cost"].items():
-                bureaucracy[category] = (bureaucracy[category][0] - cost, bureaucracy[category][1])
+            if ("Constructing" not in oldstatus):
+                continue
 
-            logInfo(f"{building} now active from date {oldstatus.split(':')[-1]}")
+            if (dates.date_grtrThan_EqlTo(savegame.date, dates.date_fromstr(oldstatus.split(':')[-1]))):
+                territoryInfo["Savegame"]["Buildings"][buildingType][buildingNum] = "Active"
 
-            neweffects.append(buildings.get_alleffects(building, savegame))
+                for category, cost in buildings.get_blueprint(buildingType, savegame)["Bureaucratic Cost"].items():
+                    bureaucracy[category] = (bureaucracy[category][0] - cost, bureaucracy[category][1])
+
+                logInfo(f"{buildingType} {buildingNum} now active from date {oldstatus.split(':')[-1]}")
+
+                neweffects.append(buildings.get_alleffects(buildingType, savegame))
 
     return ops.combineDicts(*neweffects)
