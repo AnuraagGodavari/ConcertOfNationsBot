@@ -87,7 +87,6 @@ def validate_prerequisites_exist(prerequisites, path, gamerule = None, **kwargs)
             raise InputError(f"{path}: Prerequisite must be a string indicating building names.")
 
         if not (prerequisite in gamerule["Buildings"].keys()):
-            print(prerequisite)
             raise InputError(f"{path}: Prerequisite {prerequisite} must be a building which exists in the gamerule.")
 
 

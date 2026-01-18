@@ -395,8 +395,6 @@ class MapCommands(commands.Cog):
 
         nation_terrInfo = savegame.nations[terr_owner].getTerritoryInfo(world_terr.id, savegame)
 
-        logInfo("territory_buildings", details = nation_terrInfo["Savegame"]["Buildings"])
-
         menu = MenuEmbed(
             f"Buildings in {world_terr.name}", 
             "_Information about all of the buildings in this territory, including all statuses and the blueprint for one of each building._", 
