@@ -145,7 +145,8 @@ class MapCommands(commands.Cog):
                     "Name": terr.name, 
                     "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]},
                     "Resources": terr.resources,
-                    "Base Nodes": terr.nodes
+                    "Base Nodes": terr.nodes,
+                    **({ "Tags": terr.tags} if terr.tags else {})
                     }
                 ) 
                 for i, terr in enumerate(world.territories)
@@ -200,7 +201,8 @@ class MapCommands(commands.Cog):
                     "Name": terr.name, 
                     "Coordinates": {'x': terr.pos[0], 'y': terr.pos[1]},
                     "Resources": terr.resources,
-                    "Base Nodes": terr.nodes
+                    "Base Nodes": terr.nodes,
+                    **({ "Tags": terr.tags} if terr.tags else {})
                     }
                 ) 
                 for i, terr in enumerate(world.territories)
