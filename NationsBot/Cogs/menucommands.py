@@ -94,5 +94,38 @@ class MenuCommands(commands.Cog):
 
         await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
 
+    @commands.command()
+    async def search(self, ctx, *searchargs):
+        """ 
+        Retrieve the previous menu and search by its keys.
+
+        Examples: 
+        
+        In a menu of cars, search to only include items with a title or tag that has "Toyota" in it by typing:
+        > n.search Toyota
+
+        Args:
+            *searchargs: The fields which the menu should search by. Format is either text to search on or an expression.
+        """
+
+        logInfo(f"search({ctx.author.id}, {searchargs})")
+        
+        playerID = ctx.author.id
+        menu = getMenu(playerID)
+
+        if not (menu):
+            raise InputError(f"Player <@{ctx.author.id}> does not have a menu assigned")
+
+        for arg in searchargs:
+            searched = menu.searchContent(arg)
+
+            if not(searched):
+                await ctx.send(f"Menu does not contain fields where the title or tags include all of the following: {searchargs}")
+                return
+
+        await ctx.send(embed = menu.toEmbed(), view = menu.embedView())
+
+
+
 async def setup(client):
     await client.add_cog(MenuCommands(client))

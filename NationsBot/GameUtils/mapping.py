@@ -20,7 +20,7 @@ class Territory:
         details (dict): Information used in other files. For example, resources.
     """
 
-    def __init__(self, name, id, pos, edges = None, details = None, resources = None, nodes = None, subterritories = None, parent = None):
+    def __init__(self, name, id, pos, edges = None, details = None, resources = None, nodes = None, subterritories = None, parent = None, tags = None):
         self.name = name
         self.id = id
         self.pos = pos
@@ -35,6 +35,8 @@ class Territory:
 
         self.subterritories = subterritories or list()
         self.parent = parent
+
+        self.tags = tags or []
 
     def dist(t0, t1):
         return (((t0.pos[0] - t1.pos[0])**2) + ((t0.pos[1] - t1.pos[1])**2))**0.5

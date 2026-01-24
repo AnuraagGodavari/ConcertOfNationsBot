@@ -131,7 +131,10 @@ schema_territory = {
     },
     "resources": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
     "nodes": schema.SchemaProperties(validator = schema_gamerule.validate_resources),
-    "subterritories": schema.SchemaProperties(validator = validate_territory_subterritories)
+    "subterritories": schema.SchemaProperties(validator = validate_territory_subterritories),
+    "tags": [
+		schema.SchemaProperties(primitive_type = str, is_required = False)
+    ]
 }
 
 schema_world = {

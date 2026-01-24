@@ -87,7 +87,6 @@ def validate_prerequisites_exist(prerequisites, path, gamerule = None, **kwargs)
             raise InputError(f"{path}: Prerequisite must be a string indicating building names.")
 
         if not (prerequisite in gamerule["Buildings"].keys()):
-            print(prerequisite)
             raise InputError(f"{path}: Prerequisite {prerequisite} must be a building which exists in the gamerule.")
 
 
@@ -142,7 +141,13 @@ schema_gamerule_building = {
             "Territory": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False)
 
         }
-    }
+    },
+
+    "Tags": [
+
+		schema.SchemaProperties(primitive_type = str, is_required = False)
+    
+    ]
 }
 
 schema_gamerule_unit = {
@@ -165,7 +170,13 @@ schema_gamerule_unit = {
         }
     },
 
-    "Speed": schema.SchemaProperties(primitive_type = int)
+    "Speed": schema.SchemaProperties(primitive_type = int),
+
+    "Tags": [
+
+		schema.SchemaProperties(primitive_type = str, is_required = False)
+    
+    ]
 }
 
 schema_gamerule_vehicle = {

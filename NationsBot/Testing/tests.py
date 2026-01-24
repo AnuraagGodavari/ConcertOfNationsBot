@@ -45,6 +45,7 @@ def generateTestWorld(gamerule, length, height, space, pos_rand = (0,0)):
         )
 
     world[2].subterritories.append(world[-1].id)
+    world[2].tags.append("testTerritoryTag")
 
     '''
     for i in range(32):
