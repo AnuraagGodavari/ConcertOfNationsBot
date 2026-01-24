@@ -81,7 +81,8 @@ class MapCommands(commands.Cog):
                         for buildingsList in nation.territories[terrID]["Buildings"].values()
                     ]),
                     "Sub-Territories": [world[subterr_id].name for subterr_id in world[terrID].subterritories],
-                    **({ "Parent Territory": world[world[terrID].parent].name} if world[terrID].parent else {}) # Don't show null
+                    **({ "Parent Territory": world[world[terrID].parent].name} if world[terrID].parent else {}), # Don't show null
+                    **({ "Tags": world[terrID].tags} if world[terrID].tags else {})
                     }
                 ) 
                 for terrID in menu_territories

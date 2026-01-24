@@ -141,7 +141,13 @@ schema_gamerule_building = {
             "Territory": schema.SchemaProperties(validator = validate_prerequisites_exist, is_required = False)
 
         }
-    }
+    },
+
+    "Tags": [
+
+		schema.SchemaProperties(primitive_type = str, is_required = False)
+    
+    ]
 }
 
 schema_gamerule_unit = {
@@ -164,7 +170,13 @@ schema_gamerule_unit = {
         }
     },
 
-    "Speed": schema.SchemaProperties(primitive_type = int)
+    "Speed": schema.SchemaProperties(primitive_type = int),
+
+    "Tags": [
+
+		schema.SchemaProperties(primitive_type = str, is_required = False)
+    
+    ]
 }
 
 schema_gamerule_vehicle = {

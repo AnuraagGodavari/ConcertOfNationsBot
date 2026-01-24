@@ -142,6 +142,75 @@ class MenuEmbed:
             logError(e)
             raise InputError(f"Invalid sorting keys: {keys}") 
 
+    def searchContent(self, searchArg):
+
+        filteredFields = ([
+            field for field in self.fields if (
+                searchArg in field[0]                                   # If title includes search argument
+                or searchArg.lower() in [
+                    tag.lower() for tag in self.getFieldTags(field)     # If tags include search argument
+                ]
+            )
+        ])
+
+        if not(filteredFields):
+            return False
+
+        self.fields = filteredFields
+        return True
+
+
+    def getFieldTags(self, field):
+
+        if (type(field[1]) != dict):
+            return list()
+
+        if "tags" in field[1]:
+            return field[1]["tags"]
+
+        if "Tags" in field[1]:
+            return field[1]["Tags"]
+
+        return list()
+
+
+    def fieldValueToStr(self, fieldValue):
+
+        content = ""
+
+        if (type(fieldValue) == dict):
+
+            contentDict = fieldValue
+            
+            for key in contentDict.keys():
+                
+                if key == '__class__': continue
+                if key == '__module__': continue
+
+                '''
+                if type(contentDict[key]) == dict: continue
+
+                if type(contentDict[key]) == list:
+                    if type(contentDict[key][0]) == dict:
+                        continue
+                '''
+
+                contentstr = json.dumps(contentDict[key], indent=2)
+
+                #Regex: Get rid of JSON object brackets, whitespace or comma-only lines, and quotes.
+                contentstr = re.sub(r'[{}\[\]]', '', contentstr)
+                contentstr = re.sub(r'\s+,?\n', '\n', contentstr)
+                contentstr = re.sub(r'"', '', contentstr)
+
+                if (contentstr):
+                    content += f"{key}: {contentstr}\n"
+
+        else:
+            content = str(fieldValue)
+
+        return content
+        
+
     def toEmbed(self, pagenumber = 0, *sortkeys):
         
         pagenumber = self.adjust_pagenumber(pagenumber)
@@ -163,40 +232,7 @@ class MenuEmbed:
         for field in paginatedFields:
 
             title = field[0]
-            content = ""
-
-            if (type(field[1]) == dict):
-
-                contentDict = field[1]
-                
-                for key in contentDict.keys():
-                    
-                    if key == '__class__': continue
-                    if key == '__module__': continue
-
-                    '''
-                    if type(contentDict[key]) == dict: continue
-
-                    if type(contentDict[key]) == list:
-                        if type(contentDict[key][0]) == dict:
-                            continue
-                    '''
-
-                    contentstr = json.dumps(contentDict[key], indent=2)
-
-                    #Regex: Get rid of JSON object brackets, whitespace or comma-only lines, and quotes.
-                    contentstr = re.sub(r'[{}\[\]]', '', contentstr)
-                    contentstr = re.sub(r'\s+,?\n', '\n', contentstr)
-                    contentstr = re.sub(r'"', '', contentstr)
-
-                    if (contentstr):
-                        content += f"{key}: {contentstr}\n"
-                    
-
-            else:
-                content = str(field[1])
-
-            content = str(content)
+            content = self.fieldValueToStr(field[1])
             if self.format_text: content = f"`{content}`"
 
             embed.add_field(
