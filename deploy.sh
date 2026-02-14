@@ -29,7 +29,10 @@ if [ ! -f ".env" ] ; then
     DB_PORT=
 
     IMGUR_CLIENT_ID=
-    IMGUR_CLIENT_SECRET="
+    IMGUR_CLIENT_SECRET=
+    
+    # DEVELOPER_SERVER=
+    "
 
     echo "$env" > .env
 

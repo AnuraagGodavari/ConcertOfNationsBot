@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 #Utilities
 from common import *
@@ -65,6 +66,22 @@ async def test_bot(ctx):
 @nationsbot.event
 async def on_ready():
     """ Detects when the bot has been fully loaded and is online """
+
+    try:
+
+        dev_server = os.getenv('DEVELOPER_SERVER')
+
+        if (dev_server):
+            synced = await nationsbot.tree.sync(guild = nationsbot.get_guild(dev_server))
+            logInfo("Synced commands to developer guild")
+        
+        else: 
+            synced = await nationsbot.tree.sync()
+            logInfo("Synced commands to guilds")
+
+    except Exception as e:
+        logInfo(f"Error syncing commands: {e}")
+
     logInfo("Bot ready!")
 
     if (options["test bot"]):
