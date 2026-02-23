@@ -25,18 +25,23 @@ class CommandButton(discord.ui.Button):
         self.preClickArgs = preClickArgs or None
     
     async def callback(self, interaction: discord.Interaction):
-        
-        if (interaction.user.id != self.ctx.author.id):
-            return
-        
+                
         assert self.view is not None
 
         if (self.preClick):
             self.preClick(*self.preClickArgs)
 
-        await self.ctx.invoke(self.client.get_command(self.command), *self.args)
+        #await self.ctx.invoke(self.client.get_command(self.command), *self.args)
 
-        await interaction.response.defer()
+        result = await self.command(self.client, self.ctx, *self.args)
+
+        if (type(result) == MenuEmbed):
+            
+            await interaction.response.edit_message(embed = result.toEmbed(), view = result.embedView())
+
+        else:
+            
+            await interaction.response.edit_message(result)
 
 
 class MenuView(discord.ui.View):
