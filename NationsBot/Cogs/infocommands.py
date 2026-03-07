@@ -40,10 +40,8 @@ class InfoCommands(commands.Cog):
     async def nationinfo(self, interaction, role: discord.Role = None):
         """Display basic info about the author's nation or, if another role is specified, that role's nation. 
 
-        Parameters
-        -----------
-            role (optional): discord.Role
-                The nation role.
+        Args:
+            role: The nation role.
         """
         
         await handle_interaction(interaction.client, interaction, infoactions.nationinfo, role.id if role else None)
@@ -62,10 +60,8 @@ class InfoCommands(commands.Cog):
     async def forces(self, interaction, role: discord.Role = None):
         """Show all of the forces controlled by a nation, either that of the author or one that is specified. 
         
-        Parameters
-        -----------
-            role (optional): discord.Role
-                The nation role.
+        Args:
+            role: The nation role.
         """
         
         await handle_interaction(interaction.client, interaction, infoactions.forces, role.id if role else None)
@@ -74,10 +70,8 @@ class InfoCommands(commands.Cog):
     async def force(self, interaction, forcename: str):
         """Show a specific force controlled by any nation in the game. 
 
-        Parameters
-        -----------
-            forcename: str
-                A specific force's name belonging to any nation
+        Args:
+            forcename: A specific force's name belonging to any nation
         """
 
         await handle_interaction(interaction.client, interaction, infoactions.force, forcename)
@@ -95,13 +89,10 @@ class InfoCommands(commands.Cog):
     async def population(self, interaction, role: discord.Role = None, territory: str = None):
         """Show all of the populations in a nation or a territory
 
-        Parameters
-        -----------
-            role (optional): discord.Role
-                The nation role.
+        Args:
+            role: The nation role.
 
-            territory (optional): str
-                The territory name or ID.
+            territory: The territory name or ID.
         """
 
         await handle_interaction(interaction.client, interaction, infoactions.population, role.id if role else None, territory)
