@@ -391,10 +391,12 @@ async def territory_buildings(client, ctx, terrID):
         "_Information about all of the buildings in this territory, including all statuses and the blueprint for one of each building._", 
         ctx.author.id,
         fields = [
-            (buildingName, 
-            ops.combineDicts({"Number": len(buildingsList), "All Statuses": buildingsList}, buildings.get_blueprint(buildingName, savegame))
+            (f"{buildingName} [{buildingIndex}]", 
+            ops.combineDicts({f"Index": buildingIndex, f"Status": buildingStatus}, buildings.get_blueprint(buildingName, savegame))
             )
-            for buildingName, buildingsList in nation_terrInfo["Savegame"]["Buildings"].items()
+            for buildingName, buildingsList
+            in nation_terrInfo["Savegame"]["Buildings"].items()
+            for buildingIndex, buildingStatus in enumerate(buildingsList) 
         ],
         pagesize = 3,
         sortable = True,
