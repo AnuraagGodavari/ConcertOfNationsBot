@@ -19,6 +19,8 @@ import ConcertOfNationsEngine.buildings
 from GameUtils.filehandling import *
 import GameUtils.playerutils as playerutils
 
+from Actions import buildingactions
+
 
 # Full Map Functions
 
@@ -74,14 +76,14 @@ async def worldmap(client, ctx):
 
     return menu
 
-async def worldmap_full(client, ctx, roleid):
+async def worldmapFull(client, ctx, roleid):
     """
     Look at the full world map associated with this game, without any fog of war unless admin specifies a country.
 
     Args:
         role: The nation role. If not specified, the worldmap will show all territories.
     """
-    logInfo(f"worldmap_full({ctx.guild.id})")
+    logInfo(f"worldmapFull({ctx.guild.id})")
 
     savegame = get_SavegameFromCtx(ctx)
     if not (savegame): 
@@ -200,7 +202,7 @@ def territoriesMenu(client, ctx, roleid, shop = False):
 
     if (shop and buildingInCart):
         menu.buttons = [
-            CommandButton(ctx, client, f"{world[terr].name}", 1, "buy_building", [world[terr].id, buildingInCart])
+            CommandButton(ctx, client, f"{world[terr].name}", 1, buildingactions.buyBuilding, [world[terr].id, buildingInCart])
             for terr in menu_territories
         ]
 
@@ -285,7 +287,7 @@ async def territory(client, ctx, terrID):
         ]
 
     buttons = [
-        CommandButton(ctx, client, "Buildings", 1, territory_buildings, [terrID]),
+        CommandButton(ctx, client, "Buildings", 1, territoryBuildings, [terrID]),
         CommandButton(ctx, client, "Population", 1, "population", [terrID])
     ] + [
         CommandButton(ctx, client, f"{world[subterr_id].name}", 3, "territory", [subterr_id])
@@ -324,7 +326,7 @@ async def territory(client, ctx, terrID):
                         client, 
                         "Buy a building", 
                         2, 
-                        "buildings_shop",
+                        buildingactions.getBuildings,
                         preClick = selectTerritory,
                         preClickArgs = [ctx, terrID]
                     )
@@ -353,7 +355,7 @@ async def territory(client, ctx, terrID):
 
     return menu
 
-async def territory_buildings(client, ctx, terrID):
+async def territoryBuildings(client, ctx, terrID):
     """ 
     Show all of the available buildings in a given territory. 
         
@@ -362,7 +364,7 @@ async def territory_buildings(client, ctx, terrID):
     """
 
 
-    logInfo(f"territory_buildings({ctx.guild.id}, {terrID})")
+    logInfo(f"territoryBuildings({ctx.guild.id}, {terrID})")
 
     savegame = get_SavegameFromCtx(ctx)
     if not (savegame): 

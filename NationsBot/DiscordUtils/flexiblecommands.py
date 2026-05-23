@@ -38,6 +38,12 @@ async def handle_interaction(client, interaction, command, *args, **kwargs):
             view = result.embedView(),
             ephemeral = True
             )
+    
+    elif (type(result) == str):
+        await interaction.response.send_message(
+            content = result,
+            ephemeral = True
+        )
 
 async def add_flexible_command(client, command):
 

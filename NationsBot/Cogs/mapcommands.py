@@ -46,7 +46,7 @@ class MapCommands(commands.Cog):
             role: The nation role. If not specified, the worldmap will show all territories.
         """
         
-        await handle_interaction(interaction.client, interaction, mapactions.worldmap_full, role.id if role else None)
+        await handle_interaction(interaction.client, interaction, mapactions.worldmapFull, role.id if role else None)
 
 
     #Territories
@@ -79,7 +79,7 @@ class MapCommands(commands.Cog):
             territory: The name or numeric ID of the territory.
         """
         
-        await handle_interaction(interaction.client, interaction, mapactions.territory_buildings, territory)
+        await handle_interaction(interaction.client, interaction, mapactions.territoryBuildings, territory)
 
 async def setup(client):
     await client.add_cog(MapCommands(client))

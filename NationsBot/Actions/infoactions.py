@@ -21,7 +21,7 @@ from ConcertOfNationsEngine.buildings import *
 import ConcertOfNationsEngine.military as military
 import ConcertOfNationsEngine.territories as territories
 
-from Actions import mapactions
+from Actions import mapactions, buildingactions
 
 # General Information
 
@@ -87,7 +87,7 @@ async def nationinfo(client, ctx, roleID: str = None):
             ("Modifiers", nation.modifiers)
         ],
         buttons = [
-            CommandButton(ctx, client, "Territories", 1, mapactions.territories, [nation.role_id]),
+            CommandButton(ctx, client, "Territories", 1, mapactions.getTerritories, [nation.role_id]),
             #CommandButton(ctx, client, "Trade", 1, "trade", [nation.role_id]),
             #CommandButton(ctx, client, "Forces", 1, "forces", [nation.role_id]),
             #CommandButton(ctx, client, "Population", 1, "population", [nation.role_id])
@@ -102,7 +102,7 @@ async def nationinfo(client, ctx, roleID: str = None):
             #CommandButton(ctx, client, "Military Commands", 2, "help", ["MilitaryCommands"]),
             #CommandButton(ctx, client, "Building Commands", 2, "help", ["BuildingCommands"]),
             #CommandButton(ctx, client, "Trade Commands", 2, "help", ["TradeCommands"]),
-            #CommandButton(ctx, client, "Buildings Shop", 3, "buildings_shop")
+            CommandButton(ctx, client, "Buildings Shop", 3, buildingactions.getBuildings)
         ]
 
     logInfo(f"Created Nation info display")

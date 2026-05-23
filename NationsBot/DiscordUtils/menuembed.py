@@ -40,8 +40,8 @@ class CommandButton(discord.ui.Button):
             await interaction.response.edit_message(embed = result.toEmbed(), view = result.embedView())
 
         else:
-            
-            await interaction.response.edit_message(result)
+            print(result)
+            await interaction.response.edit_message(content = result, embed = None, view = None)
 
 
 class MenuView(discord.ui.View):
