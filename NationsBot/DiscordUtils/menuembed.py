@@ -9,6 +9,8 @@ from logger import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
 import GameUtils.operations as ops
 
+from Cogs import errorlogger
+
 """ A dictionary of depth 1 where keys are player IDs and values are menu objects """
 menucache = dict()
 
@@ -24,7 +26,7 @@ class CommandButton(discord.ui.Button):
         self.preClick = preClick or None
         self.preClickArgs = preClickArgs or None
     
-    async def callback(self, interaction: discord.Interaction):
+    async def handle_callback(self, interaction: discord.Interaction): 
                 
         assert self.view is not None
 
@@ -42,6 +44,17 @@ class CommandButton(discord.ui.Button):
         else:
             print(result)
             await interaction.response.edit_message(content = result, embed = None, view = None)
+
+    async def callback(self, interaction: discord.Interaction):
+
+        try:
+            await self.handle_callback(interaction)
+
+        except Exception as error:
+
+            errorMsg = await errorlogger.handle_error(self.ctx, error)
+
+            await interaction.response.edit_message(content = errorMsg, embed = None, view = None)
 
 
 class MenuView(discord.ui.View):
