@@ -2,6 +2,7 @@ import json, datetime, pprint, traceback, re, io
 
 import discord
 from discord.ext import commands
+from discord import app_commands
 from discord.utils import get
 
 from common import *
@@ -11,6 +12,7 @@ from logger import *
 import GameUtils.operations as ops
 from DiscordUtils.getgameinfo import *
 from DiscordUtils import validationutils as validationutils
+from DiscordUtils.flexiblecommands import *
 
 from ConcertOfNationsEngine.gamehandling import *
 from ConcertOfNationsEngine.concertofnations_exceptions import *
@@ -22,6 +24,10 @@ import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.populations as populations
 import ConcertOfNationsEngine.diplomacy as diplomacy
 
+from Actions import buildingactions, mapactions
+
+ADMIN_PERMS = discord.Permissions(administrator=True)
+
 #The cog itself
 class AdminCommands(commands.Cog):
     """ Commands only usable by people with the "administrator" permission. These are to manage games and manually adjust values """
@@ -32,190 +38,41 @@ class AdminCommands(commands.Cog):
 
     # Manage buildings
 
-    @commands.command(aliases = ["giveBuilding", "give-buildng", "givebuilding"])
-    @commands.has_permissions(administrator = True)
-    async def give_building(self, ctx, terrID, buildingName, **args):
-        """ 
-        Spawn a building in a territory.
-
-        Example: To spawn a Small Farm in territory 0, type:
-        > n.give_building 0 "Small Farm"
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def give_building(self, interaction, terrid: str, buildingname: str):
+        """ Spawn a building in a territory.
 
         Args:
-            terrID: The name or numeric ID of the territory
-            buildingName: The name of the building you wish to build
+            terrid: The name or numeric ID of the territory
+            buildingname: The name of the building you wish to build
         """
-        logInfo(f"n.givebuilding({ctx.guild.id}, {terrID}, {buildingName})")
-
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        world = savegame.getWorld()
-        if not (world):
-            raise InputError("Savegame's world could not be retrieved")
-
-        #Territory info from the map
-        world_terrInfo = world[terrID]
-
-        if not world_terrInfo:
-            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
-        
-        territoryName = world_terrInfo.name
-        terrID = world_terrInfo.id
-        
-        #Get nation info
-        nationName = savegame.find_terrOwner(terrID)
-        if not (nationName): 
-            raise InputError("Territory is unowned and cannot have a building placed in it.")
-        nation = savegame.nations[nationName]
-
-        #Validate that building can be built
-
-        if not (buildingName in get_allbuildings(savegame)):
-            raise InputError(f"Building {buildingName} does not exist")
-
-        blueprint = buildings.get_blueprint(buildingName, savegame)
-
-        territory = nation.getTerritoryInfo(terrID, savegame)
-
-        if not (nation.canHoldBuilding(buildingName, blueprint, territory)):
-
-            max_num = 1
-            if ("Territory Maximum" in blueprint.keys()): max_num = blueprint['Territory Maximum'] 
-
-            raise InputError(f"{len(territory['Savegame']['Buildings'][buildingName])} of Building {buildingName} already exist in territory {territoryName}, maximum is {max_num}")
-
-        if not (nation.enoughNodesForBuilding(blueprint, territory)):
-
-            raise InputError(f"Territory {territoryName} does not have the required nodes for building {buildingName}")
-
-        territories.add_building(nation, terrID, buildingName, "Active", blueprint)
-
-        nation.add_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(terrID))
-
-        await ctx.send(f"Successfully added {buildingName} to {territoryName}!")
-
-        save_saveGame(savegame)
+        await handle_interaction(interaction.client, interaction, buildingactions.give_building, terrid, buildingname)
     
-    @commands.command(aliases = ["changebuildingstatus", "change-buildingstatus"])
-    @commands.has_permissions(administrator = True)
-    async def change_buildingstatus(self, ctx, terrID, buildingName, buildingIndex, newstatus):
-        """ 
-        Manually change the status of any building 
-
-        Example: To make the first Small Farm in territory 0 finish constructing in January 1939, type:
-        > n.change_buildingstatus 0 "Small Farm" 0 "Constructing:01/1939
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def change_buildingstatus(self, interaction, terrid: str, buildingname: str, buildingindex: int, newstatus: str):
+        """ Manually change the status of any building.
 
         Args:
-            terrID: The name or numeric ID of the territory
-            buildingName: The name of the building you wish to build
-            buildingIndex: Which building you want to access, starting with 0
-            newstatus: A new status. This can be: Active, Inactive or Constructing:<m>/<y>
+            terrid: The name or numeric ID of the territory
+            buildingname: The name of the building you wish to build
+            buildingindex: Which building you want to access, starting with 0
+            newstatus: A new status. This can be: "Active", "Inactive" or "Constructing:mm/yyyy"
         """
+        await handle_interaction(interaction.client, interaction, buildingactions.change_buildingstatus, terrid, buildingname, buildingindex, newstatus)
         
-        logInfo(f"change_buildingstatus({ctx.guild.id}, {terrID}, {buildingName}, {buildingIndex}, {newstatus})")
-
-        if not (ops.isInt(buildingIndex)):
-            raise InputError(f"Invalid amount {buildingIndex}, must be integer")
-
-        buildingIndex = int(buildingIndex)
-
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        world = savegame.getWorld()
-        if not (world):
-            raise InputError("Savegame's world could not be retrieved")
-
-
-        #Territory info from the map
-        world_terrInfo = world[terrID]
-
-        if not world_terrInfo:
-            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
-        
-        territoryName = world_terrInfo.name
-        terrID = world_terrInfo.id
-
-        #Get nation info
-        nationName = savegame.find_terrOwner(terrID)
-        if not (nationName): 
-            raise InputError("Territory is unowned and does not have this building")
-        nation = savegame.nations[nationName]
-
-        if not(nation.get_territory(terrID)):
-            raise InputError(f"Nation {nation.name} does not own territory \"{territoryName}\"")
-
-        newstatus = territories.newbuildingstatus(nation, terrID, buildingName, buildingIndex, newstatus, savegame)
-
-        if not (newstatus):
-            raise InputError(f"Could not toggle building {buildingName} {buildingIndex} in territory {terrID}.")
-
-        await ctx.send(f"New building status: {newstatus}")
-
-        save_saveGame(savegame)
-        
-    @commands.command(aliases = ["takebuilding", "take-building", "removebuilding", "remove_building", "remove-building"])
-    @commands.has_permissions(administrator = True)
-    async def take_building(self, ctx, terrID, buildingName, buildingIndex):
-        """ 
-        Manually remove a building from any territory 
-
-        Example: To remove the first Small Farm in territory 0, type:
-        > n.remove_building 0 "Small Farm" 0
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def take_building(self, interaction, terrid: str, buildingname: str, buildingindex: int):
+        """ Manually remove a building from any territory 
 
         Args:
-            terrID: The name or numeric ID of the territory
-            buildingName: The name of the building you wish to remove
-            buildingIndex: Which building you want to access, starting with 0
+            terrid: The name or numeric ID of the territory
+            buildingname: The name of the building you wish to remove
+            buildingindex: Which building you want to access, starting with 0
         """
-        logInfo(f"take_building({ctx.guild.id}, {terrID}, {buildingName}, {buildingIndex})")
-
-        if not (ops.isInt(buildingIndex)):
-            raise InputError(f"Invalid amount {buildingIndex}, must be integer")
-
-        buildingIndex = int(buildingIndex)
-
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        world = savegame.getWorld()
-        if not (world):
-            raise InputError("Savegame's world could not be retrieved")
-
-
-        #Territory info from the map
-        world_terrInfo = world[terrID]
-
-        if not world_terrInfo:
-            raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
-        
-        territoryName = world_terrInfo.name
-        terrID = world_terrInfo.id
-
-        #Get nation info
-        nationName = savegame.find_terrOwner(terrID)
-        if not (nationName): 
-            raise InputError("Territory is unowned and does not have this building")
-        nation = savegame.nations[nationName]
-
-        #Can we do the operation on this territory
-
-        if (not territories.hasbuilding(nation, terrID, buildingName)):
-            raise InputError(f"Territory {territoryName} does not have building {buildingName}")
-
-        blueprint = buildings.get_blueprint(buildingName, savegame)
-
-        territories.destroybuilding(nation, terrID, buildingName, buildingIndex, blueprint)
-
-        nation.remove_buildingeffects(buildings.get_alleffects(buildingName, savegame), nation.get_territory(terrID))
-
-        await ctx.send(f"Building {buildingName} has successfully been deleted from territory {territoryName}")
-
-        save_saveGame(savegame)
+        await handle_interaction(interaction.client, interaction, buildingactions.take_building, terrid, buildingname, buildingindex)
 
 
     # Manage population
