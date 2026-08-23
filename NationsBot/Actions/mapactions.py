@@ -218,7 +218,7 @@ def selectTerritory(ctx, terrID):
     """ Function for selecting a territory to perform a predetermined action in. """
     playerutils.addKeyValue(ctx.guild.id, ctx.author.id, MapCacheEnums.TERRITORY_SELECTED, terrID)
 
-# Territories
+# Territory Info and Selection
 
 async def getTerritories(client, ctx, roleid = None):
     """ 

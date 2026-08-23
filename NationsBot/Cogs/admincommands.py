@@ -1,4 +1,4 @@
-import json, datetime, pprint, traceback, re, io
+import json, datetime, pprint, traceback, re
 
 import discord
 from discord.ext import commands
@@ -24,7 +24,7 @@ import ConcertOfNationsEngine.territories as territories
 import ConcertOfNationsEngine.populations as populations
 import ConcertOfNationsEngine.diplomacy as diplomacy
 
-from Actions import buildingactions, mapactions
+from Actions import buildingactions, mapactions, nationactions
 
 ADMIN_PERMS = discord.Permissions(administrator=True)
 
@@ -381,228 +381,67 @@ class AdminCommands(commands.Cog):
 
     # Manage nations
 
-    @commands.command(aliases = ["giveTerritory", "give-territory", "giveterritory"])
-    @commands.has_permissions(administrator = True)
-    async def give_territory(self, ctx, roleid, *terrIDs):
-        """
-        Give a territory to a nation and take it away from its previous owner, if any. 
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def give_territory(self, interaction, role: discord.Role, terrid: str):
+        """ Give a territory to a nation and take it away from its previous owner, if any. 
 
-        Example: To give territories 0-2 to Sealand, type:
-        > n.give_territory @Sealand 0 1 2
+        Args:
+            role: The nation role.
+            *terrid: A valid territory name or numerical id.
+        """
+        
+        await handle_interaction(interaction.client, interaction, nationactions.give_territory, role.id, terrid)
+
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def remove_territory(self, interaction, role: discord.Role, terrid: str):
+        """ Remove a territory from a nation.
 
         Args:
             roleid: The nation role.
-            *terrIDs: Any number of valid territory names or numerical ids.
+            *terrid: A valid territory name or numerical id.
         """
-        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrIDs})")
 
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
+        await handle_interaction(interaction.client, interaction, nationactions.remove_territory, role.id, terrid)
 
-        nation = get_NationFromRole(ctx, roleid, savegame)
-        
-        for terrID in terrIDs:
-            transferred_terr =  savegame.transfer_territory(terrID, nation)
-            if not transferred_terr:
-                raise InputError(f"Territory {terrID} transfer to {nation.name} did not work")
-
-            logInfo(f"Successfully transferred the territory {terrID} to {nation.name}")
-
-        await ctx.send(f"Successfully transferred the territories: {terrIDs} to {nation.name}")
-
-        save_saveGame(savegame)
-
-    @commands.command(aliases = ["removeTerritory", "remove-territory", "removeterritory"])
-    @commands.has_permissions(administrator = True)
-    async def remove_territory(self, ctx, roleid, *terrIDs):
-        """
-        Remove a territory from a nation.
-
-        Example: To take away territories 0-2 from Sealand, type:
-        > n.remove_territory @Sealand 0 1 2
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def give_resources(self, interaction, role: discord.Role, resource: str, amount: float):
+        """ Give a specified amount of any resources to a specified nation.
 
         Args:
-            roleid: The nation role.
-            *terrIDs: Any number of valid territory names or numerical ids.
-        """
-        logInfo(f"giveTerritory({ctx.guild.id}, {roleid}, {terrIDs})")
-
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        
-        world = savegame.getWorld()
-        if not (world):
-            raise InputError("Savegame's world could not be retrieved")
-
-        nation = get_NationFromRole(ctx, roleid, savegame)
-
-        removed_terrs = {}
-        
-        #Check that all territories are valid before removing
-        for terrID in terrIDs:
-
-            #Territory info from the map
-            world_terr = world[terrID]
-
-            if not world_terr:
-                raise InputError(f"Invalid Territory Name or ID \"{terrID}\"")
-
-            territoryName = world_terr.name
-
-            if not(nation.get_territory(terrID)):
-                raise InputError(f"Territory {terrID} does not belong to {nation.name}")
-        
-        #Actually remove the territories
-        for terrID in terrIDs:
-
-            #Territory info from the map
-            world_terr = world[terrID]
-
-            territoryName = world_terr.name
-            terrID = world_terr.id
-
-            removed_terr = savegame.remove_territory(terrID, nation)
-
-            removed_terr_json = filehandling.saveObject(removed_terr)
-
-            logInfo(f"Successfully removed the territory {terrID} from {nation.name}", details = removed_terr_json)
-
-            removed_terrs[terrID] = removed_terr_json
-
-
-        removed_terrs_file = io.StringIO(json.dumps(removed_terrs, indent = 2))
-
-        await ctx.send(f"Successfully removed the territories: {terrIDs} from {nation.name}. Attached removed territory information.", file = discord.File(fp = removed_terrs_file, filename = f"Territories {' '.join(terrIDs)}.json"))
-
-        removed_terrs_file.close()
-
-        save_saveGame(savegame)
-
-    @commands.command(aliases = ["giveResources", "give-resources", "giveresources"])
-    @commands.has_permissions(administrator = True)
-    async def give_resources(self, ctx, roleid, *args):
-        """
-        Give a specified amount of any resources to a specified nation.
-
-        Example: To give 10 Food and 20 Money to Sealand, type:
-        > n.give_resources @Sealand Food 10 Money 20
-
-        
-        Args:
-            roleid: The nation role.
-            *args (tuple): A list of resources and numbers. Example:
-            ("Iron", "2", "Money", "3")
+            role: The nation role.
+            resource: The name of a valid resource.
+            amount: Can be a decimal amount.
         """
 
-        logInfo(f"giveResources({ctx.guild.id}, {roleid}, {args})")
+        await handle_interaction(interaction.client, interaction, nationactions.give_resources, role.id, resource, amount)
 
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        nation = get_NationFromRole(ctx, roleid, savegame)
-        
-
-        if len(args) < 1:
-            raise InputError("Not enough args!")
-
-        elif (len(args) % 2 != 0):
-            raise InputError("Odd number of args")
-
-        #Get and validate resources
-        resources_toadd = {args[n*2]: args[(n*2)+1] for n in range(int(len(args)/2))}
-
-        for k, v in resources_toadd.items():
-            
-            if not(k in savegame.getGamerule()["Resources"] + ["Money"]):
-                raise InputError(f"\"{k}\" is not a resource")
-
-            if not (ops.isInt(v)):
-                raise InputError(f"\"{v}\" is not a valid amount of resources")
-
-            else:
-                resources_toadd[k] = int(v)
-
-        logInfo(f"Adding resources to {nation.name}", details = resources_toadd)
-
-        nation.resources = ops.combineDicts(nation.resources, resources_toadd)
-
-        logInfo(f"Successfully added resources", details = nation.resources)
-        await ctx.send(f"Successfully added resources, type \"_n.nationinfo {roleid}_\" to view changes")
-
-        save_saveGame(savegame)
-
-    @commands.command(aliases = ["changeCapacity", "change-capacity", "changecapacity", "change_bureaucracy", "changeBureaucracy", "change-bureaucracy", "changebureaucracy"])
-    @commands.has_permissions(administrator = True)
-    async def change_capacity(self, ctx, roleid, category, amount):
-        """ 
-        Change the bureaucratic capacity for any category of a specific nation's bureaucracy 
-
-        Example: To change Sealand's Military bureaucratic capacity to 10, type:
-        > n.change_capacity @Sealand Military 10
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def change_capacity(self, interaction, role: discord.Role, category: str, amount: int):
+        """ Change the bureaucratic capacity for any category of a specific nation's bureaucracy
 
         Args:
-            roleid: The nation role.
+            role: The nation role.
             category: The bureaucratic category.
             amount: A non-negative integer value for the new bureaucratic capacity.
         """
 
-        logInfo(f"change_capacity({ctx.guild.id}, {roleid}, {category}, {amount})")
+        await handle_interaction(interaction.client, interaction, nationactions.change_capacity, role.id, category, amount)
 
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        nation = get_NationFromRole(ctx, roleid, savegame)
-        
-
-        if not(category in nation.bureaucracy.keys()):
-            raise InputError(f"No such bureaucratic category \"{category}\"")
-
-        if (amount.startswith('-') or not (ops.isInt(amount))):
-            raise InputError(f"{category} capacity cannot have value \"{amount}\"")
-
-        logInfo(f"Changing bureaucratic capacity for {nation.name} for category {category} from {nation.bureaucracy[category]} to {amount}")
-
-        nation.bureaucracy[category] = (nation.bureaucracy[category][0], int(amount))
-
-        logInfo(f"Successfully changed national bureaucracy", details = nation.bureaucracy)
-        await ctx.send(f"Successfully changed bureaucratic capacity for {category} category to {amount}, type \"_n.nationinfo {roleid}_\" to view changes")
-
-    @commands.command(aliases = ["changeTax", "change-tax", "changetax"])
-    @commands.has_permissions(administrator = True)
-    async def change_tax(self, ctx, roleid, amount):
-        """ 
-        Change a nation's national tax modifier 
-
-        Example: To change Sealand's tax modifier to 10%, type:
-        > n.change_tax @Sealand 0.1
+    @app_commands.command()
+    @app_commands.default_permissions(ADMIN_PERMS)
+    async def change_tax(self, interaction, role: discord.Role, amount: float):
+        """ Change a nation's national tax modifier
 
         Args:
-            roleid: The nation role.
+            role: The nation role.
             amount: A decimal value representing the new tax rate.
         """
 
-        logInfo(f"change_capacity({ctx.guild.id}, {roleid}, {amount})")
-
-        savegame = get_SavegameFromCtx(ctx)
-        if not (savegame): 
-            return #Error will already have been handled
-
-        nation = get_NationFromRole(ctx, roleid, savegame)
-
-        if not (ops.isFloat(amount)):
-            raise InputError(f"Tax modifier cannot have value \"{amount}\"")
-
-        logInfo(f"Changing tax modifier for {nation.name} from {nation.modifiers['Tax']} to {amount}")
-
-        nation.modifiers['Tax'] = float(amount)
-
-        logInfo(f"Successfully changed national tax modifier to {nation.modifiers['Tax']}")
-        await ctx.send(f"Successfully changed national tax modifier to {nation.modifiers['Tax']}, type \"_n.nationinfo {roleid}_\" to view changes")
+        await handle_interaction(interaction.client, interaction, nationactions.change_tax, role.id, amount)
 
 
     # Manage military

@@ -32,6 +32,7 @@ async def handle_interaction(client, interaction, command, *args, **kwargs):
 
     result = await command(client, ctx, *args, **kwargs)
 
+    # A menu object which can turn into an embed with interactable features
     if (type(result) == MenuEmbed):
         await interaction.response.send_message(
             embed = result.toEmbed(),
@@ -39,6 +40,18 @@ async def handle_interaction(client, interaction, command, *args, **kwargs):
             ephemeral = True
             )
     
+    # A set of parameters for ctx.send
+    elif (type(result) == dict):
+        if "content" in result.keys():
+            await interaction.response.send_message(
+                **result,
+                ephemeral = True
+            )
+
+        if "file" in result.keys():
+            result["file"].close()
+
+    # A string for ctx.send
     elif (type(result) == str):
         await interaction.response.send_message(
             content = result,
